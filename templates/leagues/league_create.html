@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Create League</title>
+</head>
+<body>
+  <main>
+    <h1>Create a League</h1>
+
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <button type="submit">Create league</button>
+    </form>
+
+    <p>
+      <a href="{% url 'league_list' %}">Back to leagues</a>
+    </p>
+  </main>
+</body>
+</html>

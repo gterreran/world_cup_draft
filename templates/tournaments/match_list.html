@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ league.name }} Matches</title>
+</head>
+<body>
+  <main>
+    <h1>Matches</h1>
+    <p>League: {{ league.name }}</p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <p>
+      <a href="{% url 'league_detail' league.slug %}">Back to league</a>
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Stage</th>
+          <th>Match</th>
+          <th>Score</th>
+          <th>Winner</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for match in matches %}
+          <tr>
+            <td>{{ match.get_stage_display }}</td>
+            <td>{{ match.home_team.name }} vs {{ match.away_team.name }}</td>
+            <td>
+              {% if match.is_complete %}
+                {{ match.home_score }}–{{ match.away_score }}
+                {% if match.went_to_penalties %}
+                  pens
+                {% elif match.went_to_extra_time %}
+                  AET
+                {% endif %}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td>
+              {% if match.winner %}
+                {{ match.winner.name }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td>
+              {% if request.user == league.commissioner %}
+                <a href="{% url 'match_result_edit' league.slug match.id %}">Edit</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5">No matches yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{% extends "base/base.html" %}
+
+{% block title %}Your Leagues{% endblock %}
+
+{% block content %}
+  <h1>Your Leagues</h1>
+
+  <p>
+    <a class="button" href="{% url 'league_create' %}">Create a new league</a>
+  </p>
+
+  <section class="card">
+    <h2>Commissioner</h2>
+    <ul>
+      {% for league in commissioned %}
+        <li>
+          <a href="{% url 'league_detail' league.slug %}">{{ league.name }}</a>
+        </li>
+      {% empty %}
+        <li>No commissioned leagues yet.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Member</h2>
+    <ul>
+      {% for league in leagues %}
+        <li>
+          <a href="{% url 'league_detail' league.slug %}">{{ league.name }}</a>
+        </li>
+      {% empty %}
+        <li>No joined leagues yet.</li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

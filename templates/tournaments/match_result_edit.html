@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Edit Match Result</title>
+</head>
+<body>
+  <main>
+    <h1>Edit Match Result</h1>
+
+    <p>
+      {{ match.get_stage_display }}:
+      {{ match.home_team.name }} vs {{ match.away_team.name }}
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <button type="submit">Save result</button>
+    </form>
+
+    <p>
+      <a href="{% url 'match_list' league.slug %}">Back to matches</a>
+    </p>
+  </main>
+</body>
+</html>

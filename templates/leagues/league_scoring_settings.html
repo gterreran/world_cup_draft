@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ league.name }} Scoring Settings</title>
+</head>
+<body>
+  <main>
+    <h1>Scoring Settings</h1>
+
+    <p>{{ league.name }}</p>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <h2>Group Stage</h2>
+      <p>{{ form.group_win.label_tag }} {{ form.group_win }}</p>
+      <p>{{ form.group_draw.label_tag }} {{ form.group_draw }}</p>
+      <p>{{ form.group_loss.label_tag }} {{ form.group_loss }}</p>
+      <p>{{ form.qualify_knockout.label_tag }} {{ form.qualify_knockout }}</p>
+
+      <h2>Knockout Stage</h2>
+      <p>{{ form.knockout_win_regulation.label_tag }} {{ form.knockout_win_regulation }}</p>
+      <p>{{ form.knockout_win_extra_time.label_tag }} {{ form.knockout_win_extra_time }}</p>
+      <p>{{ form.knockout_win_penalties.label_tag }} {{ form.knockout_win_penalties }}</p>
+      <p>{{ form.knockout_loss_extra_time.label_tag }} {{ form.knockout_loss_extra_time }}</p>
+      <p>{{ form.knockout_loss_penalties.label_tag }} {{ form.knockout_loss_penalties }}</p>
+
+      <h2>Final Placement Bonuses</h2>
+      <p>{{ form.champion_bonus.label_tag }} {{ form.champion_bonus }}</p>
+      <p>{{ form.runner_up_bonus.label_tag }} {{ form.runner_up_bonus }}</p>
+      <p>{{ form.third_place_bonus.label_tag }} {{ form.third_place_bonus }}</p>
+      <p>{{ form.fourth_place_bonus.label_tag }} {{ form.fourth_place_bonus }}</p>
+
+      <button type="submit">Save scoring settings</button>
+    </form>
+
+    <p>
+      <a href="{% url 'league_detail' league.slug %}">Back to league</a>
+    </p>
+  </main>
+</body>
+</html>

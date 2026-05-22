@@ -1,0 +1,147 @@
+from django import forms
+
+from .models import League, LeagueMember
+from scoring.defaults import default_scoring_config, default_tiebreaker_config
+from scoring.defaults import TIEBREAKER_CHOICES
+
+
+class LeagueCreateForm(forms.ModelForm):
+    class Meta:
+        model = League
+        fields = [
+            "name",
+            "tournament",
+            "teams_per_manager",
+            "use_tiers",
+            "assignment_method",
+        ]
+
+        widgets = {
+            "name": forms.TextInput(attrs={"placeholder": "e.g. The Most Chaotic League"}),
+            "teams_per_manager": forms.NumberInput(attrs={"min": 1, "max": 8}),
+        }
+
+
+class LeagueMemberCreateForm(forms.ModelForm):
+    class Meta:
+        model = LeagueMember
+        fields = ["display_name"]
+
+        widgets = {
+            "display_name": forms.TextInput(
+                attrs={"placeholder": "e.g. Giacomo, The Commish, Team Chaos"}
+            ),
+        }
+
+
+class LeagueSettingsForm(forms.ModelForm):
+    class Meta:
+        model = League
+        fields = [
+            "name",
+            "teams_per_manager",
+            "use_tiers",
+            "assignment_method",
+            "sleeper_league_id",
+        ]
+
+        widgets = {
+            "name": forms.TextInput(),
+            "teams_per_manager": forms.NumberInput(attrs={"min": 1, "max": 8}),
+            "sleeper_league_id": forms.TextInput(
+                attrs={"placeholder": "Optional Sleeper league ID"}
+            ),
+        }
+
+
+class LeagueScoringSettingsForm(forms.Form):
+    group_win = forms.DecimalField(label="Group win", min_value=0, initial=3)
+    group_draw = forms.DecimalField(label="Group draw", min_value=0, initial=1)
+    group_loss = forms.DecimalField(label="Group loss", min_value=0, initial=0)
+
+    qualify_knockout = forms.DecimalField(
+        label="Advance from group stage",
+        min_value=0,
+        initial=3,
+    )
+
+    knockout_win_regulation = forms.DecimalField(
+        label="Knockout win in regulation",
+        min_value=0,
+        initial=4,
+    )
+    knockout_win_extra_time = forms.DecimalField(
+        label="Knockout win after extra time",
+        min_value=0,
+        initial=3,
+    )
+    knockout_win_penalties = forms.DecimalField(
+        label="Knockout win on penalties",
+        min_value=0,
+        initial=2,
+    )
+    knockout_loss_extra_time = forms.DecimalField(
+        label="Knockout loss after extra time",
+        min_value=0,
+        initial=1,
+    )
+    knockout_loss_penalties = forms.DecimalField(
+        label="Knockout loss on penalties",
+        min_value=0,
+        initial=1,
+    )
+
+    champion_bonus = forms.DecimalField(label="Champion bonus", min_value=0, initial=8)
+    runner_up_bonus = forms.DecimalField(label="Runner-up bonus", min_value=0, initial=5)
+    third_place_bonus = forms.DecimalField(label="Third-place bonus", min_value=0, initial=3)
+    fourth_place_bonus = forms.DecimalField(label="Fourth-place bonus", min_value=0, initial=2)
+
+    def __init__(self, *args, league=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.league = league
+
+        if league is None:
+            return
+
+        config = default_scoring_config() | league.scoring_config
+
+        for key in self.fields:
+            self.fields[key].initial = config[key]
+
+    def save(self):
+        if self.league is None:
+            raise ValueError("LeagueScoringSettingsForm requires a league.")
+
+        self.league.scoring_config = {
+            key: float(value)
+            for key, value in self.cleaned_data.items()
+        }
+        self.league.save(update_fields=["scoring_config", "updated_at"])
+
+        return self.league
+
+
+class LeagueTiebreakerSettingsForm(forms.Form):
+    tiebreakers = forms.MultipleChoiceField(
+        choices=TIEBREAKER_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Tiebreakers",
+    )
+
+    def __init__(self, *args, league=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.league = league
+
+        if league is not None:
+            self.fields["tiebreakers"].initial = league.tiebreaker_config
+
+    def save(self):
+        if self.league is None:
+            raise ValueError("LeagueTiebreakerSettingsForm requires a league.")
+
+        self.league.tiebreaker_config = self.cleaned_data["tiebreakers"]
+        self.league.save(update_fields=["tiebreaker_config", "updated_at"])
+
+        return self.league

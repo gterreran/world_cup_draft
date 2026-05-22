@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ league.name }}</title>
+</head>
+<body>
+  <main>
+    <h1>{{ league.name }}</h1>
+
+    <p>
+      Tournament: {{ league.tournament }}<br>
+      Teams per manager: {{ league.teams_per_manager }}<br>
+      Assignment method: {{ league.get_assignment_method_display }}<br>
+      Uses tiers: {{ league.use_tiers|yesno:"yes,no" }}
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <p>
+      <a href="{% url 'match_list' league.slug %}">View/edit matches</a>
+    </p>
+
+    {% if request.user == league.commissioner %}
+      <p>
+        <a href="{% url 'league_settings' league.slug %}">League settings</a>
+      </p>
+    {% endif %}
+
+    {% if request.user == league.commissioner %}
+      <p>
+        <a href="{% url 'league_scoring_settings' league.slug %}">Scoring settings</a>
+      </p>
+    {% endif %}
+
+    {% if request.user == league.commissioner %}
+      <p>
+        <a href="{% url 'league_tiebreaker_settings' league.slug %}">Tiebreaker settings</a>
+      </p>
+    {% endif %}
+
+    {% if request.user == league.commissioner %}
+      <form method="post" action="{% url 'random_assignment' league.slug %}">
+        {% csrf_token %}
+        <button type="submit">Randomly assign teams</button>
+      </form>
+    {% endif %}
+
+    {% if request.user == league.commissioner %}
+      <form method="post" action="{% url 'recompute_standings' league.slug %}">
+        {% csrf_token %}
+        <button type="submit">Recompute standings</button>
+      </form>
+    {% endif %}
+
+    {% if request.user == league.commissioner %}
+      <form method="post" action="{% url 'import_sleeper_members' league.slug %}">
+        {% csrf_token %}
+        <button type="submit">Import managers from Sleeper</button>
+      </form>
+    {% endif %}
+
+    <p>
+      <a href="{% url 'draft_order' league.slug %}">View draft order</a>
+    </p>
+
+    <h2>Managers</h2>
+
+    {% if request.user == league.commissioner %}
+      <p>
+        <a href="{% url 'member_create' league.slug %}">Add manager</a>
+      </p>
+    {% endif %}
+
+    <ul>
+      {% for member in members %}
+        <li>
+          {{ member.display_name }}
+
+          {% if request.user == league.commissioner %}
+            —
+            <a href="{% url 'member_update' league.slug member.id %}">Edit</a>
+            |
+            <a href="{% url 'member_delete' league.slug member.id %}">Delete</a>
+          {% endif %}
+        </li>
+      {% empty %}
+        <li>No managers yet.</li>
+      {% endfor %}
+    </ul>
+
+    <h2>Assigned Teams</h2>
+
+    {% regroup assignments by member as assignment_groups %}
+
+    {% for group in assignment_groups %}
+      <h3>{{ group.grouper.display_name }}</h3>
+      <ul>
+        {% for assignment in group.list %}
+          <li>
+            {{ assignment.national_team.name }}
+            {% if assignment.national_team.pot %}
+              — Pot {{ assignment.national_team.pot }}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% empty %}
+      <p>No teams assigned yet.</p>
+    {% endfor %}
+
+    <h2>Standings</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Manager</th>
+          <th>Points</th>
+          <th>Wins</th>
+          <th>Draws</th>
+          <th>Losses</th>
+          <th>GD</th>
+          <th>GF</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in standings %}
+          <tr>
+            <td>{{ entry.current_rank }}</td>
+            <td>{{ entry.member.display_name }}</td>
+            <td>{{ entry.points }}</td>
+            <td>{{ entry.wins }}</td>
+            <td>{{ entry.draws }}</td>
+            <td>{{ entry.losses }}</td>
+            <td>{{ entry.goal_difference }}</td>
+            <td>{{ entry.goals_scored }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8">No standings yet.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <p>
+      <a href="{% url 'league_list' %}">Back to leagues</a>
+    </p>
+  </main>
+</body>
+</html>

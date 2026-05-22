@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ league.name }} Settings</title>
+</head>
+<body>
+  <main>
+    <h1>League Settings</h1>
+
+    <p>{{ league.name }}</p>
+
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <button type="submit">Save settings</button>
+    </form>
+
+    <p>
+      <a href="{% url 'league_detail' league.slug %}">Back to league</a>
+    </p>
+  </main>
+</body>
+</html>

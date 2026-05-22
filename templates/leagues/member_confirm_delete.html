@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Delete Manager</title>
+</head>
+<body>
+  <main>
+    <h1>Delete Manager</h1>
+
+    <p>
+      Are you sure you want to remove
+      <strong>{{ member.display_name }}</strong>
+      from {{ league.name }}?
+    </p>
+
+    <p>
+      This will also remove any national teams assigned to this manager.
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit">Yes, delete manager</button>
+    </form>
+
+    <p>
+      <a href="{% url 'league_detail' league.slug %}">Cancel</a>
+    </p>
+  </main>
+</body>
+</html>
