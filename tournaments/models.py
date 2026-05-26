@@ -22,6 +22,8 @@ class NationalTeam(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name="teams")
     name = models.CharField(max_length=120)
     fifa_code = models.CharField(max_length=3)
+    iso2_code = models.CharField(max_length=2, blank=True)
+    flag = models.CharField(max_length=16, default="🏳️", blank=True)
     confederation = models.CharField(max_length=20, blank=True)
     pot = models.PositiveSmallIntegerField(null=True, blank=True)
     fifa_rank = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -29,7 +31,7 @@ class NationalTeam(models.Model):
 
     class Meta:
         unique_together = [("tournament", "fifa_code")]
-        ordering = ["pot", "name"]
+        ordering = ["group", "pot", "name"]
 
     def __str__(self) -> str:
         return self.name
@@ -82,15 +84,56 @@ class Match(models.Model):
         THIRD_PLACE = "third_place", "Third-place Match"
         FINAL = "final", "Final"
 
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name="matches")
+    class Status(models.TextChoices):
+        SCHEDULED = "scheduled", "Scheduled"
+        LIVE = "live", "Live"
+        FINAL = "final", "Final"
+        POSTPONED = "postponed", "Postponed"
+        CANCELLED = "cancelled", "Cancelled"
+
+    tournament = models.ForeignKey(
+        Tournament,
+        on_delete=models.CASCADE,
+        related_name="matches",
+    )
+
+    match_number = models.PositiveSmallIntegerField(null=True, blank=True)
     stage = models.CharField(max_length=30, choices=Stage.choices)
+    group = models.CharField(max_length=5, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.SCHEDULED,
+    )
+
+    match_date = models.DateField(null=True, blank=True)
     kickoff_time = models.DateTimeField(null=True, blank=True)
-    home_team = models.ForeignKey(NationalTeam, on_delete=models.PROTECT, related_name="home_matches")
-    away_team = models.ForeignKey(NationalTeam, on_delete=models.PROTECT, related_name="away_matches")
+    venue = models.CharField(max_length=160, blank=True)
+
+    home_team = models.ForeignKey(
+        NationalTeam,
+        on_delete=models.PROTECT,
+        related_name="home_matches",
+        null=True,
+        blank=True,
+    )
+    away_team = models.ForeignKey(
+        NationalTeam,
+        on_delete=models.PROTECT,
+        related_name="away_matches",
+        null=True,
+        blank=True,
+    )
+
+    home_slot = models.CharField(max_length=80, blank=True)
+    away_slot = models.CharField(max_length=80, blank=True)
+
     home_score = models.PositiveSmallIntegerField(null=True, blank=True)
     away_score = models.PositiveSmallIntegerField(null=True, blank=True)
+
     went_to_extra_time = models.BooleanField(default=False)
     went_to_penalties = models.BooleanField(default=False)
+
     winner = models.ForeignKey(
         NationalTeam,
         on_delete=models.PROTECT,
@@ -99,16 +142,41 @@ class Match(models.Model):
         related_name="matches_won",
     )
 
+    class Meta:
+        ordering = ["match_date", "kickoff_time", "match_number", "id"]
+        unique_together = [("tournament", "match_number")]
+
+    @property
+    def is_complete(self) -> bool:
+        return self.status == self.Status.FINAL and (
+            self.home_score is not None and self.away_score is not None
+        )
+
+    @property
+    def home_label(self) -> str:
+        if self.home_team_id:
+            return self.home_team.name
+        return self.home_slot or "TBD"
+
+    @property
+    def away_label(self) -> str:
+        if self.away_team_id:
+            return self.away_team.name
+        return self.away_slot or "TBD"
+
     def clean(self):
         super().clean()
 
-        if self.home_team_id == self.away_team_id:
+        if self.home_team_id and self.away_team_id and self.home_team_id == self.away_team_id:
             raise ValidationError("A team cannot play itself.")
 
         if self.home_score is None or self.away_score is None:
             if self.winner_id is not None:
                 raise ValidationError("A winner cannot be set before scores are entered.")
             return
+
+        if not self.home_team_id or not self.away_team_id:
+            raise ValidationError("Scores cannot be entered until both teams are known.")
 
         is_group_stage = self.stage == self.Stage.GROUP
         is_tied = self.home_score == self.away_score
@@ -136,16 +204,16 @@ class Match(models.Model):
             if not is_tied and self.went_to_penalties:
                 raise ValidationError("Penalty shootouts should only happen after a tied match.")
 
+        if self.status == self.Status.FINAL:
+            return
+
+        if self.home_score is not None or self.away_score is not None:
+            raise ValidationError("Completed scores should have status set to Final.")
+
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
 
-    class Meta:
-        ordering = ["kickoff_time", "id"]
-
-    @property
-    def is_complete(self) -> bool:
-        return self.home_score is not None and self.away_score is not None
-
     def __str__(self) -> str:
-        return f"{self.home_team} vs {self.away_team} ({self.get_stage_display()})"
+        number = f"Match {self.match_number}: " if self.match_number else ""
+        return f"{number}{self.home_label} vs {self.away_label}"

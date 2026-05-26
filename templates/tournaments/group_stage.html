@@ -1,0 +1,85 @@
+{% extends "base/base.html" %}
+
+{% block title %}{{ league.name }} Group Stage{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Tournament</p>
+      <h1>Group Stage</h1>
+    </div>
+
+    <div class="header-actions">
+      <a class="button secondary" href="{% url 'tournament_schedule' league.slug %}">Full schedule</a>
+      <a class="button secondary" href="{% url 'bracket_stage' league.slug %}">Bracket</a>
+      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+    </div>
+  </div>
+
+  <div class="groups-grid">
+    {% for group in groups %}
+      <section class="card group-card">
+        <div class="section-header">
+          <h2>Group {{ group.name }}</h2>
+        </div>
+
+        <div class="group-layout">
+          <div class="table-wrap">
+            <table class="compact-table">
+              <thead>
+                <tr>
+                  <th>Team</th>
+                  <th>Pts</th>
+                  <th>GD</th>
+                  <th>GF</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in group.standings %}
+                  <tr>
+                    <td>
+                      <span class="team-flag">{{ row.team.flag }}</span>
+                      <strong>{{ row.team.name }}</strong>
+                    </td>
+                    <td><strong>{{ row.points }}</strong></td>
+                    <td>{{ row.goal_difference }}</td>
+                    <td>{{ row.goals_for }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="group-matches">
+            {% for match in group.matches %}
+              <article class="mini-match-card">
+                <div class="mini-match-meta">
+                  <span>Match {{ match.match_number }}</span>
+                  {% if match.kickoff_time %}
+                    <span>{{ match.kickoff_time|date:"M j · g:i A" }}</span>
+                  {% endif %}
+                </div>
+
+                <div class="mini-match-teams">
+                  <span>{{ match.home_team.flag }} {{ match.home_label }}</span>
+                  <strong>
+                    {% if match.is_complete %}
+                      {{ match.home_score }}–{{ match.away_score }}
+                    {% else %}
+                      vs
+                    {% endif %}
+                  </strong>
+                  <span>{{ match.away_team.flag }} {{ match.away_label }}</span>
+                </div>
+
+                {% if match.venue %}
+                  <div class="mini-match-venue">{{ match.venue }}</div>
+                {% endif %}
+              </article>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    {% endfor %}
+  </div>
+{% endblock %}

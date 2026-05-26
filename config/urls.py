@@ -73,4 +73,19 @@ urlpatterns = [
         league_views.import_sleeper_members,
         name="import_sleeper_members",
     ),
+    path(
+        "leagues/<slug:slug>/schedule/",
+        tournament_views.tournament_schedule,
+        name="tournament_schedule",
+    ),
+    path(
+        "leagues/<slug:slug>/groups/",
+        tournament_views.group_stage,
+        name="group_stage",
+    ),
+    path(
+        "leagues/<slug:slug>/bracket/",
+        tournament_views.bracket_stage,
+        name="bracket_stage",
+    ),
 ]

@@ -1,8 +1,97 @@
-.venv/
+# =========================
+# Python
+# =========================
+
 __pycache__/
-*.pyc
-.env
-db.sqlite3
-/staticfiles/
-.media/
+*.py[cod]
+*$py.class
+
+# =========================
+# Virtual environments
+# =========================
+
+.venv/
+venv/
+env/
+ENV/
+
+# =========================
+# macOS
+# =========================
+
 .DS_Store
+
+# =========================
+# VSCode / IDE
+# =========================
+
+.vscode/
+.idea/
+
+# =========================
+# Django
+# =========================
+
+db.sqlite3
+db.sqlite3-journal
+
+media/
+
+staticfiles/
+
+*.log
+
+# Django migrations cache
+**/migrations/*.pyc
+**/migrations/__pycache__/
+
+# =========================
+# Environment variables
+# =========================
+
+.env
+.env.*
+!.env.example
+
+# =========================
+# Testing / coverage
+# =========================
+
+.coverage
+htmlcov/
+.pytest_cache/
+coverage.xml
+
+# =========================
+# Build / packaging
+# =========================
+
+build/
+dist/
+*.egg-info/
+
+# =========================
+# Jupyter
+# =========================
+
+.ipynb_checkpoints/
+
+# =========================
+# Node (future frontend tooling)
+# =========================
+
+node_modules/
+
+# =========================
+# Temporary files
+# =========================
+
+tmp/
+temp/
+*.tmp
+
+# =========================
+# OS generated
+# =========================
+
+Thumbs.db

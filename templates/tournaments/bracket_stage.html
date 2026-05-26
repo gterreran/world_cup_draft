@@ -1,0 +1,65 @@
+{% extends "base/base.html" %}
+
+{% block title %}{{ league.name }} Bracket{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Tournament</p>
+      <h1>Knockout Bracket</h1>
+    </div>
+
+    <div class="header-actions">
+      <a class="button secondary" href="{% url 'tournament_schedule' league.slug %}">Full schedule</a>
+      <a class="button secondary" href="{% url 'group_stage' league.slug %}">Group stage</a>
+      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+    </div>
+  </div>
+
+  <div class="bracket-scroll">
+    <div class="bracket-grid">
+      {% for round in rounds %}
+        <section class="bracket-round">
+          <h2>{{ round.stage }}</h2>
+
+          <div class="bracket-matches">
+            {% for match in round.matches %}
+              <article class="bracket-match-card">
+                <div class="match-meta">
+                  <span>Match {{ match.match_number }}</span>
+                  {% if match.kickoff_time %}
+                    <span>{{ match.kickoff_time|date:"M j · g:i A" }}</span>
+                  {% endif %}
+                </div>
+
+                <div class="bracket-team {% if match.winner_id == match.home_team_id %}winner{% endif %}">
+                  <span>
+                    {% if match.home_team %}{{ match.home_team.flag }}{% endif %}
+                    {{ match.home_label }}
+                  </span>
+                  {% if match.is_complete %}
+                    <strong>{{ match.home_score }}</strong>
+                  {% endif %}
+                </div>
+
+                <div class="bracket-team {% if match.winner_id == match.away_team_id %}winner{% endif %}">
+                  <span>
+                    {% if match.away_team %}{{ match.away_team.flag }}{% endif %}
+                    {{ match.away_label }}
+                  </span>
+                  {% if match.is_complete %}
+                    <strong>{{ match.away_score }}</strong>
+                  {% endif %}
+                </div>
+
+                {% if match.venue %}
+                  <div class="mini-match-venue">{{ match.venue }}</div>
+                {% endif %}
+              </article>
+            {% endfor %}
+          </div>
+        </section>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

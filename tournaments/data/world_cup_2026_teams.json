@@ -1,0 +1,491 @@
+{
+  "tournament": {
+    "name": "FIFA World Cup",
+    "slug": "fifa-world-cup-2026",
+    "year": 2026,
+    "host": "Canada, Mexico, United States",
+    "status": "upcoming"
+  },
+  "teams": [
+    {
+      "name": "Mexico",
+      "fifa_code": "MEX",
+      "iso2_code": "MX",
+      "flag": "🇲🇽",
+      "confederation": "CONCACAF",
+      "pot": 1,
+      "fifa_rank": 15,
+      "group": "A"
+    },
+    {
+      "name": "Korea Republic",
+      "fifa_code": "KOR",
+      "iso2_code": "KR",
+      "flag": "🇰🇷",
+      "confederation": "AFC",
+      "pot": 2,
+      "fifa_rank": 25,
+      "group": "A"
+    },
+    {
+      "name": "South Africa",
+      "fifa_code": "RSA",
+      "iso2_code": "ZA",
+      "flag": "🇿🇦",
+      "confederation": "CAF",
+      "pot": 3,
+      "fifa_rank": 60,
+      "group": "A"
+    },
+    {
+      "name": "Czechia",
+      "fifa_code": "CZE",
+      "iso2_code": "CZ",
+      "flag": "🇨🇿",
+      "confederation": "UEFA",
+      "pot": 4,
+      "fifa_rank": 41,
+      "group": "A"
+    },
+    {
+      "name": "Canada",
+      "fifa_code": "CAN",
+      "iso2_code": "CA",
+      "flag": "🇨🇦",
+      "confederation": "CONCACAF",
+      "pot": 1,
+      "fifa_rank": 30,
+      "group": "B"
+    },
+    {
+      "name": "Switzerland",
+      "fifa_code": "SUI",
+      "iso2_code": "CH",
+      "flag": "🇨🇭",
+      "confederation": "UEFA",
+      "pot": 2,
+      "fifa_rank": 19,
+      "group": "B"
+    },
+    {
+      "name": "Qatar",
+      "fifa_code": "QAT",
+      "iso2_code": "QA",
+      "flag": "🇶🇦",
+      "confederation": "AFC",
+      "pot": 3,
+      "fifa_rank": 55,
+      "group": "B"
+    },
+    {
+      "name": "Bosnia and Herzegovina",
+      "fifa_code": "BIH",
+      "iso2_code": "BA",
+      "flag": "🇧🇦",
+      "confederation": "UEFA",
+      "pot": 4,
+      "fifa_rank": 65,
+      "group": "B"
+    },
+    {
+      "name": "Brazil",
+      "fifa_code": "BRA",
+      "iso2_code": "BR",
+      "flag": "🇧🇷",
+      "confederation": "CONMEBOL",
+      "pot": 1,
+      "fifa_rank": 6,
+      "group": "C"
+    },
+    {
+      "name": "Morocco",
+      "fifa_code": "MAR",
+      "iso2_code": "MA",
+      "flag": "🇲🇦",
+      "confederation": "CAF",
+      "pot": 2,
+      "fifa_rank": 8,
+      "group": "C"
+    },
+    {
+      "name": "Scotland",
+      "fifa_code": "SCO",
+      "iso2_code": "GB",
+      "flag": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+      "confederation": "UEFA",
+      "pot": 3,
+      "fifa_rank": 43,
+      "group": "C"
+    },
+    {
+      "name": "Haiti",
+      "fifa_code": "HAI",
+      "iso2_code": "HT",
+      "flag": "🇭🇹",
+      "confederation": "CONCACAF",
+      "pot": 4,
+      "fifa_rank": 83,
+      "group": "C"
+    },
+    {
+      "name": "United States",
+      "fifa_code": "USA",
+      "iso2_code": "US",
+      "flag": "🇺🇸",
+      "confederation": "CONCACAF",
+      "pot": 1,
+      "fifa_rank": 16,
+      "group": "D"
+    },
+    {
+      "name": "Australia",
+      "fifa_code": "AUS",
+      "iso2_code": "AU",
+      "flag": "🇦🇺",
+      "confederation": "AFC",
+      "pot": 2,
+      "fifa_rank": 27,
+      "group": "D"
+    },
+    {
+      "name": "Paraguay",
+      "fifa_code": "PAR",
+      "iso2_code": "PY",
+      "flag": "🇵🇾",
+      "confederation": "CONMEBOL",
+      "pot": 3,
+      "fifa_rank": 40,
+      "group": "D"
+    },
+    {
+      "name": "Türkiye",
+      "fifa_code": "TUR",
+      "iso2_code": "TR",
+      "flag": "🇹🇷",
+      "confederation": "UEFA",
+      "pot": 4,
+      "fifa_rank": 22,
+      "group": "D"
+    },
+    {
+      "name": "Germany",
+      "fifa_code": "GER",
+      "iso2_code": "DE",
+      "flag": "🇩🇪",
+      "confederation": "UEFA",
+      "pot": 1,
+      "fifa_rank": 10,
+      "group": "E"
+    },
+    {
+      "name": "Ecuador",
+      "fifa_code": "ECU",
+      "iso2_code": "EC",
+      "flag": "🇪🇨",
+      "confederation": "CONMEBOL",
+      "pot": 2,
+      "fifa_rank": 23,
+      "group": "E"
+    },
+    {
+      "name": "Côte d'Ivoire",
+      "fifa_code": "CIV",
+      "iso2_code": "CI",
+      "flag": "🇨🇮",
+      "confederation": "CAF",
+      "pot": 3,
+      "fifa_rank": 34,
+      "group": "E"
+    },
+    {
+      "name": "Curaçao",
+      "fifa_code": "CUW",
+      "iso2_code": "CW",
+      "flag": "🇨🇼",
+      "confederation": "CONCACAF",
+      "pot": 4,
+      "fifa_rank": 82,
+      "group": "E"
+    },
+    {
+      "name": "Netherlands",
+      "fifa_code": "NED",
+      "iso2_code": "NL",
+      "flag": "🇳🇱",
+      "confederation": "UEFA",
+      "pot": 1,
+      "fifa_rank": 7,
+      "group": "F"
+    },
+    {
+      "name": "Japan",
+      "fifa_code": "JPN",
+      "iso2_code": "JP",
+      "flag": "🇯🇵",
+      "confederation": "AFC",
+      "pot": 2,
+      "fifa_rank": 18,
+      "group": "F"
+    },
+    {
+      "name": "Tunisia",
+      "fifa_code": "TUN",
+      "iso2_code": "TN",
+      "flag": "🇹🇳",
+      "confederation": "CAF",
+      "pot": 3,
+      "fifa_rank": 44,
+      "group": "F"
+    },
+    {
+      "name": "Sweden",
+      "fifa_code": "SWE",
+      "iso2_code": "SE",
+      "flag": "🇸🇪",
+      "confederation": "UEFA",
+      "pot": 4,
+      "fifa_rank": 38,
+      "group": "F"
+    },
+    {
+      "name": "Belgium",
+      "fifa_code": "BEL",
+      "iso2_code": "BE",
+      "flag": "🇧🇪",
+      "confederation": "UEFA",
+      "pot": 1,
+      "fifa_rank": 9,
+      "group": "G"
+    },
+    {
+      "name": "IR Iran",
+      "fifa_code": "IRN",
+      "iso2_code": "IR",
+      "flag": "🇮🇷",
+      "confederation": "AFC",
+      "pot": 2,
+      "fifa_rank": 21,
+      "group": "G"
+    },
+    {
+      "name": "Egypt",
+      "fifa_code": "EGY",
+      "iso2_code": "EG",
+      "flag": "🇪🇬",
+      "confederation": "CAF",
+      "pot": 3,
+      "fifa_rank": 29,
+      "group": "G"
+    },
+    {
+      "name": "New Zealand",
+      "fifa_code": "NZL",
+      "iso2_code": "NZ",
+      "flag": "🇳🇿",
+      "confederation": "OFC",
+      "pot": 4,
+      "fifa_rank": 85,
+      "group": "G"
+    },
+    {
+      "name": "Spain",
+      "fifa_code": "ESP",
+      "iso2_code": "ES",
+      "flag": "🇪🇸",
+      "confederation": "UEFA",
+      "pot": 1,
+      "fifa_rank": 2,
+      "group": "H"
+    },
+    {
+      "name": "Uruguay",
+      "fifa_code": "URU",
+      "iso2_code": "UY",
+      "flag": "🇺🇾",
+      "confederation": "CONMEBOL",
+      "pot": 2,
+      "fifa_rank": 17,
+      "group": "H"
+    },
+    {
+      "name": "Saudi Arabia",
+      "fifa_code": "KSA",
+      "iso2_code": "SA",
+      "flag": "🇸🇦",
+      "confederation": "AFC",
+      "pot": 3,
+      "fifa_rank": 61,
+      "group": "H"
+    },
+    {
+      "name": "Cape Verde",
+      "fifa_code": "CPV",
+      "iso2_code": "CV",
+      "flag": "🇨🇻",
+      "confederation": "CAF",
+      "pot": 4,
+      "fifa_rank": 69,
+      "group": "H"
+    },
+    {
+      "name": "France",
+      "fifa_code": "FRA",
+      "iso2_code": "FR",
+      "flag": "🇫🇷",
+      "confederation": "UEFA",
+      "pot": 1,
+      "fifa_rank": 1,
+      "group": "I"
+    },
+    {
+      "name": "Senegal",
+      "fifa_code": "SEN",
+      "iso2_code": "SN",
+      "flag": "🇸🇳",
+      "confederation": "CAF",
+      "pot": 2,
+      "fifa_rank": 14,
+      "group": "I"
+    },
+    {
+      "name": "Norway",
+      "fifa_code": "NOR",
+      "iso2_code": "NO",
+      "flag": "🇳🇴",
+      "confederation": "UEFA",
+      "pot": 3,
+      "fifa_rank": 31,
+      "group": "I"
+    },
+    {
+      "name": "Iraq",
+      "fifa_code": "IRQ",
+      "iso2_code": "IQ",
+      "flag": "🇮🇶",
+      "confederation": "AFC",
+      "pot": 4,
+      "fifa_rank": 57,
+      "group": "I"
+    },
+    {
+      "name": "Argentina",
+      "fifa_code": "ARG",
+      "iso2_code": "AR",
+      "flag": "🇦🇷",
+      "confederation": "CONMEBOL",
+      "pot": 1,
+      "fifa_rank": 3,
+      "group": "J"
+    },
+    {
+      "name": "Austria",
+      "fifa_code": "AUT",
+      "iso2_code": "AT",
+      "flag": "🇦🇹",
+      "confederation": "UEFA",
+      "pot": 2,
+      "fifa_rank": 24,
+      "group": "J"
+    },
+    {
+      "name": "Algeria",
+      "fifa_code": "ALG",
+      "iso2_code": "DZ",
+      "flag": "🇩🇿",
+      "confederation": "CAF",
+      "pot": 3,
+      "fifa_rank": 28,
+      "group": "J"
+    },
+    {
+      "name": "Jordan",
+      "fifa_code": "JOR",
+      "iso2_code": "JO",
+      "flag": "🇯🇴",
+      "confederation": "AFC",
+      "pot": 4,
+      "fifa_rank": 63,
+      "group": "J"
+    },
+    {
+      "name": "Portugal",
+      "fifa_code": "POR",
+      "iso2_code": "PT",
+      "flag": "🇵🇹",
+      "confederation": "UEFA",
+      "pot": 1,
+      "fifa_rank": 5,
+      "group": "K"
+    },
+    {
+      "name": "Colombia",
+      "fifa_code": "COL",
+      "iso2_code": "CO",
+      "flag": "🇨🇴",
+      "confederation": "CONMEBOL",
+      "pot": 2,
+      "fifa_rank": 13,
+      "group": "K"
+    },
+    {
+      "name": "Uzbekistan",
+      "fifa_code": "UZB",
+      "iso2_code": "UZ",
+      "flag": "🇺🇿",
+      "confederation": "AFC",
+      "pot": 3,
+      "fifa_rank": 50,
+      "group": "K"
+    },
+    {
+      "name": "Congo DR",
+      "fifa_code": "COD",
+      "iso2_code": "CD",
+      "flag": "🇨🇩",
+      "confederation": "CAF",
+      "pot": 4,
+      "fifa_rank": 46,
+      "group": "K"
+    },
+    {
+      "name": "England",
+      "fifa_code": "ENG",
+      "iso2_code": "GB",
+      "flag": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+      "confederation": "UEFA",
+      "pot": 1,
+      "fifa_rank": 4,
+      "group": "L"
+    },
+    {
+      "name": "Croatia",
+      "fifa_code": "CRO",
+      "iso2_code": "HR",
+      "flag": "🇭🇷",
+      "confederation": "UEFA",
+      "pot": 2,
+      "fifa_rank": 11,
+      "group": "L"
+    },
+    {
+      "name": "Panama",
+      "fifa_code": "PAN",
+      "iso2_code": "PA",
+      "flag": "🇵🇦",
+      "confederation": "CONCACAF",
+      "pot": 3,
+      "fifa_rank": 33,
+      "group": "L"
+    },
+    {
+      "name": "Ghana",
+      "fifa_code": "GHA",
+      "iso2_code": "GH",
+      "flag": "🇬🇭",
+      "confederation": "CAF",
+      "pot": 4,
+      "fifa_rank": 74,
+      "group": "L"
+    }
+  ]
+}

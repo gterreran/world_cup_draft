@@ -1,0 +1,95 @@
+{% extends "base/base.html" %}
+
+{% block title %}{{ league.name }} Schedule{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Tournament schedule</p>
+      <h1>{{ league.tournament }}</h1>
+    </div>
+
+    <div class="header-actions">
+      <a class="button secondary" href="{% url 'group_stage' league.slug %}">Group stage</a>
+      <a class="button secondary" href="{% url 'bracket_stage' league.slug %}">Bracket</a>
+      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+    </div>
+  </div>
+
+  {% for stage, matches in matches_by_stage.items %}
+    <section class="card">
+      <div class="section-header">
+        <div>
+          <h2>{{ stage }}</h2>
+          <p>{{ matches|length }} matches</p>
+        </div>
+      </div>
+
+      <div class="schedule-list">
+        {% for match in matches %}
+          <article class="match-card">
+            <div class="match-meta">
+              {% if match.match_number %}
+                <span>Match {{ match.match_number }}</span>
+              {% endif %}
+
+              {% if match.kickoff_time %}
+                <span>{{ match.kickoff_time|date:"M j, Y · g:i A" }}</span>
+              {% else %}
+                <span>Date TBD</span>
+              {% endif %}
+
+              {% if match.venue %}
+                <span>{{ match.venue }}</span>
+              {% endif %}
+            </div>
+
+            <div class="match-main">
+              <div class="match-team">
+                {% if match.home_team %}
+                  <span class="team-flag">{{ match.home_team.flag }}</span>
+                {% endif %}
+                <strong>{{ match.home_label }}</strong>
+              </div>
+
+              <div class="match-score">
+                {% if match.is_complete %}
+                  {{ match.home_score }}–{{ match.away_score }}
+                {% else %}
+                  vs
+                {% endif %}
+              </div>
+
+              <div class="match-team right">
+                <strong>{{ match.away_label }}</strong>
+                {% if match.away_team %}
+                  <span class="team-flag">{{ match.away_team.flag }}</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="match-footer">
+              <span class="status-pill status-{{ match.status }}">
+                {{ match.get_status_display }}
+              </span>
+
+              {% if match.went_to_penalties %}
+                <span>Penalties</span>
+              {% elif match.went_to_extra_time %}
+                <span>After extra time</span>
+              {% endif %}
+
+              {% if match.winner %}
+                <span>Winner: {{ match.winner.flag }} {{ match.winner.name }}</span>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% empty %}
+    <section class="card">
+      <p>No matches loaded yet.</p>
+    </section>
+  {% endfor %}
+{% endblock %}

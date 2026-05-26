@@ -1,158 +1,177 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>{{ league.name }}</title>
-</head>
-<body>
-  <main>
-    <h1>{{ league.name }}</h1>
+{% extends "base/base.html" %}
 
-    <p>
-      Tournament: {{ league.tournament }}<br>
-      Teams per manager: {{ league.teams_per_manager }}<br>
-      Assignment method: {{ league.get_assignment_method_display }}<br>
-      Uses tiers: {{ league.use_tiers|yesno:"yes,no" }}
-    </p>
+{% load league_extras %}
 
-    {% if messages %}
-      <ul>
-        {% for message in messages %}
-          <li>{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+{% block title %}{{ league.name }}{% endblock %}
 
-    <p>
-      <a href="{% url 'match_list' league.slug %}">View/edit matches</a>
-    </p>
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">League dashboard</p>
+      <h1>{{ league.name }}</h1>
+    </div>
 
-    {% if request.user == league.commissioner %}
-      <p>
-        <a href="{% url 'league_settings' league.slug %}">League settings</a>
-      </p>
-    {% endif %}
+    <div class="header-actions">
+      <a class="button secondary" href="{% url 'league_list' %}">Back to leagues</a>
+      <a class="button secondary" href="{% url 'tournament_schedule' league.slug %}">Full schedule</a>
+      <a class="button secondary" href="{% url 'group_stage' league.slug %}">Group stage</a>
+      <a class="button secondary" href="{% url 'bracket_stage' league.slug %}">Bracket</a>
+      <a class="button" href="{% url 'draft_order' league.slug %}">View draft order</a>
+    </div>
+  </div>
 
-    {% if request.user == league.commissioner %}
-      <p>
-        <a href="{% url 'league_scoring_settings' league.slug %}">Scoring settings</a>
-      </p>
-    {% endif %}
+  <section class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-label">Tournament</span>
+      <strong>{{ league.tournament }}</strong>
+    </div>
 
-    {% if request.user == league.commissioner %}
-      <p>
-        <a href="{% url 'league_tiebreaker_settings' league.slug %}">Tiebreaker settings</a>
-      </p>
-    {% endif %}
+    <div class="stat-card">
+      <span class="stat-label">Managers</span>
+      <strong>{{ members|length }}</strong>
+    </div>
 
-    {% if request.user == league.commissioner %}
-      <form method="post" action="{% url 'random_assignment' league.slug %}">
-        {% csrf_token %}
-        <button type="submit">Randomly assign teams</button>
-      </form>
-    {% endif %}
+    <div class="stat-card">
+      <span class="stat-label">Teams per manager</span>
+      <strong>{{ league.teams_per_manager }}</strong>
+    </div>
 
-    {% if request.user == league.commissioner %}
-      <form method="post" action="{% url 'recompute_standings' league.slug %}">
-        {% csrf_token %}
-        <button type="submit">Recompute standings</button>
-      </form>
-    {% endif %}
+    <div class="stat-card">
+      <span class="stat-label">Assignment</span>
+      <strong>{{ league.get_assignment_method_display }}</strong>
+      <small>{% if league.use_tiers %}Using tiers{% else %}No tiers{% endif %}</small>
+    </div>
+  </section>
 
-    {% if request.user == league.commissioner %}
-      <form method="post" action="{% url 'import_sleeper_members' league.slug %}">
-        {% csrf_token %}
-        <button type="submit">Import managers from Sleeper</button>
-      </form>
-    {% endif %}
+  {% if request.user == league.commissioner %}
+    <section class="card">
+      <div class="section-header">
+        <div>
+          <h2>Commissioner controls</h2>
+          <p>Manage managers, settings, assignments, and scoring.</p>
+        </div>
+      </div>
 
-    <p>
-      <a href="{% url 'draft_order' league.slug %}">View draft order</a>
-    </p>
+      <div class="actions">
+        <a class="button secondary" href="{% url 'member_create' league.slug %}">Add manager</a>
+        <a class="button secondary" href="{% url 'league_settings' league.slug %}">League settings</a>
+        <a class="button secondary" href="{% url 'league_scoring_settings' league.slug %}">Scoring settings</a>
+        <a class="button secondary" href="{% url 'league_tiebreaker_settings' league.slug %}">Tiebreaker settings</a>
+        <a class="button secondary" href="{% url 'match_list' league.slug %}">View/edit matches</a>
+      </div>
 
-    <h2>Managers</h2>
+      <div class="actions">
+        <form method="post" action="{% url 'import_sleeper_members' league.slug %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit">Import Sleeper managers</button>
+        </form>
 
-    {% if request.user == league.commissioner %}
-      <p>
-        <a href="{% url 'member_create' league.slug %}">Add manager</a>
-      </p>
-    {% endif %}
+        <form method="post" action="{% url 'random_assignment' league.slug %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit">Randomly assign teams</button>
+        </form>
 
-    <ul>
+        <form method="post" action="{% url 'recompute_standings' league.slug %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="secondary-button">Recompute standings</button>
+        </form>
+      </div>
+    </section>
+  {% else %}
+    <section class="card">
+      <a class="button secondary" href="{% url 'match_list' league.slug %}">View matches</a>
+    </section>
+  {% endif %}
+
+  <section class="card">
+    <div class="section-header">
+      <div>
+        <h2>Standings</h2>
+        <p>Current draft order based on tournament scoring.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Pick</th>
+            <th>Manager</th>
+            <th>Points</th>
+            <th>Wins</th>
+            <th>Draws</th>
+            <th>Losses</th>
+            <th>GD</th>
+            <th>GF</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in standings %}
+            <tr class="{% if entry.current_rank == 1 %}podium-row podium-gold{% elif entry.current_rank == 2 %}podium-row podium-silver{% elif entry.current_rank == 3 %}podium-row podium-bronze{% endif %}">
+              <td>
+                <span class="rank-badge {% if entry.current_rank == 1 %}gold{% elif entry.current_rank == 2 %}silver{% elif entry.current_rank == 3 %}bronze{% endif %}">
+                  {% if entry.current_rank == 1 %}🥇{% elif entry.current_rank == 2 %}🥈{% elif entry.current_rank == 3 %}🥉{% else %}{{ entry.current_rank }}{% endif %}
+                </span>
+              </td>
+              <td><strong>{{ entry.member.display_name }}</strong></td>
+              <td class="points-cell">{{ entry.points }}</td>
+              <td>{{ entry.wins }}</td>
+              <td>{{ entry.draws }}</td>
+              <td>{{ entry.losses }}</td>
+              <td>{{ entry.goal_difference }}</td>
+              <td>{{ entry.goals_scored }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8">No standings yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-header">
+      <div>
+        <h2>Managers</h2>
+        <p>League members and assigned national teams.</p>
+      </div>
+    </div>
+
+    <div class="manager-grid">
       {% for member in members %}
-        <li>
-          {{ member.display_name }}
+        <article class="manager-card">
+          <div class="manager-card-header">
+            <h3>{{ member.display_name }}</h3>
 
-          {% if request.user == league.commissioner %}
-            —
-            <a href="{% url 'member_update' league.slug member.id %}">Edit</a>
-            |
-            <a href="{% url 'member_delete' league.slug member.id %}">Delete</a>
-          {% endif %}
-        </li>
-      {% empty %}
-        <li>No managers yet.</li>
-      {% endfor %}
-    </ul>
-
-    <h2>Assigned Teams</h2>
-
-    {% regroup assignments by member as assignment_groups %}
-
-    {% for group in assignment_groups %}
-      <h3>{{ group.grouper.display_name }}</h3>
-      <ul>
-        {% for assignment in group.list %}
-          <li>
-            {{ assignment.national_team.name }}
-            {% if assignment.national_team.pot %}
-              — Pot {{ assignment.national_team.pot }}
+            {% if request.user == league.commissioner %}
+              <div class="manager-actions">
+                <a href="{% url 'member_update' league.slug member.id %}">Edit</a>
+                <a href="{% url 'member_delete' league.slug member.id %}">Delete</a>
+              </div>
             {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-    {% empty %}
-      <p>No teams assigned yet.</p>
-    {% endfor %}
+          </div>
 
-    <h2>Standings</h2>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Manager</th>
-          <th>Points</th>
-          <th>Wins</th>
-          <th>Draws</th>
-          <th>Losses</th>
-          <th>GD</th>
-          <th>GF</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for entry in standings %}
-          <tr>
-            <td>{{ entry.current_rank }}</td>
-            <td>{{ entry.member.display_name }}</td>
-            <td>{{ entry.points }}</td>
-            <td>{{ entry.wins }}</td>
-            <td>{{ entry.draws }}</td>
-            <td>{{ entry.losses }}</td>
-            <td>{{ entry.goal_difference }}</td>
-            <td>{{ entry.goals_scored }}</td>
-          </tr>
-        {% empty %}
-          <tr>
-            <td colspan="8">No standings yet.</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-
-    <p>
-      <a href="{% url 'league_list' %}">Back to leagues</a>
-    </p>
-  </main>
-</body>
-</html>
+          <ul class="team-list">
+            {% for assignment in assignments %}
+              {% if assignment.member_id == member.id %}
+                <li>
+                  <span>
+                    <span class="team-flag">{{ assignment.national_team.flag }}</span>
+                    {{ assignment.national_team.name }}
+                  </span>
+                  {% if assignment.national_team.pot %}
+                    <small>Pot {{ assignment.national_team.pot }}</small>
+                  {% endif %}
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </article>
+      {% empty %}
+        <p>No managers yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

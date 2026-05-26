@@ -18,8 +18,30 @@ class NationalTeamAdmin(admin.ModelAdmin):
 
 @admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
-    list_display = ("tournament", "stage", "home_team", "away_team", "home_score", "away_score", "winner")
-    list_filter = ("tournament", "stage")
+    list_display = (
+        "match_number",
+        "tournament",
+        "stage",
+        "status",
+        "home_team",
+        "away_team",
+        "home_slot",
+        "away_slot",
+        "home_score",
+        "away_score",
+        "winner",
+        "kickoff_time",
+        "venue",
+    )
+    list_filter = ("tournament", "stage", "status", "venue")
+    search_fields = (
+        "home_team__name",
+        "away_team__name",
+        "home_slot",
+        "away_slot",
+        "venue",
+    )
+    ordering = ("kickoff_time", "match_number")
 
 @admin.register(TeamTournamentStatus)
 class TeamTournamentStatusAdmin(admin.ModelAdmin):
