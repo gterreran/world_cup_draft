@@ -9,7 +9,7 @@ from .models import Match
 from .services import build_group_stage_context
 from scoring.services import recompute_league_standings
 from collections import defaultdict
-
+from assignments.models import TeamAssignment
 
 @login_required
 def match_list(request, slug: str):
@@ -77,6 +77,15 @@ def tournament_schedule(request, slug: str):
         .order_by("kickoff_time", "match_number", "id")
     )
 
+    assignment_map = {
+        assignment.national_team_id: assignment.member.display_name
+        for assignment in (
+            TeamAssignment.objects
+            .filter(league=league)
+            .select_related("member", "national_team")
+        )
+    }
+
     matches_by_stage = defaultdict(list)
 
     for match in matches:
@@ -88,6 +97,7 @@ def tournament_schedule(request, slug: str):
         {
             "league": league,
             "matches_by_stage": dict(matches_by_stage),
+            "assignment_map": assignment_map,
         },
     )
 
@@ -97,12 +107,22 @@ def group_stage(request, slug: str):
 
     groups = build_group_stage_context(league.tournament)
 
+    assignment_map = {
+        assignment.national_team_id: assignment.member.display_name
+        for assignment in (
+            TeamAssignment.objects
+            .filter(league=league)
+            .select_related("member", "national_team")
+        )
+    }
+
     return render(
         request,
         "tournaments/group_stage.html",
         {
             "league": league,
             "groups": groups,
+            "assignment_map": assignment_map,
         },
     )
 
@@ -110,6 +130,15 @@ def group_stage(request, slug: str):
 @login_required
 def bracket_stage(request, slug: str):
     league = get_object_or_404(League, slug=slug)
+
+    assignment_map = {
+        assignment.national_team_id: assignment.member.display_name
+        for assignment in (
+            TeamAssignment.objects
+            .filter(league=league)
+            .select_related("member", "national_team")
+        )
+    }
 
     bracket_stages = [
         Match.Stage.ROUND_OF_32,
@@ -140,5 +169,6 @@ def bracket_stage(request, slug: str):
         {
             "league": league,
             "rounds": rounds,
+            "assignment_map": assignment_map,
         },
     )

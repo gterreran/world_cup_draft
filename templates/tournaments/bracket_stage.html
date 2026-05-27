@@ -1,5 +1,5 @@
 {% extends "base/base.html" %}
-
+{% load league_extras %}
 {% block title %}{{ league.name }} Bracket{% endblock %}
 
 {% block content %}
@@ -33,20 +33,36 @@
                 </div>
 
                 <div class="bracket-team {% if match.winner_id == match.home_team_id %}winner{% endif %}">
-                  <span>
-                    {% if match.home_team %}{{ match.home_team.flag }}{% endif %}
-                    {{ match.home_label }}
-                  </span>
+                  <div>
+                    <span>
+                      {% if match.home_team %}{{ match.home_team.flag }}{% endif %}
+                      {{ match.home_label }}
+                    </span>
+
+                    {% if match.home_team_id in assignment_map %}
+                      <div class="fantasy-owner">
+                        {{ assignment_map|get_item:match.home_team_id }}
+                      </div>
+                    {% endif %}
+                  </div>
                   {% if match.is_complete %}
                     <strong>{{ match.home_score }}</strong>
                   {% endif %}
                 </div>
 
                 <div class="bracket-team {% if match.winner_id == match.away_team_id %}winner{% endif %}">
-                  <span>
-                    {% if match.away_team %}{{ match.away_team.flag }}{% endif %}
-                    {{ match.away_label }}
-                  </span>
+                  <div>
+                    <span>
+                      {% if match.away_team %}{{ match.away_team.flag }}{% endif %}
+                      {{ match.away_label }}
+                    </span>
+
+                    {% if match.away_team_id in assignment_map %}
+                      <div class="fantasy-owner">
+                        {{ assignment_map|get_item:match.away_team_id }}
+                      </div>
+                    {% endif %}
+                  </div>
                   {% if match.is_complete %}
                     <strong>{{ match.away_score }}</strong>
                   {% endif %}

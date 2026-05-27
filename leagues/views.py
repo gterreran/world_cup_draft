@@ -330,9 +330,9 @@ def import_sleeper_members(request, slug: str):
     for sleeper_user in sleeper_users:
         sleeper_user_id = sleeper_user.get("user_id")
         display_name = (
-            sleeper_user.get("metadata", {}).get("team_name")
-            or sleeper_user.get("display_name")
+            sleeper_user.get("display_name")
             or sleeper_user.get("username")
+            or sleeper_user.get("metadata", {}).get("team_name")
             or f"Sleeper user {sleeper_user_id}"
         )
 

@@ -548,3 +548,10 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 }
+
+.fantasy-owner {
+  margin-top: 2px;
+  font-size: 0.72rem;
+  color: #6b7280;
+  font-weight: 500;
+}

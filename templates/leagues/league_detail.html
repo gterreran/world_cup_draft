@@ -161,9 +161,11 @@
                     <span class="team-flag">{{ assignment.national_team.flag }}</span>
                     {{ assignment.national_team.name }}
                   </span>
-                  {% if assignment.national_team.pot %}
-                    <small>Pot {{ assignment.national_team.pot }}</small>
-                  {% endif %}
+                  <small>
+                    {% if assignment.national_team.group %}Group {{ assignment.national_team.group }}{% endif %}
+                    {% if assignment.national_team.group and assignment.national_team.pot %} · {% endif %}
+                    {% if assignment.national_team.pot %}Pot {{ assignment.national_team.pot }}{% endif %}
+                  </small>
                 </li>
               {% endif %}
             {% endfor %}

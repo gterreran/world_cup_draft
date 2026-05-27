@@ -1,5 +1,5 @@
 {% extends "base/base.html" %}
-
+{% load league_extras %}
 {% block title %}{{ league.name }} Schedule{% endblock %}
 
 {% block content %}
@@ -49,7 +49,15 @@
                 {% if match.home_team %}
                   <span class="team-flag">{{ match.home_team.flag }}</span>
                 {% endif %}
-                <strong>{{ match.home_label }}</strong>
+                <div>
+                  <strong>{{ match.home_label }}</strong>
+
+                  {% if match.home_team_id in assignment_map %}
+                    <div class="fantasy-owner">
+                      {{ assignment_map|get_item:match.home_team_id }}
+                    </div>
+                  {% endif %}
+                </div>
               </div>
 
               <div class="match-score">
@@ -61,7 +69,15 @@
               </div>
 
               <div class="match-team right">
-                <strong>{{ match.away_label }}</strong>
+                <div>
+                  <strong>{{ match.away_label }}</strong>
+
+                  {% if match.away_team_id in assignment_map %}
+                    <div class="fantasy-owner">
+                      {{ assignment_map|get_item:match.away_team_id }}
+                    </div>
+                  {% endif %}
+                </div>
                 {% if match.away_team %}
                   <span class="team-flag">{{ match.away_team.flag }}</span>
                 {% endif %}
