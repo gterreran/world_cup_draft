@@ -59,6 +59,8 @@ class TeamTournamentStatus(models.Model):
         related_name="tournament_status",
     )
 
+    mathematically_qualified = models.BooleanField(default=False)
+    mathematically_eliminated = models.BooleanField(default=False)
     advanced_from_group = models.BooleanField(default=False)
     eliminated_stage = models.CharField(
         max_length=30,

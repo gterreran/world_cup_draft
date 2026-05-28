@@ -2,6 +2,7 @@ import re
 
 from tournaments.models import Match, NationalTeam, Tournament
 from tournaments.qualification import compute_qualification
+from tournaments.mathematical_status import compute_guaranteed_group_slot_map
 from tournaments.third_place import allocate_third_place_slots
 
 
@@ -20,10 +21,12 @@ def populate_knockout_bracket(tournament: Tournament) -> None:
         .order_by("match_number")
     )
 
-    third_place_slots = _collect_third_place_slots(knockout_matches)
+    third_place_slots_by_opponent = _collect_third_place_slots_by_opponent(
+        knockout_matches
+    )
 
     third_place_allocation = allocate_third_place_slots(
-        third_place_slots=third_place_slots,
+        third_place_slots_by_opponent=third_place_slots_by_opponent,
         qualified_third_place_teams=qualification.best_third_place_teams,
     )
 
@@ -58,15 +61,70 @@ def populate_knockout_bracket(tournament: Tournament) -> None:
         if changed:
             match.save()
 
-def _collect_third_place_slots(matches) -> list[str]:
-    slots = []
+
+def populate_guaranteed_group_slots(tournament: Tournament) -> None:
+    """Populate known first/second-place group slots before group stage ends.
+
+    This intentionally resolves only direct slots like ``1A`` and ``2B``.
+    Third-place slots are left unresolved until the complete third-place
+    allocation is known.
+    """
+    qualification_map = compute_guaranteed_group_slot_map(tournament)
+
+    if not qualification_map:
+        return
+
+    knockout_matches = (
+        Match.objects.filter(tournament=tournament)
+        .exclude(stage=Match.Stage.GROUP)
+        .order_by("match_number")
+    )
+
+    for match in knockout_matches:
+        if match.is_complete:
+            continue
+
+        changed = False
+
+        if DIRECT_SLOT_PATTERN.match((match.home_slot or "").strip()):
+            home_team = qualification_map.get(match.home_slot.strip())
+
+            if home_team is not None and home_team != match.home_team:
+                match.home_team = home_team
+                changed = True
+
+        if DIRECT_SLOT_PATTERN.match((match.away_slot or "").strip()):
+            away_team = qualification_map.get(match.away_slot.strip())
+
+            if away_team is not None and away_team != match.away_team:
+                match.away_team = away_team
+                changed = True
+
+        if changed:
+            match.save()
+
+def _collect_third_place_slots_by_opponent(matches) -> dict[str, str]:
+    """Return {direct_winner_slot: third_place_placeholder}.
+
+    FIFA's 2026 third-place allocation table is keyed by the group winner in
+    the Round-of-32 matchup, e.g. ``1A vs 3E``. The schedule stores the
+    third-place side as a compatibility placeholder such as ``3CEFHI``. This
+    helper preserves the relationship between those two labels so the FIFA row
+    can be translated back into the schedule's placeholder labels.
+    """
+    slots_by_opponent = {}
 
     for match in matches:
-        for slot in [match.home_slot, match.away_slot]:
-            if slot and THIRD_PLACE_SLOT_PATTERN.match(slot):
-                slots.append(slot)
+        home_slot = (match.home_slot or "").strip()
+        away_slot = (match.away_slot or "").strip()
 
-    return slots
+        if DIRECT_SLOT_PATTERN.match(home_slot) and THIRD_PLACE_SLOT_PATTERN.match(away_slot):
+            slots_by_opponent[home_slot] = away_slot
+
+        if DIRECT_SLOT_PATTERN.match(away_slot) and THIRD_PLACE_SLOT_PATTERN.match(home_slot):
+            slots_by_opponent[away_slot] = home_slot
+
+    return slots_by_opponent
 
 def resolve_slot(
     *,

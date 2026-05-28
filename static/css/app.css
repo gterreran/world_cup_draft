@@ -359,10 +359,16 @@ tbody tr:hover {
 .match-meta,
 .match-footer {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 10px;
   color: #6b7280;
   font-size: 0.85rem;
+}
+
+.match-meta .right {
+  margin-left: auto;
+  text-align: right;
 }
 
 .match-main {
@@ -518,7 +524,7 @@ tbody tr:hover {
   display: grid;
   grid-template-columns: repeat(6, minmax(240px, 1fr));
   gap: 16px;
-  min-width: 1500px;
+  min-width: 1800px;
 }
 
 .bracket-round h2 {
@@ -600,4 +606,18 @@ tbody tr:hover {
   .group-matches {
     grid-template-columns: 1fr;
   }
+}
+
+.bracket-team.winner {
+  background: #dcfce7;
+  border-radius: 8px;
+  font-weight: 800;
+}
+
+.bracket-team.loser {
+  opacity: 0.55;
+}
+.qualification-pill.eliminated {
+  background: #fee2e2;
+  color: #991b1b;
 }

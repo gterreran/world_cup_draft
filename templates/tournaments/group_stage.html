@@ -37,7 +37,7 @@
               </thead>
               <tbody>
                 {% for row in group.standings %}
-                  <tr>
+                  <tr class="{% if row.qualification_class %}is-{{ row.qualification_class }}{% endif %}">
                     <td>
                       {% if row.qualification_label %}
                         <span class="qualification-pill {{ row.qualification_class }}">

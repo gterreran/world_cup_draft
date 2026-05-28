@@ -1,4 +1,5 @@
 from tournaments.models import Match, NationalTeam, TeamTournamentStatus
+from tournaments.mathematical_status import compute_mathematical_status
 
 
 FINISH_RANKS = {
@@ -20,8 +21,11 @@ def recompute_team_statuses(tournament, qualification_result) -> None:
 
     qualified_team_ids = set()
 
-    for team in qualification_result.slot_map.values():
-        qualified_team_ids.add(team.id)
+    if _all_group_stage_matches_complete(tournament):
+        for team in qualification_result.slot_map.values():
+            qualified_team_ids.add(team.id)
+
+    mathematical_status_map = compute_mathematical_status(tournament)
 
     all_teams = NationalTeam.objects.filter(
         tournament=tournament,
@@ -30,10 +34,20 @@ def recompute_team_statuses(tournament, qualification_result) -> None:
     status_map = {}
 
     for team in all_teams:
+        team_math_status = mathematical_status_map.get(team.id)
+
         status_map[team.id] = TeamTournamentStatus.objects.create(
             tournament=tournament,
             team=team,
             advanced_from_group=team.id in qualified_team_ids,
+            mathematically_qualified=(
+                team_math_status.qualified
+                if team_math_status else False
+            ),
+            mathematically_eliminated=(
+                team_math_status.eliminated
+                if team_math_status else False
+            ),
         )
 
     knockout_matches = (
@@ -80,3 +94,15 @@ def _loser(match):
         return match.away_team
 
     return match.home_team
+
+
+def _all_group_stage_matches_complete(tournament) -> bool:
+    group_matches = Match.objects.filter(
+        tournament=tournament,
+        stage=Match.Stage.GROUP,
+    )
+
+    if not group_matches.exists():
+        return False
+
+    return all(match.is_complete for match in group_matches)

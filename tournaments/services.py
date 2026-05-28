@@ -2,7 +2,7 @@ from tournaments.models import Match
 
 from tournaments.standings import compute_group_standings
 from tournaments.qualification import compute_qualification
-
+from tournaments.qualification_status import compute_group_qualification_status
 from django.db import models
 
 def build_group_stage_context(tournament):
@@ -21,6 +21,9 @@ def build_group_stage_context(tournament):
 
     output = []
 
+
+    qualification_status = compute_group_qualification_status(tournament)
+
     for group_name, standings in standings_by_group.items():
         matches = (
             Match.objects.filter(
@@ -38,18 +41,10 @@ def build_group_stage_context(tournament):
         rows = []
 
         for row in standings:
-            if row.position in {1, 2}:
-                qualification_label = "Q"
-                qualification_class = "qualified"
-            elif row.team.id in best_third_team_ids:
-                qualification_label = "3Q"
-                qualification_class = "third-qualified"
-            elif row.position == 3:
-                qualification_label = "3rd"
-                qualification_class = "third"
-            else:
-                qualification_label = ""
-                qualification_class = ""
+            team_status = qualification_status.get(row.team.id, {})
+
+            qualification_label = team_status.get("label", "")
+            qualification_class = team_status.get("class", "")
 
             rows.append(
                 {

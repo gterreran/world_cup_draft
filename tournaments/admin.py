@@ -22,6 +22,7 @@ class MatchAdmin(admin.ModelAdmin):
         "match_number",
         "tournament",
         "stage",
+        "group",
         "status",
         "home_team",
         "away_team",
@@ -33,7 +34,7 @@ class MatchAdmin(admin.ModelAdmin):
         "kickoff_time",
         "venue",
     )
-    list_filter = ("tournament", "stage", "status", "venue")
+    list_filter = ("tournament", "stage", "status", "venue", "group")
     search_fields = (
         "home_team__name",
         "away_team__name",

@@ -84,12 +84,18 @@ class Command(BaseCommand):
                         f"{row['match_date']}"
                     )
 
+            match_group = self._resolve_group(
+                row=row,
+                home_team=home_team,
+                away_team=away_team,
+            )
+
             _, created = Match.objects.update_or_create(
                 tournament=tournament,
                 match_number=row["match_number"],
                 defaults={
                     "stage": row["stage"],
-                    "group": row.get("group", ""),
+                    "group": match_group,
                     "status": row.get("status", Match.Status.SCHEDULED),
                     "match_date": match_date,
                     "kickoff_time": kickoff_time,
@@ -118,6 +124,34 @@ class Command(BaseCommand):
                 f"{created_count} created, {updated_count} updated."
             )
         )
+
+
+    def _resolve_group(self, *, row, home_team, away_team) -> str:
+        """Return the group to store on a match row.
+
+        The schedule JSON is the source of truth, but this fallback makes the
+        importer robust to older or hand-edited schedule files and also helps
+        repair existing rows when the command is re-run.
+        """
+        explicit_group = row.get("group", "") or ""
+
+        if explicit_group:
+            return explicit_group
+
+        if row.get("stage") != Match.Stage.GROUP:
+            return ""
+
+        home_group = home_team.group if home_team else ""
+        away_group = away_team.group if away_team else ""
+
+        if home_group and away_group and home_group != away_group:
+            raise CommandError(
+                f"Match {row['match_number']} has teams from different groups: "
+                f"{home_team.name} is in {home_group}, "
+                f"{away_team.name} is in {away_group}."
+            )
+
+        return home_group or away_group or ""
 
     def _resolve_team_or_slot(
         self,

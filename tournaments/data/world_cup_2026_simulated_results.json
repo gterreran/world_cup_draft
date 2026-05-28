@@ -1,0 +1,1051 @@
+{
+  "tournament_slug": "fifa-world-cup-2026",
+  "source": "Random simulated World Cup generated from uploaded schedule for local engine testing.",
+  "notes": [
+    "Group-stage match results include only scores.",
+    "Knockout results include scores plus winner_side; if the score is tied, went_to_penalties is true.",
+    "Apply incrementally by match_number so bracket teams are populated as the tournament progresses."
+  ],
+  "results": [
+    {
+      "match_number": 1,
+      "stage": "group",
+      "home_score": 3,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 2,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 3,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 4,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 4,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 5,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 6,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 7,
+      "stage": "group",
+      "home_score": 3,
+      "away_score": 5,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 8,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 9,
+      "stage": "group",
+      "home_score": 3,
+      "away_score": 4,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 10,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 11,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 12,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 13,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 14,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 15,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 16,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 17,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 18,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 19,
+      "stage": "group",
+      "home_score": 3,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 20,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 21,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 22,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 23,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 24,
+      "stage": "group",
+      "home_score": 3,
+      "away_score": 5,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 25,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 26,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 4,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 27,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 28,
+      "stage": "group",
+      "home_score": 4,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 29,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 30,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 31,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 4,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 32,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 33,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 34,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 35,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 36,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 37,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 38,
+      "stage": "group",
+      "home_score": 4,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 39,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 40,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 41,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 42,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 43,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 44,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 45,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 46,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 47,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 48,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 49,
+      "stage": "group",
+      "home_score": 3,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 50,
+      "stage": "group",
+      "home_score": 4,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 51,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 52,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 53,
+      "stage": "group",
+      "home_score": 3,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 54,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 55,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 56,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 57,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 58,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 59,
+      "stage": "group",
+      "home_score": 3,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 60,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 61,
+      "stage": "group",
+      "home_score": 4,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 62,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 63,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 64,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 65,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 66,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 67,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 68,
+      "stage": "group",
+      "home_score": 1,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 69,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 70,
+      "stage": "group",
+      "home_score": 0,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 71,
+      "stage": "group",
+      "home_score": 4,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 72,
+      "stage": "group",
+      "home_score": 2,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": null
+    },
+    {
+      "match_number": 73,
+      "stage": "round_of_32",
+      "home_score": 2,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "home"
+    },
+    {
+      "match_number": 74,
+      "stage": "round_of_32",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 75,
+      "stage": "round_of_32",
+      "home_score": 0,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 76,
+      "stage": "round_of_32",
+      "home_score": 1,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 77,
+      "stage": "round_of_32",
+      "home_score": 0,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 78,
+      "stage": "round_of_32",
+      "home_score": 2,
+      "away_score": 4,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 79,
+      "stage": "round_of_32",
+      "home_score": 2,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": true,
+      "went_to_penalties": false,
+      "winner_side": "home"
+    },
+    {
+      "match_number": 80,
+      "stage": "round_of_32",
+      "home_score": 2,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 81,
+      "stage": "round_of_32",
+      "home_score": 1,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "home"
+    },
+    {
+      "match_number": 82,
+      "stage": "round_of_32",
+      "home_score": 3,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "home"
+    },
+    {
+      "match_number": 83,
+      "stage": "round_of_32",
+      "home_score": 0,
+      "away_score": 4,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 84,
+      "stage": "round_of_32",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 85,
+      "stage": "round_of_32",
+      "home_score": 2,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": true,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 86,
+      "stage": "round_of_32",
+      "home_score": 3,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": true,
+      "went_to_penalties": false,
+      "winner_side": "home"
+    },
+    {
+      "match_number": 87,
+      "stage": "round_of_32",
+      "home_score": 2,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "home"
+    },
+    {
+      "match_number": 88,
+      "stage": "round_of_32",
+      "home_score": 4,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "home"
+    },
+    {
+      "match_number": 89,
+      "stage": "round_of_16",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 90,
+      "stage": "round_of_16",
+      "home_score": 0,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": true,
+      "went_to_penalties": true,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 91,
+      "stage": "round_of_16",
+      "home_score": 2,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 92,
+      "stage": "round_of_16",
+      "home_score": 3,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": true,
+      "went_to_penalties": true,
+      "winner_side": "home"
+    },
+    {
+      "match_number": 93,
+      "stage": "round_of_16",
+      "home_score": 2,
+      "away_score": 3,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 94,
+      "stage": "round_of_16",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 95,
+      "stage": "round_of_16",
+      "home_score": 4,
+      "away_score": 4,
+      "status": "final",
+      "went_to_extra_time": true,
+      "went_to_penalties": true,
+      "winner_side": "home"
+    },
+    {
+      "match_number": 96,
+      "stage": "round_of_16",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": true,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 97,
+      "stage": "quarterfinal",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 98,
+      "stage": "quarterfinal",
+      "home_score": 0,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 99,
+      "stage": "quarterfinal",
+      "home_score": 1,
+      "away_score": 4,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 100,
+      "stage": "quarterfinal",
+      "home_score": 2,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": true,
+      "went_to_penalties": true,
+      "winner_side": "home"
+    },
+    {
+      "match_number": 101,
+      "stage": "semifinal",
+      "home_score": 0,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 102,
+      "stage": "semifinal",
+      "home_score": 0,
+      "away_score": 1,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    },
+    {
+      "match_number": 103,
+      "stage": "third_place",
+      "home_score": 4,
+      "away_score": 0,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "home"
+    },
+    {
+      "match_number": 104,
+      "stage": "final",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "final",
+      "went_to_extra_time": false,
+      "went_to_penalties": false,
+      "winner_side": "away"
+    }
+  ]
+}
