@@ -143,35 +143,64 @@ def bracket_stage(request, slug: str):
         )
     }
 
-    bracket_stages = [
+    championship_stages = [
         Match.Stage.ROUND_OF_32,
         Match.Stage.ROUND_OF_16,
         Match.Stage.QUARTERFINAL,
         Match.Stage.SEMIFINAL,
-        Match.Stage.THIRD_PLACE,
         Match.Stage.FINAL,
     ]
 
-    rounds = []
+    championship_rounds = []
+    base_match_count = 16
 
-    for stage in bracket_stages:
-        matches = (
+    for round_index, stage in enumerate(championship_stages):
+        matches = list(
             Match.objects.filter(tournament=league.tournament, stage=stage)
             .select_related("home_team", "away_team", "winner")
             .order_by("match_number")
         )
 
-        rounds.append({
-            "stage": Match.Stage(stage).label,
-            "matches": matches,
-        })
+        row_span = 2 ** round_index
+        entries = []
+
+        for index, match in enumerate(matches):
+            pair_position = ""
+            if stage != Match.Stage.FINAL:
+                pair_position = "upper" if index % 2 == 0 else "lower"
+
+            entries.append(
+                {
+                    "match": match,
+                    "row_start": 1 + index * row_span,
+                    "row_span": row_span,
+                    "pair_position": pair_position,
+                }
+            )
+
+        championship_rounds.append(
+            {
+                "stage": Match.Stage(stage).label,
+                "stage_value": stage,
+                "stage_class": stage.replace("_", "-"),
+                "entries": entries,
+            }
+        )
+
+    third_place_matches = list(
+        Match.objects.filter(tournament=league.tournament, stage=Match.Stage.THIRD_PLACE)
+        .select_related("home_team", "away_team", "winner")
+        .order_by("match_number")
+    )
 
     return render(
         request,
         "tournaments/bracket_stage.html",
         {
             "league": league,
-            "rounds": rounds,
+            "championship_rounds": championship_rounds,
+            "third_place_matches": third_place_matches,
+            "base_match_count": base_match_count,
             "assignment_map": assignment_map,
         },
     )

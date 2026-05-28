@@ -17,80 +17,171 @@
   </div>
 
   <div class="bracket-scroll">
-    <div class="bracket-grid">
-      {% for round in rounds %}
-        <section class="bracket-round">
+    <div class="bracket-board bracket-board-grid">
+      {% for round in championship_rounds %}
+        <section class="bracket-round bracket-round-{{ round.stage_class }}">
           <h2>{{ round.stage }}</h2>
 
-          <div class="bracket-matches">
-            {% for match in round.matches %}
-              <article class="bracket-match-card">
-                <div class="match-meta">
-                  <span>Match {{ match.match_number }}</span>
-                  
-                  {% if match.kickoff_time %}
-                    <span>{{ match.kickoff_time|date:"M j · g:i A" }}</span>
-                  {% endif %}
+          <div class="bracket-grid-column">
+            {% for entry in round.entries %}
+              {% with match=entry.match %}
+                <div
+                  class="bracket-match-slot {% if entry.pair_position %}pair-{{ entry.pair_position }}{% endif %} {% if round.stage_value != 'final' %}has-next-round{% endif %} {% if round.stage_value != 'round_of_32' %}has-prev-round{% endif %}"
+                  style="grid-row: {{ entry.row_start }} / span {{ entry.row_span }};"
+                >
+                  <article class="bracket-match-card {% if match.is_complete %}is-complete{% endif %}">
+                    <div class="match-meta">
+                      <span>Match {{ match.match_number }}</span>
 
-                  {% if match.venue %}
-                    <div class="right">
-                      <span>{{ match.venue }}</span>
+                      {% if match.kickoff_time %}
+                        <span>{{ match.kickoff_time|date:"M j · g:i A" }}</span>
+                      {% endif %}
+
+                      {% if match.venue %}
+                        <div class="right">
+                          <span>{{ match.venue }}</span>
+                        </div>
+                      {% endif %}
+                    </div>
+
+                    <div class="bracket-team
+                      {% if match.is_complete %}
+                        {% if match.winner_id == match.home_team_id %}
+                          winner
+                        {% else %}
+                          loser
+                        {% endif %}
+                      {% elif not match.home_team_id %}
+                        pending
+                      {% endif %}
+                    ">
+                      <div class="bracket-team-main">
+                        <span class="bracket-team-name">
+                          {% if match.home_team %}{{ match.home_team.flag }}{% endif %}
+                          {{ match.home_label }}
+                        </span>
+
+                        {% if match.home_team_id in assignment_map %}
+                          <div class="fantasy-owner">
+                            {{ assignment_map|get_item:match.home_team_id }}
+                          </div>
+                        {% endif %}
+                      </div>
+                      {% if match.is_complete %}
+                        <strong class="bracket-score">{{ match.home_score }}</strong>
+                      {% endif %}
+                    </div>
+
+                    <div class="bracket-team
+                      {% if match.is_complete %}
+                        {% if match.winner_id == match.away_team_id %}
+                          winner
+                        {% else %}
+                          loser
+                        {% endif %}
+                      {% elif not match.away_team_id %}
+                        pending
+                      {% endif %}
+                    ">
+                      <div class="bracket-team-main">
+                        <span class="bracket-team-name">
+                          {% if match.away_team %}{{ match.away_team.flag }}{% endif %}
+                          {{ match.away_label }}
+                        </span>
+
+                        {% if match.away_team_id in assignment_map %}
+                          <div class="fantasy-owner">
+                            {{ assignment_map|get_item:match.away_team_id }}
+                          </div>
+                        {% endif %}
+                      </div>
+                      {% if match.is_complete %}
+                        <strong class="bracket-score">{{ match.away_score }}</strong>
+                      {% endif %}
+                    </div>
+                  </article>
+
+                  {% if round.stage_value == 'final' and third_place_matches %}
+                    <div class="bracket-third-place-inline">
+                      <h3>Third-place match</h3>
+
+                      {% for match in third_place_matches %}
+                        <article class="bracket-match-card third-place-card {% if match.is_complete %}is-complete{% endif %}">
+                          <div class="match-meta">
+                            <span>Match {{ match.match_number }}</span>
+
+                            {% if match.kickoff_time %}
+                              <span>{{ match.kickoff_time|date:"M j · g:i A" }}</span>
+                            {% endif %}
+
+                            {% if match.venue %}
+                              <div class="right">
+                                <span>{{ match.venue }}</span>
+                              </div>
+                            {% endif %}
+                          </div>
+
+                          <div class="bracket-team
+                            {% if match.is_complete %}
+                              {% if match.winner_id == match.home_team_id %}
+                                winner
+                              {% else %}
+                                loser
+                              {% endif %}
+                            {% elif not match.home_team_id %}
+                              pending
+                            {% endif %}
+                          ">
+                            <div class="bracket-team-main">
+                              <span class="bracket-team-name">
+                                {% if match.home_team %}{{ match.home_team.flag }}{% endif %}
+                                {{ match.home_label }}
+                              </span>
+
+                              {% if match.home_team_id in assignment_map %}
+                                <div class="fantasy-owner">
+                                  {{ assignment_map|get_item:match.home_team_id }}
+                                </div>
+                              {% endif %}
+                            </div>
+                            {% if match.is_complete %}
+                              <strong class="bracket-score">{{ match.home_score }}</strong>
+                            {% endif %}
+                          </div>
+
+                          <div class="bracket-team
+                            {% if match.is_complete %}
+                              {% if match.winner_id == match.away_team_id %}
+                                winner
+                              {% else %}
+                                loser
+                              {% endif %}
+                            {% elif not match.away_team_id %}
+                              pending
+                            {% endif %}
+                          ">
+                            <div class="bracket-team-main">
+                              <span class="bracket-team-name">
+                                {% if match.away_team %}{{ match.away_team.flag }}{% endif %}
+                                {{ match.away_label }}
+                              </span>
+
+                              {% if match.away_team_id in assignment_map %}
+                                <div class="fantasy-owner">
+                                  {{ assignment_map|get_item:match.away_team_id }}
+                                </div>
+                              {% endif %}
+                            </div>
+                            {% if match.is_complete %}
+                              <strong class="bracket-score">{{ match.away_score }}</strong>
+                            {% endif %}
+                          </div>
+                        </article>
+                      {% endfor %}
                     </div>
                   {% endif %}
                 </div>
-
-                <div class="bracket-team
-                  {% if match.is_complete %}
-                    {% if match.winner_id == match.home_team_id %}
-                      winner
-                    {% else %}
-                      loser
-                    {% endif %}
-                  {% endif %}
-                ">
-                  <div>
-                    <span>
-                      {% if match.home_team %}{{ match.home_team.flag }}{% endif %}
-                      {{ match.home_label }}
-                    </span>
-
-                    {% if match.home_team_id in assignment_map %}
-                      <div class="fantasy-owner">
-                        {{ assignment_map|get_item:match.home_team_id }}
-                      </div>
-                    {% endif %}
-                  </div>
-                  {% if match.is_complete %}
-                    <strong>{{ match.home_score }}</strong>
-                  {% endif %}
-                </div>
-
-                <div class="bracket-team
-                  {% if match.is_complete %}
-                    {% if match.winner_id == match.away_team_id %}
-                      winner
-                    {% else %}
-                      loser
-                    {% endif %}
-                  {% endif %}
-                ">
-                  <div>
-                    <span>
-                      {% if match.away_team %}{{ match.away_team.flag }}{% endif %}
-                      {{ match.away_label }}
-                    </span>
-
-                    {% if match.away_team_id in assignment_map %}
-                      <div class="fantasy-owner">
-                        {{ assignment_map|get_item:match.away_team_id }}
-                      </div>
-                    {% endif %}
-                  </div>
-                  {% if match.is_complete %}
-                    <strong>{{ match.away_score }}</strong>
-                  {% endif %}
-                </div>
-              </article>
+              {% endwith %}
             {% endfor %}
           </div>
         </section>
