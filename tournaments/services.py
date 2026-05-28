@@ -1,110 +1,70 @@
-from collections import defaultdict
+from tournaments.models import Match
 
-from tournaments.models import Match, NationalTeam
+from tournaments.standings import compute_group_standings
+from tournaments.qualification import compute_qualification
 
+from django.db import models
 
 def build_group_stage_context(tournament):
-    groups = {}
+    standings_by_group = compute_group_standings(tournament)
+    qualification = compute_qualification(tournament)
 
-    teams = NationalTeam.objects.filter(tournament=tournament).order_by("group", "name")
+    qualified_team_ids = {
+        team.id
+        for team in qualification.slot_map.values()
+    }
 
-    for team in teams:
-        if not team.group:
-            continue
-
-        groups.setdefault(team.group, {
-            "teams": {},
-            "matches": [],
-        })
-
-        groups[team.group]["teams"][team.id] = {
-            "team": team,
-            "played": 0,
-            "wins": 0,
-            "draws": 0,
-            "losses": 0,
-            "goals_for": 0,
-            "goals_against": 0,
-            "goal_difference": 0,
-            "points": 0,
-        }
-
-    matches = (
-        Match.objects.filter(tournament=tournament, stage=Match.Stage.GROUP)
-        .select_related("home_team", "away_team")
-        .order_by("group", "kickoff_time", "match_number")
-    )
-
-    for match in matches:
-        group = match.group or (
-            match.home_team.group if match.home_team else ""
-        )
-
-        if not group:
-            continue
-
-        groups.setdefault(group, {
-            "teams": {},
-            "matches": [],
-        })
-
-        groups[group]["matches"].append(match)
-
-        if not match.is_complete:
-            continue
-
-        _apply_group_result(groups[group]["teams"], match)
+    best_third_team_ids = {
+        standing.team.id
+        for standing in qualification.best_third_place_teams
+    }
 
     output = []
 
-    for group_name in sorted(groups):
-        standings = list(groups[group_name]["teams"].values())
-        standings.sort(
-            key=lambda row: (
-                -row["points"],
-                -row["goal_difference"],
-                -row["goals_for"],
-                row["team"].name,
+    for group_name, standings in standings_by_group.items():
+        matches = (
+            Match.objects.filter(
+                tournament=tournament,
+                stage=Match.Stage.GROUP,
+            ).filter(
+                models.Q(group=group_name)
+                | models.Q(home_team__group=group_name)
+                | models.Q(away_team__group=group_name)
             )
+            .select_related("home_team", "away_team")
+            .order_by("kickoff_time", "match_number")
         )
 
-        output.append({
-            "name": group_name,
-            "standings": standings,
-            "matches": groups[group_name]["matches"],
-        })
+        rows = []
+
+        for row in standings:
+            if row.position in {1, 2}:
+                qualification_label = "Q"
+                qualification_class = "qualified"
+            elif row.team.id in best_third_team_ids:
+                qualification_label = "3Q"
+                qualification_class = "third-qualified"
+            elif row.position == 3:
+                qualification_label = "3rd"
+                qualification_class = "third"
+            else:
+                qualification_label = ""
+                qualification_class = ""
+
+            rows.append(
+                {
+                    "standing": row,
+                    "qualification_label": qualification_label,
+                    "qualification_class": qualification_class,
+                }
+            )
+
+        output.append(
+            {
+                "name": group_name,
+                "standings": rows,
+                "matches": matches,
+            }
+        )
 
     return output
-
-
-def _apply_group_result(standings, match):
-    home = standings[match.home_team_id]
-    away = standings[match.away_team_id]
-
-    home_score = match.home_score
-    away_score = match.away_score
-
-    home["played"] += 1
-    away["played"] += 1
-
-    home["goals_for"] += home_score
-    home["goals_against"] += away_score
-    home["goal_difference"] += home_score - away_score
-
-    away["goals_for"] += away_score
-    away["goals_against"] += home_score
-    away["goal_difference"] += away_score - home_score
-
-    if home_score > away_score:
-        home["wins"] += 1
-        home["points"] += 3
-        away["losses"] += 1
-    elif home_score < away_score:
-        away["wins"] += 1
-        away["points"] += 3
-        home["losses"] += 1
-    else:
-        home["draws"] += 1
-        away["draws"] += 1
-        home["points"] += 1
-        away["points"] += 1

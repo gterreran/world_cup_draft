@@ -89,6 +89,7 @@ class Command(BaseCommand):
                 match_number=row["match_number"],
                 defaults={
                     "stage": row["stage"],
+                    "group": row.get("group", ""),
                     "status": row.get("status", Match.Status.SCHEDULED),
                     "match_date": match_date,
                     "kickoff_time": kickoff_time,

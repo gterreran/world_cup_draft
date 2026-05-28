@@ -470,6 +470,7 @@ tbody tr:hover {
 
 .group-matches {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -483,9 +484,16 @@ tbody tr:hover {
 .mini-match-meta,
 .mini-match-venue {
   display: flex;
+  align-items: center;
   gap: 8px;
+
   color: #6b7280;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
+}
+
+.mini-match-meta .right {
+  margin-left: auto;
+  text-align: right;
 }
 
 .mini-match-teams {
@@ -554,4 +562,42 @@ tbody tr:hover {
   font-size: 0.72rem;
   color: #6b7280;
   font-weight: 500;
+}
+
+.qualification-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  border-radius: 999px;
+  padding: 3px 7px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.qualification-pill.qualified {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.qualification-pill.third-qualified {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.qualification-pill.third {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.mini-match-teams .right {
+  text-align: right;
+}
+
+@media (max-width: 700px) {
+  .group-matches {
+    grid-template-columns: 1fr;
+  }
 }

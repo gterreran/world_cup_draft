@@ -10,6 +10,7 @@ from .services import build_group_stage_context
 from scoring.services import recompute_league_standings
 from collections import defaultdict
 from assignments.models import TeamAssignment
+from tournaments.progression import recompute_tournament_progression
 
 @login_required
 def match_list(request, slug: str):
@@ -51,6 +52,8 @@ def match_result_edit(request, slug: str, match_id: int):
 
         if form.is_valid():
             form.save()
+
+            recompute_tournament_progression(league.tournament)
             recompute_league_standings(league)
             messages.success(request, "Match result updated and standings recomputed.")
             return redirect("match_list", slug=league.slug)

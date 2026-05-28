@@ -28,6 +28,7 @@
             <table class="compact-table">
               <thead>
                 <tr>
+                  <th></th>
                   <th>Team</th>
                   <th>Pts</th>
                   <th>GD</th>
@@ -38,20 +39,27 @@
                 {% for row in group.standings %}
                   <tr>
                     <td>
+                      {% if row.qualification_label %}
+                        <span class="qualification-pill {{ row.qualification_class }}">
+                          {{ row.qualification_label }}
+                        </span>
+                      {% endif %}
+                    </td>
+                    <td>
                       <div>
-                        <span class="team-flag">{{ row.team.flag }}</span>
-                        <strong>{{ row.team.name }}</strong>
+                        <span class="team-flag">{{ row.standing.team.flag }}</span>
+                        <strong>{{ row.standing.team.name }}</strong>
 
-                        {% if row.team.id in assignment_map %}
+                        {% if row.standing.team.id in assignment_map %}
                           <div class="fantasy-owner">
-                            {{ assignment_map|get_item:row.team.id }}
+                            {{ assignment_map|get_item:row.standing.team.id }}
                           </div>
                         {% endif %}
                       </div>
                     </td>
-                    <td><strong>{{ row.points }}</strong></td>
-                    <td>{{ row.goal_difference }}</td>
-                    <td>{{ row.goals_for }}</td>
+                    <td><strong>{{ row.standing.points }}</strong></td>
+                    <td>{{ row.standing.goal_difference }}</td>
+                    <td>{{ row.standing.goals_for }}</td>
                   </tr>
                 {% endfor %}
               </tbody>
@@ -65,6 +73,11 @@
                   <span>Match {{ match.match_number }}</span>
                   {% if match.kickoff_time %}
                     <span>{{ match.kickoff_time|date:"M j · g:i A" }}</span>
+                  {% endif %}
+                  {% if match.venue %}
+                    <div class="right">
+                      <span>{{ match.venue }}</span>
+                    </div>
                   {% endif %}
                 </div>
 
@@ -85,7 +98,7 @@
                       vs
                     {% endif %}
                   </strong>
-                  <div>
+                  <div class="right">
                     <span>{{ match.away_team.flag }} {{ match.away_label }}</span>
 
                     {% if match.away_team_id in assignment_map %}
@@ -95,10 +108,6 @@
                     {% endif %}
                   </div>
                 </div>
-
-                {% if match.venue %}
-                  <div class="mini-match-venue">{{ match.venue }}</div>
-                {% endif %}
               </article>
             {% endfor %}
           </div>
