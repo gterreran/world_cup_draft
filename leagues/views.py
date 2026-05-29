@@ -179,6 +179,53 @@ def member_create(request, slug: str):
         },
     )
 
+
+@login_required
+def draft_presentation(request, slug: str):
+    """Show a read-only animated reveal of the current team assignments."""
+    league = get_object_or_404(League, slug=slug)
+
+    if league.use_tiers:
+        assignment_ordering = (
+            "national_team__pot",
+            "member__display_name",
+            "national_team__name",
+        )
+    else:
+        assignment_ordering = (
+            "member__display_name",
+            "national_team__pot",
+            "national_team__name",
+        )
+
+    assignments = league.team_assignments.select_related(
+        "member",
+        "national_team",
+    ).order_by(*assignment_ordering)
+
+    picks = []
+    for index, assignment in enumerate(assignments, start=1):
+        team = assignment.national_team
+        picks.append(
+            {
+                "pick": index,
+                "manager": assignment.member.display_name,
+                "team": team.name,
+                "flag": team.flag or "🏳️",
+                "group": team.group or "",
+                "pot": team.pot,
+            }
+        )
+
+    return render(
+        request,
+        "leagues/draft_presentation.html",
+        {
+            "league": league,
+            "picks": picks,
+        },
+    )
+
 @login_required
 def draft_order(request, slug: str):
     league = get_object_or_404(League, slug=slug)

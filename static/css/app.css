@@ -1058,3 +1058,727 @@ tbody tr:hover {
   color: #6b7280;
   font-style: italic;
 }
+
+/* Animated draft presentation */
+.draft-stage-page {
+  --draft-blue: #155eef;
+  --draft-dark: #08111f;
+  --draft-gold: #facc15;
+}
+
+.draft-stage-header {
+  align-items: flex-start;
+}
+
+.draft-stage-subtitle {
+  margin: 8px 0 0;
+  color: #6b7280;
+}
+
+.draft-stage-shell {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(250, 204, 21, 0.28), transparent 30%),
+    radial-gradient(circle at 80% 10%, rgba(21, 94, 239, 0.32), transparent 32%),
+    linear-gradient(135deg, #08111f 0%, #10203d 48%, #07101f 100%);
+  color: white;
+  box-shadow: 0 24px 70px rgba(8, 17, 31, 0.26);
+}
+
+.draft-scoreboard {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.draft-scoreboard > div {
+  min-width: 150px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.draft-kicker,
+.draft-pick-label {
+  display: block;
+  color: #bfdbfe;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.draft-scoreboard strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 1.35rem;
+}
+
+.draft-reveal-card {
+  position: relative;
+  isolation: isolate;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 32px;
+  padding: 36px 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06)),
+    rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+
+.draft-card-glow {
+  position: absolute;
+  inset: auto auto -120px 50%;
+  z-index: -1;
+  width: 420px;
+  height: 420px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.28);
+  filter: blur(38px);
+  transform: translateX(-50%);
+}
+
+.draft-flag {
+  margin: 18px 0 12px;
+  font-size: clamp(5rem, 13vw, 9rem);
+  line-height: 1;
+  filter: drop-shadow(0 16px 22px rgba(0, 0, 0, 0.28));
+}
+
+.draft-reveal-card h2 {
+  margin: 0;
+  font-size: clamp(2.1rem, 7vw, 5.2rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.draft-team-meta {
+  margin: 14px 0 0;
+  color: #dbeafe;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.draft-manager-pill {
+  margin-top: 22px;
+  border-radius: 999px;
+  padding: 10px 18px;
+  background: #facc15;
+  color: #422006;
+  font-weight: 950;
+  box-shadow: 0 10px 26px rgba(250, 204, 21, 0.24);
+}
+
+.draft-reveal-card.is-revealing .draft-flag {
+  animation: draft-pop 650ms cubic-bezier(.2, 1.4, .34, 1) both;
+}
+
+.draft-reveal-card.is-revealing h2,
+.draft-reveal-card.is-revealing .draft-team-meta,
+.draft-reveal-card.is-revealing .draft-manager-pill {
+  animation: draft-slide-up 560ms ease both;
+}
+
+.draft-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 22px 0 16px;
+}
+
+.draft-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.draft-controls .secondary-button {
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.draft-progress-track {
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.draft-progress-fill {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #60a5fa, #facc15);
+  transition: width 280ms ease;
+}
+
+.draft-pick-board {
+  margin-top: 24px;
+}
+
+.compact-section-header h2,
+.compact-section-header p {
+  color: white;
+}
+
+.compact-section-header p {
+  opacity: 0.72;
+}
+
+.draft-pick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.draft-queue-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.draft-queue-number {
+  grid-row: span 2;
+  color: #93c5fd;
+  font-weight: 950;
+}
+
+.draft-queue-flag {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.draft-queue-card strong,
+.draft-queue-card small {
+  grid-column: 2;
+}
+
+.draft-queue-card strong {
+  color: inherit;
+}
+
+.draft-queue-card.is-revealed {
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+}
+
+.draft-queue-card.is-current {
+  border-color: rgba(250, 204, 21, 0.88);
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.16);
+}
+
+.empty-state-card {
+  text-align: center;
+}
+
+@keyframes draft-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.45) rotate(-8deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.1) rotate(3deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes draft-slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 700px) {
+  .draft-stage-shell {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .draft-scoreboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .draft-scoreboard > div {
+    min-width: 0;
+  }
+
+  .draft-reveal-card {
+    min-height: 300px;
+    border-radius: 22px;
+  }
+}
+
+/* Animated draft pot ceremony upgrades */
+.draft-scoreboard {
+  align-items: stretch;
+}
+
+.draft-pot-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.draft-pot-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 8px 13px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.88rem;
+  font-weight: 850;
+  transition: transform 180ms ease, background 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+.draft-pot-pill span {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.draft-pot-pill strong {
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: inherit;
+  font-size: 0.72rem;
+}
+
+.draft-pot-pill.is-active {
+  transform: translateY(-1px);
+  border-color: rgba(250, 204, 21, 0.88);
+  background: rgba(250, 204, 21, 0.18);
+  color: #fff7cc;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.10);
+}
+
+.draft-pot-pill.is-complete:not(.is-active) {
+  opacity: 0.56;
+}
+
+.draft-reveal-layout {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.72fr) minmax(330px, 1.55fr) minmax(180px, 0.72fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.draft-side-panel {
+  display: flex;
+  min-height: 360px;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.draft-side-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+  padding: 13px 14px;
+}
+
+.draft-side-panel-header strong {
+  display: inline-flex;
+  min-width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.18);
+  color: #fde68a;
+  font-size: 0.95rem;
+}
+
+.draft-side-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  overflow: auto;
+  padding: 12px;
+}
+
+.draft-side-item,
+.draft-side-empty {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  padding: 9px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.draft-side-empty {
+  color: rgba(255, 255, 255, 0.64);
+  font-style: italic;
+  font-weight: 700;
+}
+
+.team-side-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mini-flag {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.draft-pot-board {
+  display: grid;
+  gap: 16px;
+}
+
+.draft-pot-column {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.draft-pot-column.is-active {
+  border-color: rgba(250, 204, 21, 0.72);
+  background: rgba(250, 204, 21, 0.08);
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.08);
+}
+
+.draft-pot-column-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.draft-pot-column-header h3 {
+  margin: 0;
+  color: white;
+  font-size: 1.08rem;
+}
+
+.draft-pot-column-header span {
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+@media (max-width: 980px) {
+  .draft-reveal-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .draft-side-panel {
+    min-height: 0;
+  }
+
+  .draft-side-list {
+    max-height: 220px;
+  }
+}
+
+@media (max-width: 700px) {
+  .draft-scoreboard {
+    grid-template-columns: 1fr;
+  }
+
+  .draft-pot-strip {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .draft-pot-pill {
+    flex: 0 0 auto;
+  }
+}
+
+/* Animated draft: fixed ceremony geometry and two-step reveal polish */
+.draft-reveal-layout {
+  min-height: 560px;
+  align-items: stretch;
+}
+
+.draft-reveal-layout > * {
+  height: 100%;
+}
+
+.draft-side-panel,
+.draft-reveal-card {
+  min-height: 560px;
+}
+
+.draft-side-list {
+  min-height: 0;
+}
+
+.draft-side-item,
+.draft-side-empty {
+  min-height: 48px;
+  display: grid;
+  align-items: center;
+  line-height: 1.15;
+}
+
+.manager-side-item,
+.team-side-item {
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 8px;
+}
+
+.team-side-item {
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+}
+
+.draft-side-item span:not(.mini-flag) {
+  min-width: 0;
+}
+
+.draft-side-item small {
+  justify-self: end;
+  border-radius: 999px;
+  padding: 3px 7px;
+  background: rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.draft-side-item.is-selected {
+  border-color: rgba(250, 204, 21, 0.84);
+  background: rgba(250, 204, 21, 0.18);
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.09);
+}
+
+.draft-side-item.is-selected small {
+  background: rgba(250, 204, 21, 0.22);
+  color: #fde68a;
+}
+
+.draft-side-item.is-unavailable {
+  opacity: 0.48;
+  filter: grayscale(0.65);
+}
+
+.draft-side-item.is-unavailable small {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fecaca;
+}
+
+.draft-reveal-card.is-manager-revealing .draft-flag {
+  animation: draft-manager-pop 520ms cubic-bezier(.2, 1.22, .34, 1) both;
+}
+
+.draft-reveal-card.is-manager-revealing h2,
+.draft-reveal-card.is-manager-revealing .draft-team-meta,
+.draft-reveal-card.is-manager-revealing .draft-manager-pill {
+  animation: draft-slide-up 520ms ease both;
+}
+
+.draft-queue-card.is-manager-revealed {
+  border-color: rgba(96, 165, 250, 0.72);
+  background: rgba(96, 165, 250, 0.13);
+  color: white;
+}
+
+.draft-queue-card.is-manager-revealed .draft-queue-flag {
+  font-size: 1.55rem;
+}
+
+@keyframes draft-manager-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.62) translateY(10px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (max-width: 980px) {
+  .draft-reveal-layout,
+  .draft-side-panel,
+  .draft-reveal-card {
+    min-height: 0;
+  }
+
+  .draft-side-panel,
+  .draft-reveal-card {
+    height: auto;
+  }
+}
+
+/* Defensive: keep draft controls above decorative ceremony layers. */
+.draft-controls {
+  position: relative;
+  z-index: 5;
+}
+
+.draft-controls button {
+  position: relative;
+  z-index: 6;
+  pointer-events: auto;
+}
+
+
+/* Animated draft: keep ceremony area stable through the full draw. */
+@media (min-width: 981px) {
+  .draft-reveal-layout {
+    height: 560px;
+    min-height: 560px;
+  }
+
+  .draft-reveal-layout > * {
+    height: 560px;
+    min-height: 0;
+  }
+
+  .draft-side-panel,
+  .draft-reveal-card {
+    height: 560px;
+    min-height: 0;
+  }
+
+  .draft-side-list {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
+
+.draft-finish-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border-radius: 999px;
+  padding: 10px 18px;
+  background: #facc15;
+  color: #422006;
+  font-weight: 950;
+  text-decoration: none;
+  box-shadow: 0 10px 26px rgba(250, 204, 21, 0.20);
+}
+
+.draft-finish-link.is-hidden {
+  display: none;
+}
+
+
+/* Animated draft: stage-based controls and extra breathing room. */
+.draft-reveal-layout {
+  margin-bottom: 30px;
+}
+
+.draft-controls {
+  min-height: 48px;
+  margin-top: 0;
+}
+
+.draft-controls .is-draft-control-hidden {
+  display: none !important;
+}
+
+.draft-controls .draft-finish-link:not(.is-hidden) {
+  display: inline-flex;
+}
+
+
+/* Animated draft: keep controls inside the reveal card footer. */
+.draft-reveal-card {
+  justify-content: space-between;
+  gap: 14px;
+  padding: 24px;
+}
+
+.draft-reveal-content {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+.draft-reveal-card .draft-controls {
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 52px;
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.draft-reveal-card .draft-controls button,
+.draft-reveal-card .draft-controls .draft-finish-link {
+  white-space: nowrap;
+}
+
+.draft-reveal-layout {
+  margin-bottom: 60px;
+}
+
+.draft-progress-track {
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+}
+
+@media (max-width: 700px) {
+  .draft-reveal-card {
+    padding: 20px 16px;
+  }
+
+  .draft-reveal-card .draft-controls {
+    min-height: 0;
+  }
+}

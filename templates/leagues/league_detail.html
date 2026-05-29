@@ -16,7 +16,8 @@
       <a class="button secondary" href="{% url 'tournament_schedule' league.slug %}">Full schedule</a>
       <a class="button secondary" href="{% url 'group_stage' league.slug %}">Group stage</a>
       <a class="button secondary" href="{% url 'bracket_stage' league.slug %}">Bracket</a>
-      <a class="button" href="{% url 'draft_order' league.slug %}">View draft order</a>
+      <a class="button secondary" href="{% url 'draft_order' league.slug %}">View draft order</a>
+      <a class="button" href="{% url 'draft_presentation' league.slug %}">Animated draft</a>
     </div>
   </div>
 
@@ -57,6 +58,7 @@
         <a class="button secondary" href="{% url 'league_settings' league.slug %}">League settings</a>
         <a class="button secondary" href="{% url 'league_scoring_settings' league.slug %}">Scoring & tiebreakers</a>
         <a class="button secondary" href="{% url 'match_list' league.slug %}">View/edit matches</a>
+        <a class="button secondary" href="{% url 'draft_presentation' league.slug %}">Open animated draft</a>
       </div>
 
       <div class="actions">

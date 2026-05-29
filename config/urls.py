@@ -49,6 +49,11 @@ urlpatterns = [
         name="draft_order",
     ),
     path(
+        "leagues/<slug:slug>/draft-presentation/",
+        league_views.draft_presentation,
+        name="draft_presentation",
+    ),
+    path(
         "leagues/<slug:slug>/members/<int:member_id>/edit/",
         league_views.member_update,
         name="member_update",

@@ -1,0 +1,111 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}{{ league.name }} Animated Draft{% endblock %}
+
+{% block content %}
+  <div class="draft-stage-page">
+    <div class="page-header draft-stage-header">
+      <div>
+        <p class="eyebrow">Draft presentation</p>
+        <h1>{{ league.name }} Animated Draft</h1>
+        <p class="draft-stage-subtitle">A read-only reveal of the teams already assigned to each manager, grouped by pot.</p>
+      </div>
+
+      <div class="header-actions">
+        <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+        <a class="button secondary" href="{% url 'draft_order' league.slug %}">Draft order</a>
+      </div>
+    </div>
+
+    {{ picks|json_script:"draft-picks-data" }}
+
+    {% if picks %}
+      <section class="draft-stage-shell" aria-live="polite">
+        <div class="draft-scoreboard">
+          <div>
+            <span class="draft-kicker">Current pick</span>
+            <strong id="draft-current-pick">0 / {{ picks|length }}</strong>
+          </div>
+          <div>
+            <span class="draft-kicker">Current pot</span>
+            <strong id="draft-current-pot">Pot 1</strong>
+          </div>
+          <div>
+            <span class="draft-kicker">Remaining</span>
+            <strong id="draft-remaining-picks">{{ picks|length }}</strong>
+          </div>
+        </div>
+
+        <div class="draft-pot-strip" id="draft-pot-strip" aria-label="Draft pots"></div>
+
+        <div class="draft-reveal-layout">
+          <aside class="draft-side-panel">
+            <div class="draft-side-panel-header">
+              <span class="draft-kicker">Remaining managers</span>
+              <strong id="draft-manager-count">0</strong>
+            </div>
+            <div class="draft-side-list" id="draft-remaining-managers"></div>
+          </aside>
+
+          <div class="draft-reveal-card" id="draft-reveal-card">
+            <div class="draft-card-glow"></div>
+            <div class="draft-reveal-content">
+              <p class="draft-pick-label" id="draft-pick-label">Ready to begin</p>
+              <div class="draft-flag" id="draft-flag">🏆</div>
+              <h2 id="draft-team-name">World Cup Draft</h2>
+              <p class="draft-team-meta" id="draft-team-meta">Press Start draft to reveal the first assigned team.</p>
+              <div class="draft-manager-pill" id="draft-manager-pill">Waiting for commissioner</div>
+            </div>
+
+            <div class="draft-controls">
+              <button type="button" id="draft-start-button">Start draft</button>
+              <button type="button" class="secondary-button" id="draft-next-button" disabled>Next pick</button>
+              <button type="button" class="secondary-button" id="draft-auto-button" disabled>Auto-play</button>
+              <a class="button draft-finish-link is-hidden" id="draft-finish-link" href="{% url 'league_detail' league.slug %}">Back to league</a>
+            </div>
+          </div>
+
+          <aside class="draft-side-panel">
+            <div class="draft-side-panel-header">
+              <span class="draft-kicker">Remaining teams</span>
+              <strong id="draft-team-count">0</strong>
+            </div>
+            <div class="draft-side-list" id="draft-remaining-teams"></div>
+          </aside>
+        </div>
+
+
+        <div class="draft-progress-track" aria-hidden="true">
+          <div class="draft-progress-fill" id="draft-progress-fill"></div>
+        </div>
+
+        <section class="draft-pick-board">
+          <div class="section-header compact-section-header">
+            <div>
+              <h2>Reveal queue by pot</h2>
+              <p>Cards unlock as the presentation advances. The active pot is highlighted during the draw.</p>
+            </div>
+          </div>
+
+          <div class="draft-pot-board" id="draft-pick-grid"></div>
+        </section>
+      </section>
+    {% else %}
+      <section class="card empty-state-card">
+        <h2>No teams assigned yet</h2>
+        <p>Run the random assignment first, then come back here for the animated reveal.</p>
+        {% if request.user == league.commissioner %}
+          <form method="post" action="{% url 'random_assignment' league.slug %}" class="inline-form">
+            {% csrf_token %}
+            <button type="submit">Randomly assign teams</button>
+          </form>
+        {% endif %}
+      </section>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/draft_presentation.js' %}?v=layoutfooter1"></script>
+{% endblock %}
