@@ -1,28 +1,44 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Edit Match Result</title>
-</head>
-<body>
-  <main>
-    <h1>Edit Match Result</h1>
+{% extends "base/base.html" %}
+{% block title %}Edit Match Result{% endblock %}
 
-    <p>
-      {{ match.get_stage_display }}:
-      {{ match.home_team.name }} vs {{ match.away_team.name }}
-    </p>
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Commissioner controls</p>
+      <h1>Edit match result</h1>
+    </div>
 
-    <form method="post">
+    <div class="header-actions">
+      <a class="button secondary" href="{% url 'match_list' league.slug %}">Back to matches</a>
+      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+    </div>
+  </div>
+
+  <section class="card match-edit-card">
+    <div class="section-header">
+      <div>
+        <h2>
+          {% if match.home_team %}{{ match.home_team.flag }} {% endif %}{{ match.home_label }}
+          <span class="muted">vs</span>
+          {% if match.away_team %}{{ match.away_team.flag }} {% endif %}{{ match.away_label }}
+        </h2>
+        <p>
+          {{ match.get_stage_display }}
+          {% if match.match_number %} · Match {{ match.match_number }}{% endif %}
+          {% if match.kickoff_time %} · {{ match.kickoff_time|date:"M j, Y · g:i A" }}{% endif %}
+          {% if match.venue %} · {{ match.venue }}{% endif %}
+        </p>
+      </div>
+    </div>
+
+    <form method="post" class="settings-form match-result-form">
       {% csrf_token %}
       {{ form.as_p }}
 
-      <button type="submit">Save result</button>
+      <div class="actions">
+        <button type="submit">Save result</button>
+        <a class="button secondary" href="{% url 'match_list' league.slug %}">Cancel</a>
+      </div>
     </form>
-
-    <p>
-      <a href="{% url 'match_list' league.slug %}">Back to matches</a>
-    </p>
-  </main>
-</body>
-</html>
+  </section>
+{% endblock %}

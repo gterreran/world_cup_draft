@@ -1,8 +1,11 @@
 from django import forms
 
 from .models import League, LeagueMember
-from scoring.defaults import default_scoring_config, default_tiebreaker_config
-from scoring.defaults import TIEBREAKER_CHOICES
+from scoring.defaults import (
+    TIEBREAKER_CHOICES,
+    default_scoring_config,
+    default_tiebreaker_config,
+)
 
 
 class LeagueCreateForm(forms.ModelForm):
@@ -96,6 +99,14 @@ class LeagueScoringSettingsForm(forms.Form):
     third_place_bonus = forms.DecimalField(label="Third-place bonus", min_value=0, initial=3)
     fourth_place_bonus = forms.DecimalField(label="Fourth-place bonus", min_value=0, initial=2)
 
+    tiebreakers = forms.MultipleChoiceField(
+        choices=TIEBREAKER_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Standings tiebreakers",
+        help_text="Applied in order after total fantasy points.",
+    )
+
     def __init__(self, *args, league=None, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -104,44 +115,37 @@ class LeagueScoringSettingsForm(forms.Form):
         if league is None:
             return
 
-        config = default_scoring_config() | league.scoring_config
+        scoring_config = default_scoring_config() | league.scoring_config
+        tiebreaker_config = league.tiebreaker_config or default_tiebreaker_config()
 
-        for key in self.fields:
-            self.fields[key].initial = config[key]
+        for key in default_scoring_config():
+            self.fields[key].initial = scoring_config[key]
+
+        self.fields["tiebreakers"].initial = tiebreaker_config
 
     def save(self):
         if self.league is None:
             raise ValueError("LeagueScoringSettingsForm requires a league.")
 
+        scoring_keys = default_scoring_config().keys()
+
         self.league.scoring_config = {
-            key: float(value)
-            for key, value in self.cleaned_data.items()
+            key: float(self.cleaned_data[key])
+            for key in scoring_keys
         }
-        self.league.save(update_fields=["scoring_config", "updated_at"])
-
-        return self.league
-
-
-class LeagueTiebreakerSettingsForm(forms.Form):
-    tiebreakers = forms.MultipleChoiceField(
-        choices=TIEBREAKER_CHOICES,
-        widget=forms.CheckboxSelectMultiple,
-        required=False,
-        label="Tiebreakers",
-    )
-
-    def __init__(self, *args, league=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.league = league
-
-        if league is not None:
-            self.fields["tiebreakers"].initial = league.tiebreaker_config
-
-    def save(self):
-        if self.league is None:
-            raise ValueError("LeagueTiebreakerSettingsForm requires a league.")
-
         self.league.tiebreaker_config = self.cleaned_data["tiebreakers"]
-        self.league.save(update_fields=["tiebreaker_config", "updated_at"])
+        self.league.save(
+            update_fields=[
+                "scoring_config",
+                "tiebreaker_config",
+                "updated_at",
+            ]
+        )
 
         return self.league
+
+
+# Backwards-compatible import name. The separate tiebreaker page now redirects
+# to the combined scoring settings page, but keeping this alias avoids breaking
+# any stale imports during deployment.
+LeagueTiebreakerSettingsForm = LeagueScoringSettingsForm

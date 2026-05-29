@@ -9,14 +9,17 @@ from .forms import (
     LeagueSettingsForm,
 )
 from .models import League, LeagueMember
-from scoring.services import recompute_league_standings
+from scoring.services import (
+    compute_team_contribution,
+    recompute_league_standings,
+    team_is_eliminated_from_scoring,
+)
 from scoring.projections import (
     ensure_projection_entries_exist,
     get_projection_entries_by_member_id,
     mark_projection_entries_stale,
 )
 from scoring.defaults import default_scoring_config, default_tiebreaker_config
-from .forms import LeagueTiebreakerSettingsForm
 
 from django.contrib import messages
 
@@ -86,6 +89,11 @@ def league_detail(request, slug: str):
         "member__display_name",
     )
 
+    assignment_cards_by_member = _assignment_cards_by_member(
+        league=league,
+        assignments=assignments,
+    )
+
     ensure_projection_entries_exist(league)
     projections_by_member_id = get_projection_entries_by_member_id(league)
 
@@ -96,11 +104,38 @@ def league_detail(request, slug: str):
             "league": league,
             "members": members,
             "assignments": assignments,
+            "assignment_cards_by_member": assignment_cards_by_member,
             "standings": standings,
             "projections_by_member_id": projections_by_member_id,
         },
     )
 
+
+
+def _assignment_cards_by_member(*, league: League, assignments) -> dict[int, list[dict]]:
+    """Build display-ready assigned-team cards for the league dashboard."""
+    cards_by_member: dict[int, list[dict]] = {}
+
+    for assignment in assignments:
+        team = assignment.national_team
+        contribution = compute_team_contribution(league, team)
+
+        cards_by_member.setdefault(assignment.member_id, []).append(
+            {
+                "assignment": assignment,
+                "team": team,
+                "points": contribution["points"],
+                "wins": contribution["wins"],
+                "draws": contribution["draws"],
+                "losses": contribution["losses"],
+                "goal_difference": contribution["goal_difference"],
+                "goals_scored": contribution["goals_scored"],
+                "teams_advanced": contribution["teams_advanced"],
+                "is_eliminated": team_is_eliminated_from_scoring(league, team),
+            }
+        )
+
+    return cards_by_member
 
 def _unique_league_slug(name: str) -> str:
     base_slug = slugify(name) or "league"
@@ -294,37 +329,17 @@ def league_scoring_settings(request, slug: str):
 
 @login_required
 def league_tiebreaker_settings(request, slug: str):
+    """Redirect old tiebreaker settings URL to combined scoring settings."""
     league = get_object_or_404(League, slug=slug)
 
     if league.commissioner != request.user:
         return redirect("league_detail", slug=league.slug)
 
-    if request.method == "POST":
-        form = LeagueTiebreakerSettingsForm(request.POST, league=league)
-
-        if form.is_valid():
-            form.save()
-            recompute_league_standings(league)
-            mark_projection_entries_stale(
-                league,
-                reason="Scoring settings changed.",
-            )
-            messages.info(
-                request,
-                "Scoring settings changed. Max-points projections need to be recomputed.",
-            )
-            return redirect("league_detail", slug=league.slug)
-    else:
-        form = LeagueTiebreakerSettingsForm(league=league)
-
-    return render(
+    messages.info(
         request,
-        "leagues/league_tiebreaker_settings.html",
-        {
-            "league": league,
-            "form": form,
-        },
+        "Tiebreakers now live on the scoring settings page.",
     )
+    return redirect("league_scoring_settings", slug=league.slug)
 
 
 @login_required

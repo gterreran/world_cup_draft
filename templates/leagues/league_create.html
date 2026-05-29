@@ -1,23 +1,26 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Create League</title>
-</head>
-<body>
-  <main>
-    <h1>Create a League</h1>
+{% extends "base/base.html" %}
 
-    <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
+{% block title %}Create League{% endblock %}
 
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">New league</p>
+      <h1>Create a League</h1>
+    </div>
+
+    <div class="header-actions">
+      <a class="button secondary" href="{% url 'league_list' %}">Back to leagues</a>
+    </div>
+  </div>
+
+  <form method="post" class="card settings-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <div class="actions">
       <button type="submit">Create league</button>
-    </form>
-
-    <p>
-      <a href="{% url 'league_list' %}">Back to leagues</a>
-    </p>
-  </main>
-</body>
-</html>
+      <a class="button secondary" href="{% url 'league_list' %}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}

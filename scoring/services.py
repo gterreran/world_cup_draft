@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.db import transaction
+from django.db.models import Q
 
 from leagues.models import League, LeagueMember
 from tournaments.models import Match, NationalTeam, TeamTournamentStatus
@@ -51,15 +52,56 @@ def recompute_league_standings(league: League) -> list[StandingEntry]:
     return StandingEntry.objects.bulk_create(entries)
 
 
-def _compute_member_stats(league: League, member: LeagueMember) -> dict:
-    teams = list(
-        NationalTeam.objects.filter(
-            fantasy_assignments__league=league,
-            fantasy_assignments__member=member,
-        )
-    )
 
-    stats = {
+def compute_team_contribution(league: League, team: NationalTeam) -> dict:
+    """Return the current fantasy contribution for one national team.
+
+    This mirrors the same scoring logic used by league standings, but isolates
+    the contribution of a single assigned team so it can be displayed on the
+    league dashboard.
+    """
+    stats = _empty_member_stats()
+    _add_team_stats(league, team, stats)
+    return stats
+
+
+def team_is_eliminated_from_scoring(league: League, team: NationalTeam) -> bool:
+    """Return whether a team can no longer add future fantasy points.
+
+    Group-stage mathematical elimination is handled through
+    TeamTournamentStatus. Knockout elimination is detected directly from
+    completed knockout matches, because the status table only stores final
+    tournament ranks for the final and third-place match.
+    """
+    try:
+        status = team.tournament_status
+    except TeamTournamentStatus.DoesNotExist:
+        status = None
+
+    if status is not None:
+        if status.finish_rank is not None:
+            return status.finish_rank != FINISH_RANKS["champion"]
+
+        if status.mathematically_eliminated and not status.advanced_from_group:
+            return True
+
+    completed_knockout_loss_exists = Match.objects.filter(
+        tournament=league.tournament,
+        status=Match.Status.FINAL,
+        winner__isnull=False,
+    ).exclude(
+        stage=Match.Stage.GROUP,
+    ).filter(
+        Q(home_team=team) | Q(away_team=team),
+    ).exclude(
+        winner=team,
+    ).exists()
+
+    return completed_knockout_loss_exists
+
+
+def _empty_member_stats() -> dict:
+    return {
         "points": Decimal("0"),
         "wins": 0,
         "draws": 0,
@@ -69,6 +111,16 @@ def _compute_member_stats(league: League, member: LeagueMember) -> dict:
         "goal_difference": 0,
         "goals_scored": 0,
     }
+
+def _compute_member_stats(league: League, member: LeagueMember) -> dict:
+    teams = list(
+        NationalTeam.objects.filter(
+            fantasy_assignments__league=league,
+            fantasy_assignments__member=member,
+        )
+    )
+
+    stats = _empty_member_stats()
 
     for team in teams:
         _add_team_stats(league, team, stats)

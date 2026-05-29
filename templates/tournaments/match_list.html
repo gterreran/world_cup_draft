@@ -1,73 +1,108 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>{{ league.name }} Matches</title>
-</head>
-<body>
-  <main>
-    <h1>Matches</h1>
-    <p>League: {{ league.name }}</p>
+{% extends "base/base.html" %}
+{% block title %}{{ league.name }} Matches{% endblock %}
 
-    {% if messages %}
-      <ul>
-        {% for message in messages %}
-          <li>{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Commissioner controls</p>
+      <h1>View/edit matches</h1>
+      <p>{{ league.name }}</p>
+    </div>
 
-    <p>
-      <a href="{% url 'league_detail' league.slug %}">Back to league</a>
-    </p>
+    <div class="header-actions">
+      <a class="button secondary" href="{% url 'tournament_schedule' league.slug %}">Full schedule</a>
+      <a class="button secondary" href="{% url 'group_stage' league.slug %}">Group stage</a>
+      <a class="button secondary" href="{% url 'bracket_stage' league.slug %}">Bracket</a>
+      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+    </div>
+  </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Stage</th>
-          <th>Match</th>
-          <th>Score</th>
-          <th>Winner</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for match in matches %}
+  <section class="card">
+    <div class="section-header">
+      <div>
+        <h2>Match results</h2>
+        <p>Edit scores, knockout winners, extra time, and penalty status.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="compact-table match-admin-table">
+        <thead>
           <tr>
-            <td>{{ match.get_stage_display }}</td>
-            <td>{{ match.home_team.name }} vs {{ match.away_team.name }}</td>
-            <td>
-              {% if match.is_complete %}
-                {{ match.home_score }}–{{ match.away_score }}
-                {% if match.went_to_penalties %}
-                  pens
-                {% elif match.went_to_extra_time %}
-                  AET
+            <th>Stage</th>
+            <th>Match</th>
+            <th>Score</th>
+            <th>Winner</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for match in matches %}
+            <tr>
+              <td>
+                <span class="status-pill status-{{ match.stage }}">
+                  {{ match.get_stage_display }}
+                </span>
+              </td>
+              <td>
+                <div class="match-admin-teams">
+                  {% if match.match_number %}
+                    <small>Match {{ match.match_number }}</small>
+                  {% endif %}
+
+                  <strong>
+                    {% if match.home_team %}{{ match.home_team.flag }} {% endif %}{{ match.home_label }}
+                    <span class="muted">vs</span>
+                    {% if match.away_team %}{{ match.away_team.flag }} {% endif %}{{ match.away_label }}
+                  </strong>
+
+                  {% if match.kickoff_time or match.venue %}
+                    <small>
+                      {% if match.kickoff_time %}{{ match.kickoff_time|date:"M j · g:i A" }}{% endif %}
+                      {% if match.kickoff_time and match.venue %} · {% endif %}
+                      {% if match.venue %}{{ match.venue }}{% endif %}
+                    </small>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                {% if match.is_complete %}
+                  <strong>{{ match.home_score }}–{{ match.away_score }}</strong>
+                  {% if match.went_to_penalties %}
+                    <div class="fantasy-owner">Pens</div>
+                  {% elif match.went_to_extra_time %}
+                    <div class="fantasy-owner">AET</div>
+                  {% endif %}
+                {% else %}
+                  <span class="muted">—</span>
                 {% endif %}
-              {% else %}
-                —
-              {% endif %}
-            </td>
-            <td>
-              {% if match.winner %}
-                {{ match.winner.name }}
-              {% else %}
-                —
-              {% endif %}
-            </td>
-            <td>
-              {% if request.user == league.commissioner %}
-                <a href="{% url 'match_result_edit' league.slug match.id %}">Edit</a>
-              {% endif %}
-            </td>
-          </tr>
-        {% empty %}
-          <tr>
-            <td colspan="5">No matches yet.</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </main>
-</body>
-</html>
+              </td>
+              <td>
+                {% if match.winner %}
+                  {{ match.winner.flag }} {{ match.winner.name }}
+                {% else %}
+                  <span class="muted">—</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="status-pill status-{{ match.status }}">
+                  {{ match.get_status_display }}
+                </span>
+              </td>
+              <td class="right-cell">
+                {% if request.user == league.commissioner %}
+                  <a class="button secondary small-button" href="{% url 'match_result_edit' league.slug match.id %}">Edit</a>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6">No matches yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

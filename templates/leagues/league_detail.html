@@ -55,8 +55,7 @@
       <div class="actions">
         <a class="button secondary" href="{% url 'member_create' league.slug %}">Add manager</a>
         <a class="button secondary" href="{% url 'league_settings' league.slug %}">League settings</a>
-        <a class="button secondary" href="{% url 'league_scoring_settings' league.slug %}">Scoring settings</a>
-        <a class="button secondary" href="{% url 'league_tiebreaker_settings' league.slug %}">Tiebreaker settings</a>
+        <a class="button secondary" href="{% url 'league_scoring_settings' league.slug %}">Scoring & tiebreakers</a>
         <a class="button secondary" href="{% url 'match_list' league.slug %}">View/edit matches</a>
       </div>
 
@@ -178,22 +177,38 @@
             {% endif %}
           </div>
 
-          <ul class="team-list">
-            {% for assignment in assignments %}
-              {% if assignment.member_id == member.id %}
-                <li>
-                  <span>
-                    <span class="team-flag">{{ assignment.national_team.flag }}</span>
-                    {{ assignment.national_team.name }}
-                  </span>
-                  <small>
-                    {% if assignment.national_team.group %}Group {{ assignment.national_team.group }}{% endif %}
-                    {% if assignment.national_team.group and assignment.national_team.pot %} · {% endif %}
-                    {% if assignment.national_team.pot %}Pot {{ assignment.national_team.pot }}{% endif %}
-                  </small>
+          <ul class="team-list team-contribution-list">
+            {% with team_cards=assignment_cards_by_member|get_item:member.id %}
+              {% for card in team_cards %}
+                <li class="team-contribution-row {% if card.is_eliminated %}is-eliminated{% endif %}">
+                  <div class="team-contribution-main">
+                    <span class="team-contribution-name">
+                      <span class="team-flag">{{ card.team.flag }}</span>
+                      {{ card.team.name }}
+                    </span>
+
+                    <small>
+                      {% if card.team.group %}Group {{ card.team.group }}{% endif %}
+                      {% if card.team.group and card.team.pot %} · {% endif %}
+                      {% if card.team.pot %}Pot {{ card.team.pot }}{% endif %}
+                    </small>
+
+                    {% if card.is_eliminated %}
+                      <span class="team-eliminated-label">Eliminated</span>
+                    {% endif %}
+                  </div>
+
+                  <div class="team-contribution-points" title="Fantasy points contributed by {{ card.team.name }}">
+                    <strong>{{ card.points }}</strong>
+                    <span>pts</span>
+                  </div>
                 </li>
-              {% endif %}
-            {% endfor %}
+              {% empty %}
+                <li class="team-contribution-row is-empty">
+                  <span>No teams assigned yet.</span>
+                </li>
+              {% endfor %}
+            {% endwith %}
           </ul>
         </article>
       {% empty %}

@@ -1,31 +1,32 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Delete Manager</title>
-</head>
-<body>
-  <main>
-    <h1>Delete Manager</h1>
+{% extends "base/base.html" %}
 
+{% block title %}Delete Manager{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Commissioner controls</p>
+      <h1>Delete Manager</h1>
+    </div>
+
+    <div class="header-actions">
+      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+    </div>
+  </div>
+
+  <section class="card danger-card">
     <p>
       Are you sure you want to remove
       <strong>{{ member.display_name }}</strong>
       from {{ league.name }}?
     </p>
 
-    <p>
-      This will also remove any national teams assigned to this manager.
-    </p>
+    <p>This will also remove any national teams assigned to this manager.</p>
 
-    <form method="post">
+    <form method="post" class="actions">
       {% csrf_token %}
-      <button type="submit">Yes, delete manager</button>
+      <button type="submit" class="danger-button">Yes, delete manager</button>
+      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Cancel</a>
     </form>
-
-    <p>
-      <a href="{% url 'league_detail' league.slug %}">Cancel</a>
-    </p>
-  </main>
-</body>
-</html>
+  </section>
+{% endblock %}

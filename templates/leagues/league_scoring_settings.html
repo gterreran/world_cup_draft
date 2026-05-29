@@ -1,43 +1,64 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>{{ league.name }} Scoring Settings</title>
-</head>
-<body>
-  <main>
-    <h1>Scoring Settings</h1>
+{% extends "base/base.html" %}
 
-    <p>{{ league.name }}</p>
+{% block title %}{{ league.name }} Scoring Settings{% endblock %}
 
-    <form method="post">
-      {% csrf_token %}
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Commissioner controls</p>
+      <h1>Scoring &amp; Tiebreakers</h1>
+      <p>{{ league.name }}</p>
+    </div>
 
+    <div class="header-actions">
+      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+    </div>
+  </div>
+
+  <form method="post" class="card settings-form">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="message message-error">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <section class="settings-section">
       <h2>Group Stage</h2>
-      <p>{{ form.group_win.label_tag }} {{ form.group_win }}</p>
-      <p>{{ form.group_draw.label_tag }} {{ form.group_draw }}</p>
-      <p>{{ form.group_loss.label_tag }} {{ form.group_loss }}</p>
-      <p>{{ form.qualify_knockout.label_tag }} {{ form.qualify_knockout }}</p>
+      <p>{{ form.group_win.label_tag }} {{ form.group_win }} {{ form.group_win.errors }}</p>
+      <p>{{ form.group_draw.label_tag }} {{ form.group_draw }} {{ form.group_draw.errors }}</p>
+      <p>{{ form.group_loss.label_tag }} {{ form.group_loss }} {{ form.group_loss.errors }}</p>
+      <p>{{ form.qualify_knockout.label_tag }} {{ form.qualify_knockout }} {{ form.qualify_knockout.errors }}</p>
+    </section>
 
+    <section class="settings-section">
       <h2>Knockout Stage</h2>
-      <p>{{ form.knockout_win_regulation.label_tag }} {{ form.knockout_win_regulation }}</p>
-      <p>{{ form.knockout_win_extra_time.label_tag }} {{ form.knockout_win_extra_time }}</p>
-      <p>{{ form.knockout_win_penalties.label_tag }} {{ form.knockout_win_penalties }}</p>
-      <p>{{ form.knockout_loss_extra_time.label_tag }} {{ form.knockout_loss_extra_time }}</p>
-      <p>{{ form.knockout_loss_penalties.label_tag }} {{ form.knockout_loss_penalties }}</p>
+      <p>{{ form.knockout_win_regulation.label_tag }} {{ form.knockout_win_regulation }} {{ form.knockout_win_regulation.errors }}</p>
+      <p>{{ form.knockout_win_extra_time.label_tag }} {{ form.knockout_win_extra_time }} {{ form.knockout_win_extra_time.errors }}</p>
+      <p>{{ form.knockout_win_penalties.label_tag }} {{ form.knockout_win_penalties }} {{ form.knockout_win_penalties.errors }}</p>
+      <p>{{ form.knockout_loss_extra_time.label_tag }} {{ form.knockout_loss_extra_time }} {{ form.knockout_loss_extra_time.errors }}</p>
+      <p>{{ form.knockout_loss_penalties.label_tag }} {{ form.knockout_loss_penalties }} {{ form.knockout_loss_penalties.errors }}</p>
+    </section>
 
+    <section class="settings-section">
       <h2>Final Placement Bonuses</h2>
-      <p>{{ form.champion_bonus.label_tag }} {{ form.champion_bonus }}</p>
-      <p>{{ form.runner_up_bonus.label_tag }} {{ form.runner_up_bonus }}</p>
-      <p>{{ form.third_place_bonus.label_tag }} {{ form.third_place_bonus }}</p>
-      <p>{{ form.fourth_place_bonus.label_tag }} {{ form.fourth_place_bonus }}</p>
+      <p>{{ form.champion_bonus.label_tag }} {{ form.champion_bonus }} {{ form.champion_bonus.errors }}</p>
+      <p>{{ form.runner_up_bonus.label_tag }} {{ form.runner_up_bonus }} {{ form.runner_up_bonus.errors }}</p>
+      <p>{{ form.third_place_bonus.label_tag }} {{ form.third_place_bonus }} {{ form.third_place_bonus.errors }}</p>
+      <p>{{ form.fourth_place_bonus.label_tag }} {{ form.fourth_place_bonus }} {{ form.fourth_place_bonus.errors }}</p>
+    </section>
 
+    <section class="settings-section">
+      <h2>Standings Tiebreakers</h2>
+      <p class="section-help">Applied in order after total fantasy points.</p>
+      <div class="checkbox-list">
+        {{ form.tiebreakers }}
+      </div>
+      {{ form.tiebreakers.errors }}
+    </section>
+
+    <div class="actions">
       <button type="submit">Save scoring settings</button>
-    </form>
-
-    <p>
-      <a href="{% url 'league_detail' league.slug %}">Back to league</a>
-    </p>
-  </main>
-</body>
-</html>
+      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Cancel</a>
+    </div>
+  </form>
+{% endblock %}
