@@ -10,6 +10,11 @@ from .forms import (
 )
 from .models import League, LeagueMember
 from scoring.services import recompute_league_standings
+from scoring.projections import (
+    ensure_projection_entries_exist,
+    get_projection_entries_by_member_id,
+    mark_projection_entries_stale,
+)
 from scoring.defaults import default_scoring_config, default_tiebreaker_config
 from .forms import LeagueTiebreakerSettingsForm
 
@@ -81,6 +86,9 @@ def league_detail(request, slug: str):
         "member__display_name",
     )
 
+    ensure_projection_entries_exist(league)
+    projections_by_member_id = get_projection_entries_by_member_id(league)
+
     return render(
         request,
         "leagues/league_detail.html",
@@ -89,6 +97,7 @@ def league_detail(request, slug: str):
             "members": members,
             "assignments": assignments,
             "standings": standings,
+            "projections_by_member_id": projections_by_member_id,
         },
     )
 
@@ -261,6 +270,14 @@ def league_scoring_settings(request, slug: str):
         if form.is_valid():
             form.save()
             recompute_league_standings(league)
+            mark_projection_entries_stale(
+                league,
+                reason="Scoring settings changed.",
+            )
+            messages.info(
+                request,
+                "Scoring settings changed. Max-points projections need to be recomputed.",
+            )
             return redirect("league_detail", slug=league.slug)
     else:
         form = LeagueScoringSettingsForm(league=league)
@@ -288,6 +305,14 @@ def league_tiebreaker_settings(request, slug: str):
         if form.is_valid():
             form.save()
             recompute_league_standings(league)
+            mark_projection_entries_stale(
+                league,
+                reason="Scoring settings changed.",
+            )
+            messages.info(
+                request,
+                "Scoring settings changed. Max-points projections need to be recomputed.",
+            )
             return redirect("league_detail", slug=league.slug)
     else:
         form = LeagueTiebreakerSettingsForm(league=league)

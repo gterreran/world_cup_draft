@@ -75,6 +75,11 @@
           {% csrf_token %}
           <button type="submit" class="secondary-button">Recompute standings</button>
         </form>
+
+        <form method="post" action="{% url 'recompute_projections' league.slug %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="secondary-button">Recalculate max points</button>
+        </form>
       </div>
     </section>
   {% else %}
@@ -87,7 +92,7 @@
     <div class="section-header">
       <div>
         <h2>Standings</h2>
-        <p>Current draft order based on tournament scoring.</p>
+        <p>Current draft order based on tournament scoring. Max points are cached and recalculated on demand.</p>
       </div>
     </div>
 
@@ -98,6 +103,9 @@
             <th>Pick</th>
             <th>Manager</th>
             <th>Points</th>
+            <th>Max</th>
+            <th>Still possible</th>
+            <th>Projection</th>
             <th>Wins</th>
             <th>Draws</th>
             <th>Losses</th>
@@ -115,6 +123,23 @@
               </td>
               <td><strong>{{ entry.member.display_name }}</strong></td>
               <td class="points-cell">{{ entry.points }}</td>
+              {% with projection=projections_by_member_id|get_item:entry.member_id %}
+                {% if projection %}
+                  <td class="points-cell projection-max">{{ projection.max_possible_points }}</td>
+                  <td>{{ projection.remaining_possible_points }}</td>
+                  <td>
+                    {% if projection.is_stale %}
+                      <span class="status-pill projection-stale" title="{{ projection.stale_reason }}">Stale</span>
+                    {% else %}
+                      <span class="status-pill projection-fresh">Fresh</span>
+                    {% endif %}
+                  </td>
+                {% else %}
+                  <td>—</td>
+                  <td>—</td>
+                  <td><span class="status-pill projection-stale">Missing</span></td>
+                {% endif %}
+              {% endwith %}
               <td>{{ entry.wins }}</td>
               <td>{{ entry.draws }}</td>
               <td>{{ entry.losses }}</td>
@@ -123,7 +148,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="8">No standings yet.</td>
+              <td colspan="11">No standings yet.</td>
             </tr>
           {% endfor %}
         </tbody>

@@ -851,3 +851,17 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 }
+
+.projection-max {
+  color: #155eef;
+}
+
+.projection-fresh {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.projection-stale {
+  background: #fef3c7;
+  color: #92400e;
+}

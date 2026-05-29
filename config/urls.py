@@ -29,6 +29,11 @@ urlpatterns = [
         name="recompute_standings",
     ),
     path(
+        "leagues/<slug:slug>/projections/recompute/",
+        scoring_views.recompute_projections,
+        name="recompute_projections",
+    ),
+    path(
         "leagues/<slug:slug>/matches/",
         tournament_views.match_list,
         name="match_list",

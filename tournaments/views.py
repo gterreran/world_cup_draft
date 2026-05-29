@@ -8,6 +8,7 @@ from .forms import MatchResultForm
 from .models import Match
 from .services import build_group_stage_context
 from scoring.services import recompute_league_standings
+from scoring.projections import mark_projection_entries_stale
 from collections import defaultdict
 from assignments.models import TeamAssignment
 from tournaments.progression import recompute_tournament_progression
@@ -55,7 +56,14 @@ def match_result_edit(request, slug: str, match_id: int):
 
             recompute_tournament_progression(league.tournament)
             recompute_league_standings(league)
-            messages.success(request, "Match result updated and standings recomputed.")
+            mark_projection_entries_stale(
+                league,
+                reason="Match result changed.",
+            )
+            messages.success(
+                request,
+                "Match result updated and standings recomputed. Max-points projections need to be recomputed.",
+            )
             return redirect("match_list", slug=league.slug)
     else:
         form = MatchResultForm(instance=match)
