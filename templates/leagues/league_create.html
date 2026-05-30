@@ -19,7 +19,8 @@
     {{ form.as_p }}
 
     <div class="actions">
-      <button type="submit">Create league</button>
+      <button type="submit" name="create_plain" value="1">Create league</button>
+      <button type="submit" name="create_with_sleeper" value="1" class="secondary-button">Create and import Sleeper managers</button>
       <a class="button secondary" href="{% url 'league_list' %}">Cancel</a>
     </div>
   </form>

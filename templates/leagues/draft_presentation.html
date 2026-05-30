@@ -14,7 +14,6 @@
 
       <div class="header-actions">
         <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
-        <a class="button secondary" href="{% url 'draft_order' league.slug %}">Draft order</a>
       </div>
     </div>
 
@@ -95,11 +94,13 @@
       <section class="card empty-state-card">
         <h2>No teams assigned yet</h2>
         <p>Run the random assignment first, then come back here for the animated reveal.</p>
-        {% if request.user == league.commissioner %}
+        {% if request.user == league.commissioner and not league.is_setup_locked %}
           <form method="post" action="{% url 'random_assignment' league.slug %}" class="inline-form">
             {% csrf_token %}
             <button type="submit">Randomly assign teams</button>
           </form>
+        {% elif request.user == league.commissioner and league.is_setup_locked %}
+          <p class="muted">Unlock the league before generating assignments.</p>
         {% endif %}
       </section>
     {% endif %}

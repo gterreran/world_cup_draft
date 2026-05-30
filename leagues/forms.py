@@ -15,13 +15,16 @@ class LeagueCreateForm(forms.ModelForm):
             "name",
             "tournament",
             "teams_per_manager",
-            "use_tiers",
             "assignment_method",
+            "sleeper_league_id",
         ]
 
         widgets = {
             "name": forms.TextInput(attrs={"placeholder": "e.g. The Most Chaotic League"}),
             "teams_per_manager": forms.NumberInput(attrs={"min": 1, "max": 8}),
+            "sleeper_league_id": forms.TextInput(
+                attrs={"placeholder": "Optional Sleeper league ID"}
+            ),
         }
 
 
@@ -43,7 +46,6 @@ class LeagueSettingsForm(forms.ModelForm):
         fields = [
             "name",
             "teams_per_manager",
-            "use_tiers",
             "assignment_method",
             "sleeper_league_id",
         ]
@@ -55,6 +57,30 @@ class LeagueSettingsForm(forms.ModelForm):
                 attrs={"placeholder": "Optional Sleeper league ID"}
             ),
         }
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        league = self.instance
+        if league and league.pk and league.is_setup_locked:
+            for field_name in (
+                "teams_per_manager",
+                "assignment_method",
+                "sleeper_league_id",
+            ):
+                self.fields[field_name].disabled = True
+                self.fields[field_name].help_text = (
+                    "Unlock the league before changing setup/assignment settings."
+                )
+
+    def save(self, commit=True):
+        league = super().save(commit=False)
+
+        if commit:
+            league.save()
+
+        return league
 
 
 class LeagueScoringSettingsForm(forms.Form):
@@ -144,8 +170,3 @@ class LeagueScoringSettingsForm(forms.Form):
 
         return self.league
 
-
-# Backwards-compatible import name. The separate tiebreaker page now redirects
-# to the combined scoring settings page, but keeping this alias avoids breaking
-# any stale imports during deployment.
-LeagueTiebreakerSettingsForm = LeagueScoringSettingsForm

@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Match
+from .models import Match, NationalTeam
 
 
 class MatchResultForm(forms.ModelForm):

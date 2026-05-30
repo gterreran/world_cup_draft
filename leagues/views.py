@@ -48,22 +48,39 @@ def league_list(request):
 def league_create(request):
     if request.method == "POST":
         form = LeagueCreateForm(request.POST)
+        should_import_sleeper = "create_with_sleeper" in request.POST
 
         if form.is_valid():
-            league = form.save(commit=False)
-            league.commissioner = request.user
-            league.slug = _unique_league_slug(league.name)
-            league.scoring_config = default_scoring_config()
-            league.tiebreaker_config = default_tiebreaker_config()
-            league.save()
+            sleeper_league_id = form.cleaned_data.get("sleeper_league_id", "").strip()
 
-            LeagueMember.objects.create(
-                league=league,
-                user=request.user,
-                display_name=request.user.get_username(),
-            )
-
-            return redirect("league_detail", slug=league.slug)
+            if should_import_sleeper and not sleeper_league_id:
+                form.add_error(
+                    "sleeper_league_id",
+                    "Enter a Sleeper league ID before importing managers.",
+                )
+            elif should_import_sleeper:
+                try:
+                    sleeper_users = get_users(sleeper_league_id)
+                    sleeper_rosters = get_rosters(sleeper_league_id)
+                except SleeperAPIError as exc:
+                    form.add_error("sleeper_league_id", str(exc))
+                else:
+                    league = _create_league_from_form(form, request.user)
+                    created_count, updated_count = _sync_sleeper_members(
+                        league=league,
+                        sleeper_users=sleeper_users,
+                        sleeper_rosters=sleeper_rosters,
+                    )
+                    messages.success(
+                        request,
+                        "League created. Imported Sleeper managers: "
+                        f"{created_count} created, {updated_count} updated.",
+                    )
+                    return redirect("league_detail", slug=league.slug)
+            else:
+                league = _create_league_from_form(form, request.user)
+                messages.success(request, "League created.")
+                return redirect("league_detail", slug=league.slug)
     else:
         form = LeagueCreateForm()
 
@@ -156,6 +173,10 @@ def member_create(request, slug: str):
     if league.commissioner != request.user:
         return redirect("league_detail", slug=league.slug)
 
+    if league.is_setup_locked:
+        messages.error(request, "Unlock the league before adding managers.")
+        return redirect("league_detail", slug=league.slug)
+
     if request.method == "POST":
         form = LeagueMemberCreateForm(request.POST)
 
@@ -185,7 +206,7 @@ def draft_presentation(request, slug: str):
     """Show a read-only animated reveal of the current team assignments."""
     league = get_object_or_404(League, slug=slug)
 
-    if league.use_tiers:
+    if league.assignment_method == League.AssignmentMethod.TIERED_RANDOM:
         assignment_ordering = (
             "national_team__pot",
             "member__display_name",
@@ -227,46 +248,15 @@ def draft_presentation(request, slug: str):
     )
 
 @login_required
-def draft_order(request, slug: str):
-    league = get_object_or_404(League, slug=slug)
-
-    standings = league.standings.select_related("member").order_by(
-        "current_rank",
-        "-points",
-        "member__display_name",
-    )
-
-    assignments = league.team_assignments.select_related(
-        "member",
-        "national_team",
-    ).order_by(
-        "member__display_name",
-        "national_team__pot",
-        "national_team__name",
-    )
-
-    teams_by_member = {}
-    for assignment in assignments:
-        teams_by_member.setdefault(assignment.member_id, []).append(
-            assignment.national_team
-        )
-
-    return render(
-        request,
-        "leagues/draft_order.html",
-        {
-            "league": league,
-            "standings": standings,
-            "teams_by_member": teams_by_member,
-        },
-    )
-
-@login_required
 def member_update(request, slug: str, member_id: int):
     league = get_object_or_404(League, slug=slug)
     member = get_object_or_404(LeagueMember, id=member_id, league=league)
 
     if league.commissioner != request.user:
+        return redirect("league_detail", slug=league.slug)
+
+    if league.is_setup_locked:
+        messages.error(request, "Unlock the league before editing managers.")
         return redirect("league_detail", slug=league.slug)
 
     if request.method == "POST":
@@ -297,6 +287,10 @@ def member_delete(request, slug: str, member_id: int):
     member = get_object_or_404(LeagueMember, id=member_id, league=league)
 
     if league.commissioner != request.user:
+        return redirect("league_detail", slug=league.slug)
+
+    if league.is_setup_locked:
+        messages.error(request, "Unlock the league before deleting managers.")
         return redirect("league_detail", slug=league.slug)
 
     if request.method == "POST":
@@ -340,6 +334,41 @@ def league_settings(request, slug: str):
 
 
 @login_required
+def lock_assignments(request, slug: str):
+    league = get_object_or_404(League, slug=slug)
+
+    if league.commissioner != request.user:
+        messages.error(request, "Only the commissioner can lock the league.")
+        return redirect("league_detail", slug=league.slug)
+
+    if request.method != "POST":
+        return redirect("league_detail", slug=league.slug)
+
+    league.lock_assignments()
+    messages.success(request, "League setup locked.")
+    return redirect("league_detail", slug=league.slug)
+
+
+@login_required
+def unlock_assignments(request, slug: str):
+    league = get_object_or_404(League, slug=slug)
+
+    if league.commissioner != request.user:
+        messages.error(request, "Only the commissioner can unlock the league.")
+        return redirect("league_detail", slug=league.slug)
+
+    if request.method != "POST":
+        return redirect("league_detail", slug=league.slug)
+
+    league.unlock_assignments()
+    messages.success(
+        request,
+        "League setup unlocked. Existing assignments were preserved.",
+    )
+    return redirect("league_detail", slug=league.slug)
+
+
+@login_required
 def league_scoring_settings(request, slug: str):
     league = get_object_or_404(League, slug=slug)
 
@@ -375,21 +404,6 @@ def league_scoring_settings(request, slug: str):
 
 
 @login_required
-def league_tiebreaker_settings(request, slug: str):
-    """Redirect old tiebreaker settings URL to combined scoring settings."""
-    league = get_object_or_404(League, slug=slug)
-
-    if league.commissioner != request.user:
-        return redirect("league_detail", slug=league.slug)
-
-    messages.info(
-        request,
-        "Tiebreakers now live on the scoring settings page.",
-    )
-    return redirect("league_scoring_settings", slug=league.slug)
-
-
-@login_required
 def import_sleeper_members(request, slug: str):
     league = get_object_or_404(League, slug=slug)
 
@@ -398,39 +412,76 @@ def import_sleeper_members(request, slug: str):
         return redirect("league_detail", slug=league.slug)
 
     if request.method != "POST":
-        return redirect("league_detail", slug=league.slug)
+        return redirect("league_settings", slug=league.slug)
+
+    if league.is_setup_locked:
+        messages.error(request, "Unlock the league before importing Sleeper managers.")
+        return redirect("league_settings", slug=league.slug)
 
     if not league.sleeper_league_id:
-        messages.error(request, "Add a Sleeper league ID in league settings first.")
+        messages.error(request, "Add a Sleeper league ID before importing managers.")
         return redirect("league_settings", slug=league.slug)
 
     try:
-        sleeper_users = get_users(league.sleeper_league_id)
-        sleeper_rosters = get_rosters(league.sleeper_league_id)
+        created_count, updated_count = _import_sleeper_members_for_league(league)
     except SleeperAPIError as exc:
         messages.error(request, str(exc))
-        return redirect("league_detail", slug=league.slug)
+        return redirect("league_settings", slug=league.slug)
+
+    messages.success(
+        request,
+        f"Imported Sleeper managers: {created_count} created, {updated_count} updated.",
+    )
+    return redirect("league_settings", slug=league.slug)
+
+
+def _create_league_from_form(form: LeagueCreateForm, user) -> League:
+    league = form.save(commit=False)
+    league.commissioner = user
+    league.slug = _unique_league_slug(league.name)
+    league.scoring_config = default_scoring_config()
+    league.tiebreaker_config = default_tiebreaker_config()
+    league.save()
+    return league
+
+
+def _import_sleeper_members_for_league(league: League) -> tuple[int, int]:
+    sleeper_users = get_users(league.sleeper_league_id)
+    sleeper_rosters = get_rosters(league.sleeper_league_id)
+    return _sync_sleeper_members(
+        league=league,
+        sleeper_users=sleeper_users,
+        sleeper_rosters=sleeper_rosters,
+    )
+
+
+def _sync_sleeper_members(
+    *,
+    league: League,
+    sleeper_users: list[dict],
+    sleeper_rosters: list[dict],
+) -> tuple[int, int]:
+    roster_id_by_owner_id = {
+        roster.get("owner_id"): str(roster.get("roster_id"))
+        for roster in sleeper_rosters
+        if roster.get("owner_id") is not None
+    }
 
     created_count = 0
     updated_count = 0
 
     for sleeper_user in sleeper_users:
         sleeper_user_id = sleeper_user.get("user_id")
+
+        if not sleeper_user_id:
+            continue
+
         display_name = (
             sleeper_user.get("display_name")
             or sleeper_user.get("username")
             or sleeper_user.get("metadata", {}).get("team_name")
             or f"Sleeper user {sleeper_user_id}"
         )
-
-        roster_id_by_owner_id = {
-            roster.get("owner_id"): str(roster.get("roster_id"))
-            for roster in sleeper_rosters
-            if roster.get("owner_id") is not None
-        }
-
-        if not sleeper_user_id:
-            continue
 
         _, created = LeagueMember.objects.update_or_create(
             league=league,
@@ -446,9 +497,4 @@ def import_sleeper_members(request, slug: str):
         else:
             updated_count += 1
 
-    messages.success(
-        request,
-        f"Imported Sleeper members: {created_count} created, {updated_count} updated.",
-    )
-
-    return redirect("league_detail", slug=league.slug)
+    return created_count, updated_count

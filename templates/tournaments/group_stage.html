@@ -30,9 +30,11 @@
                 <tr>
                   <th></th>
                   <th>Team</th>
+                  <th>MP</th>
                   <th>Pts</th>
-                  <th>GD</th>
                   <th>GF</th>
+                  <th>GA</th>
+                  <th>GD</th>
                 </tr>
               </thead>
               <tbody>
@@ -57,9 +59,11 @@
                         {% endif %}
                       </div>
                     </td>
+                    <td>{{ row.standing.played }}</td>
                     <td><strong>{{ row.standing.points }}</strong></td>
-                    <td>{{ row.standing.goal_difference }}</td>
                     <td>{{ row.standing.goals_for }}</td>
+                    <td>{{ row.standing.goals_against }}</td>
+                    <td>{{ row.standing.goal_difference }}</td>
                   </tr>
                 {% endfor %}
               </tbody>

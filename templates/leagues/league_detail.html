@@ -16,7 +16,6 @@
       <a class="button secondary" href="{% url 'tournament_schedule' league.slug %}">Full schedule</a>
       <a class="button secondary" href="{% url 'group_stage' league.slug %}">Group stage</a>
       <a class="button secondary" href="{% url 'bracket_stage' league.slug %}">Bracket</a>
-      <a class="button secondary" href="{% url 'draft_order' league.slug %}">View draft order</a>
       <a class="button" href="{% url 'draft_presentation' league.slug %}">Animated draft</a>
     </div>
   </div>
@@ -40,7 +39,6 @@
     <div class="stat-card">
       <span class="stat-label">Assignment</span>
       <strong>{{ league.get_assignment_method_display }}</strong>
-      <small>{% if league.use_tiers %}Using tiers{% else %}No tiers{% endif %}</small>
     </div>
   </section>
 
@@ -53,8 +51,48 @@
         </div>
       </div>
 
+      <div class="league-lock-status {% if league.is_setup_locked %}is-locked{% else %}is-unlocked{% endif %}">
+        <div>
+          <span class="stat-label">League setup</span>
+          <strong>{% if league.is_setup_locked %}🔒 Locked{% else %}🔓 Setup mode{% endif %}</strong>
+          <small>
+            {{ members|length }} manager{{ members|length|pluralize }} ·
+            {{ assignments|length }} assigned team{{ assignments|length|pluralize }}
+            {% if league.assignments_generated_at %}
+              · Generated {{ league.assignments_generated_at|date:"M j, Y g:i A" }}
+            {% endif %}
+          </small>
+        </div>
+
+        {% if league.is_setup_locked %}
+          <form method="post" action="{% url 'unlock_assignments' league.slug %}" class="inline-form">
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="secondary-button"
+              onclick="return confirm('Unlock league setup? Existing assignments will remain visible, but managers and assignments can be changed again.');"
+            >
+              Unlock league
+            </button>
+          </form>
+        {% else %}
+          <form method="post" action="{% url 'lock_assignments' league.slug %}" class="inline-form">
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="secondary-button"
+              onclick="return confirm('Lock league setup? Managers, Sleeper import, and assignment settings will be protected until you unlock it again.');"
+            >
+              Lock league
+            </button>
+          </form>
+        {% endif %}
+      </div>
+
       <div class="actions">
-        <a class="button secondary" href="{% url 'member_create' league.slug %}">Add manager</a>
+        {% if not league.is_setup_locked %}
+          <a class="button secondary" href="{% url 'member_create' league.slug %}">Add manager</a>
+        {% endif %}
         <a class="button secondary" href="{% url 'league_settings' league.slug %}">League settings</a>
         <a class="button secondary" href="{% url 'league_scoring_settings' league.slug %}">Scoring & tiebreakers</a>
         <a class="button secondary" href="{% url 'match_list' league.slug %}">View/edit matches</a>
@@ -62,15 +100,17 @@
       </div>
 
       <div class="actions">
-        <form method="post" action="{% url 'import_sleeper_members' league.slug %}" class="inline-form">
-          {% csrf_token %}
-          <button type="submit">Import Sleeper managers</button>
-        </form>
-
-        <form method="post" action="{% url 'random_assignment' league.slug %}" class="inline-form">
-          {% csrf_token %}
-          <button type="submit">Randomly assign teams</button>
-        </form>
+        {% if not league.is_setup_locked %}
+          <form method="post" action="{% url 'random_assignment' league.slug %}" class="inline-form">
+            {% csrf_token %}
+            <button
+              type="submit"
+              onclick="return confirm('Randomly assign teams? This will replace existing assignments, recompute standings, and lock the league setup.');"
+            >
+              Randomly assign teams
+            </button>
+          </form>
+        {% endif %}
 
         <form method="post" action="{% url 'recompute_standings' league.slug %}" class="inline-form">
           {% csrf_token %}
@@ -171,7 +211,7 @@
           <div class="manager-card-header">
             <h3>{{ member.display_name }}</h3>
 
-            {% if request.user == league.commissioner %}
+            {% if request.user == league.commissioner and not league.is_setup_locked %}
               <div class="manager-actions">
                 <a href="{% url 'member_update' league.slug member.id %}">Edit</a>
                 <a href="{% url 'member_delete' league.slug member.id %}">Delete</a>

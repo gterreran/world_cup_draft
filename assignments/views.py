@@ -6,6 +6,7 @@ from leagues.models import League
 
 from .services import AssignmentError, assign_teams_randomly
 from scoring.services import recompute_league_standings
+from scoring.projections import mark_projection_entries_stale
 
 
 @login_required
@@ -19,12 +20,21 @@ def random_assignment(request, slug: str):
     if request.method != "POST":
         return redirect("league_detail", slug=league.slug)
 
+    if league.is_setup_locked:
+        messages.error(request, "Unlock the league before regenerating assignments.")
+        return redirect("league_detail", slug=league.slug)
+
     try:
         assign_teams_randomly(league)
         recompute_league_standings(league)
+        mark_projection_entries_stale(
+            league,
+            reason="Assignments regenerated.",
+        )
+        league.lock_assignments(generated=True)
     except AssignmentError as exc:
         messages.error(request, str(exc))
     else:
-        messages.success(request, "Teams assigned successfully and standings recomputed.")
+        messages.success(request, "Teams assigned successfully. League setup is now locked.")
 
     return redirect("league_detail", slug=league.slug)

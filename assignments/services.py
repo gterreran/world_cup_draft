@@ -27,7 +27,7 @@ def assign_teams_randomly(league: League, *, clear_existing: bool = True) -> Non
     if clear_existing:
         TeamAssignment.objects.filter(league=league).delete()
 
-    if league.use_tiers:
+    if league.assignment_method == League.AssignmentMethod.TIERED_RANDOM:
         assignments = _build_tiered_random_assignments_without_group_duplicates(
             league,
             members,

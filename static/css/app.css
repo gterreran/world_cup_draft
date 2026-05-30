@@ -1782,3 +1782,43 @@ tbody tr:hover {
     min-height: 0;
   }
 }
+
+/* League setup locking */
+.league-lock-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 18px 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px;
+  background: #f8fafc;
+}
+
+.league-lock-status strong {
+  display: block;
+  margin: 4px 0;
+  font-size: 1.2rem;
+}
+
+.league-lock-status small {
+  color: #6b7280;
+}
+
+.league-lock-status.is-locked {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.league-lock-status.is-unlocked {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+@media (max-width: 700px) {
+  .league-lock-status {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

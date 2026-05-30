@@ -44,11 +44,6 @@ urlpatterns = [
         name="match_result_edit",
     ),
     path(
-        "leagues/<slug:slug>/draft-order/",
-        league_views.draft_order,
-        name="draft_order",
-    ),
-    path(
         "leagues/<slug:slug>/draft-presentation/",
         league_views.draft_presentation,
         name="draft_presentation",
@@ -74,9 +69,14 @@ urlpatterns = [
         name="league_scoring_settings",
     ),
     path(
-        "leagues/<slug:slug>/settings/tiebreakers/",
-        league_views.league_tiebreaker_settings,
-        name="league_tiebreaker_settings",
+        "leagues/<slug:slug>/lock/",
+        league_views.lock_assignments,
+        name="lock_assignments",
+    ),
+    path(
+        "leagues/<slug:slug>/unlock/",
+        league_views.unlock_assignments,
+        name="unlock_assignments",
     ),
     path(
         "leagues/<slug:slug>/import/sleeper-members/",

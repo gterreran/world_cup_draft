@@ -10,8 +10,8 @@ class LeagueMemberInline(admin.TabularInline):
 
 @admin.register(League)
 class LeagueAdmin(admin.ModelAdmin):
-    list_display = ("name", "commissioner", "tournament", "teams_per_manager", "assignment_method", "created_at")
-    list_filter = ("assignment_method", "use_tiers", "tournament")
+    list_display = ("name", "commissioner", "tournament", "teams_per_manager", "assignment_method", "assignments_locked", "created_at")
+    list_filter = ("assignment_method", "assignments_locked", "tournament")
     search_fields = ("name", "commissioner__username")
     prepopulated_fields = {"slug": ("name",)}
     inlines = [LeagueMemberInline]
@@ -19,6 +19,6 @@ class LeagueAdmin(admin.ModelAdmin):
 
 @admin.register(LeagueMember)
 class LeagueMemberAdmin(admin.ModelAdmin):
-    list_display = ("display_name", "league", "user", "sleeper_user_id", "draft_order")
+    list_display = ("display_name", "league", "user", "sleeper_user_id")
     list_filter = ("league",)
     search_fields = ("display_name", "sleeper_user_id")

@@ -24,4 +24,26 @@
       <a class="button secondary" href="{% url 'league_detail' league.slug %}">Cancel</a>
     </div>
   </form>
+
+  <section class="card settings-form">
+    <div class="section-header">
+      <div>
+        <h2>Sleeper managers</h2>
+        {% if league.is_setup_locked %}
+          <p class="section-help">League setup is locked. Unlock the league before importing or refreshing managers.</p>
+        {% else %}
+          <p class="section-help">Save a Sleeper league ID above, then import or refresh managers from that league.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if league.is_setup_locked %}
+      <p class="muted">Sleeper import is unavailable while the league is locked.</p>
+    {% else %}
+      <form method="post" action="{% url 'import_sleeper_members' league.slug %}" class="inline-form">
+        {% csrf_token %}
+        <button type="submit">Import Sleeper managers</button>
+      </form>
+    {% endif %}
+  </section>
 {% endblock %}
