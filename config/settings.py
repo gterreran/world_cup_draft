@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
-from urllib.parse import parse_qsl, unquote, urlparse
+from urllib.parse import parse_qsl, urlparse
 
 from dotenv import load_dotenv
 
@@ -58,8 +58,8 @@ def database_from_url(url: str) -> dict:
     config = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": parsed.path.lstrip("/"),
-        "USER": unquote(parsed.username or ""),
-        "PASSWORD": unquote(parsed.password or ""),
+        "USER": parsed.username or "",
+        "PASSWORD": parsed.password or "",
         "HOST": parsed.hostname or "",
         "PORT": str(parsed.port or ""),
     }
@@ -84,8 +84,15 @@ SECRET_KEY = os.getenv(
 DEBUG = env_bool("DJANGO_DEBUG", True)
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS")
-
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
+
+# Railway exposes the public domain through this environment variable once a
+# domain is generated for the service. Keeping this automatic avoids needing to
+# hard-code the temporary Railway URL in settings.py.
+RAILWAY_PUBLIC_DOMAIN = os.getenv("RAILWAY_PUBLIC_DOMAIN")
+if RAILWAY_PUBLIC_DOMAIN:
+    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
 
 
 # Application definition
@@ -105,6 +112,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -131,6 +139,18 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
+
+# Authentication redirects
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "league_list"
+LOGOUT_REDIRECT_URL = "home"
+
+# Railway and most managed platforms terminate HTTPS before forwarding requests
+# to the app. This lets Django correctly recognize secure proxied requests.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = env_bool("DJANGO_SESSION_COOKIE_SECURE", not DEBUG)
+CSRF_COOKIE_SECURE = env_bool("DJANGO_CSRF_COOKIE_SECURE", not DEBUG)
 
 
 # Database
@@ -192,6 +212,15 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
