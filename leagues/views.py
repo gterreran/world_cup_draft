@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
@@ -208,6 +209,9 @@ def draft_presentation(request, slug: str):
     league = get_object_or_404(League, slug=slug)
     picks = get_draft_picks(league)
     draft_state = serialize_draft_state(league)
+    public_live_url = request.build_absolute_uri(
+        reverse("draft_live", kwargs={"slug": league.slug})
+    )
 
     return render(
         request,
@@ -218,6 +222,7 @@ def draft_presentation(request, slug: str):
             "draft_state": draft_state,
             "can_control": True,
             "is_live_view": False,
+            "public_live_url": public_live_url,
         },
     )
 

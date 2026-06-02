@@ -231,15 +231,6 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
-        "CONFIG": {
-            "hosts": [os.getenv("REDIS_URL")],
-        },
-    },
-}
-
 USE_REDIS_CHANNEL_LAYER = os.getenv("USE_REDIS_CHANNEL_LAYER", "False") == "True"
 
 if USE_REDIS_CHANNEL_LAYER:

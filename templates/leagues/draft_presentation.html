@@ -21,19 +21,46 @@
     {{ draft_state|json_script:"draft-state-data" }}
 
     {% if can_control %}
-    <div class="draft-share-link">
-        Public live page:
-        <a href="{% url 'draft_live' league.slug %}" target="_blank">
-            {% url 'draft_live' league.slug %}
-        </a>
-    </div>
-    {% endif %}
+      <div class="draft-live-toolbar">
+        <div class="draft-share-link">
+          <span class="draft-kicker">Public live page</span>
+          <a id="draft-live-url" href="{{ public_live_url }}" target="_blank">
+            {{ public_live_url }}
+          </a>
+          <button
+            type="button"
+            class="copy-link-button"
+            data-copy-target="draft-live-url"
+            title="Copy link">
 
-    {% if can_control %}
-    <div class="draft-viewer-counter">
-        <span class="draft-kicker">Watching live</span>
-        <strong id="draft-viewer-count">0</strong>
-    </div>
+            <svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true" color="black">
+              <path
+                d="M8 7V4h12v14h-3"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linejoin="round"
+              />
+              <rect
+                x="4"
+                y="7"
+                width="13"
+                height="13"
+                rx="1.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+            </svg>
+
+        </button>
+        </div>
+
+        <div class="draft-viewer-counter">
+          <span class="draft-kicker">Watching live</span>
+          <strong id="draft-viewer-count">0</strong>
+        </div>
+      </div>
     {% endif %}
 
     {% if picks %}

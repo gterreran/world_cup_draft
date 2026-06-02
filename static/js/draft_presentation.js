@@ -775,3 +775,17 @@
     bootDraftPresentation();
   }
 })();
+
+document.querySelectorAll("[data-copy-target]").forEach((button) => {
+  button.addEventListener("click", async () => {
+    const target = document.getElementById(button.dataset.copyTarget);
+    if (!target) return;
+
+    await navigator.clipboard.writeText(target.href || target.textContent.trim());
+    button.classList.add("copied");
+
+    window.setTimeout(() => {
+      button.classList.remove("copied");
+    }, 1200);
+  });
+});
