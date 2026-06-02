@@ -707,7 +707,7 @@
         draftSocket = null;
 
         if (state.phase !== "complete") {
-          reconnectTimer = window.setTimeout(connectDraftSocket, 2000);
+          reconnectTimer = window.setTimeout(connectDraftSocket, 10000);
         }
       };
 
