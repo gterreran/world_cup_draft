@@ -18,9 +18,62 @@
     </div>
 
     {{ picks|json_script:"draft-picks-data" }}
+    {{ draft_state|json_script:"draft-state-data" }}
+
+    {% if can_control %}
+      <div class="draft-live-toolbar">
+        <div class="draft-share-link">
+          <span class="draft-kicker">Public live page</span>
+          <a id="draft-live-url" href="{{ public_live_url }}" target="_blank">
+            {{ public_live_url }}
+          </a>
+          <button
+            type="button"
+            class="copy-link-button"
+            data-copy-target="draft-live-url"
+            title="Copy link">
+
+            <svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true" color="black">
+              <path
+                d="M8 7V4h12v14h-3"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linejoin="round"
+              />
+              <rect
+                x="4"
+                y="7"
+                width="13"
+                height="13"
+                rx="1.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+            </svg>
+
+        </button>
+        </div>
+
+        <div class="draft-viewer-counter">
+          <span class="draft-kicker">Watching live</span>
+          <strong id="draft-viewer-count">0</strong>
+        </div>
+      </div>
+    {% endif %}
 
     {% if picks %}
-      <section class="draft-stage-shell" aria-live="polite">
+      <section
+        class="draft-stage-shell"
+        aria-live="polite"
+        data-league-slug="{{ league.slug }}"
+        data-draft-state-url="{% url 'draft_state' league.slug %}"
+        data-draft-start-url="{% url 'draft_start' league.slug %}"
+        data-draft-advance-url="{% url 'draft_advance' league.slug %}"
+        data-draft-autoplay-url="{% url 'draft_autoplay' league.slug %}"
+        data-can-control="{% if request.user == league.commissioner %}true{% else %}false{% endif %}"
+      >
         <div class="draft-scoreboard">
           <div>
             <span class="draft-kicker">Current pick</span>
@@ -53,16 +106,24 @@
               <p class="draft-pick-label" id="draft-pick-label">Ready to begin</p>
               <div class="draft-flag" id="draft-flag">🏆</div>
               <h2 id="draft-team-name">World Cup Draft</h2>
-              <p class="draft-team-meta" id="draft-team-meta">Press Start draft to reveal the first assigned team.</p>
+              <p class="draft-team-meta" id="draft-team-meta">
+                {% if can_control %}
+                  Press Start draft to reveal the first assigned team.
+                {% else %}
+                  Waiting for the commissioner to start the draft.
+                {% endif %}
+              </p>
               <div class="draft-manager-pill" id="draft-manager-pill">Waiting for commissioner</div>
             </div>
 
+            {% if can_control %}
             <div class="draft-controls">
               <button type="button" id="draft-start-button">Start draft</button>
               <button type="button" class="secondary-button" id="draft-next-button" disabled>Next pick</button>
               <button type="button" class="secondary-button" id="draft-auto-button" disabled>Auto-play</button>
               <a class="button draft-finish-link is-hidden" id="draft-finish-link" href="{% url 'league_detail' league.slug %}">Back to league</a>
             </div>
+            {% endif %}
           </div>
 
           <aside class="draft-side-panel">
@@ -108,5 +169,5 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="{% static 'js/draft_presentation.js' %}?v=layoutfooter1"></script>
+  <script src="{% static 'js/draft_presentation.js' %}?v=websocket1"></script>
 {% endblock %}

@@ -7,6 +7,7 @@ from leagues.models import League
 from .services import AssignmentError, assign_teams_randomly
 from scoring.services import recompute_league_standings
 from scoring.projections import mark_projection_entries_stale
+from drafts.services import reset_draft
 
 
 @login_required
@@ -31,6 +32,7 @@ def random_assignment(request, slug: str):
             league,
             reason="Assignments regenerated.",
         )
+        reset_draft(league)
         league.lock_assignments(generated=True)
     except AssignmentError as exc:
         messages.error(request, str(exc))

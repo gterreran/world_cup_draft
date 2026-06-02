@@ -4,3 +4,7 @@ python-dotenv
 requests
 gunicorn
 whitenoise
+channels
+channels-redis==4.2.1
+daphne
+redis==5.0.8
