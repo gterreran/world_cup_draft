@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-python manage.py migrate --noinput
+python manage.py migrate
 python manage.py collectstatic --noinput
-gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000}
+daphne -b 0.0.0.0 -p $PORT config.asgi:application
