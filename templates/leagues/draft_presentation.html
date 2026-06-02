@@ -33,6 +33,7 @@
       <section
         class="draft-stage-shell"
         aria-live="polite"
+        data-league-slug="{{ league.slug }}"
         data-draft-state-url="{% url 'draft_state' league.slug %}"
         data-draft-start-url="{% url 'draft_start' league.slug %}"
         data-draft-advance-url="{% url 'draft_advance' league.slug %}"
@@ -134,5 +135,5 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="{% static 'js/draft_presentation.js' %}?v=serverstate1"></script>
+  <script src="{% static 'js/draft_presentation.js' %}?v=websocket1"></script>
 {% endblock %}

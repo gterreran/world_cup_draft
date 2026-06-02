@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
 from django.db import transaction
 
 from assignments.models import TeamAssignment
@@ -119,6 +122,7 @@ def start_draft(league: League) -> DraftState:
             "updated_at",
         ]
     )
+    broadcast_draft_state(league)
     return state
 
 
@@ -152,6 +156,7 @@ def advance_draft(league: League) -> DraftState:
             "updated_at",
         ]
     )
+    broadcast_draft_state(league)
     return state
 
 
@@ -171,6 +176,7 @@ def reset_draft(league: League) -> DraftState:
             "updated_at",
         ]
     )
+    broadcast_draft_state(league)
     return state
 
 
@@ -179,6 +185,7 @@ def set_autoplay(league: League, enabled: bool) -> DraftState:
     state = get_or_create_draft_state(league)
     state.autoplay = bool(enabled) and state.status == DraftState.Status.RUNNING
     state.save(update_fields=["autoplay", "updated_at"])
+    broadcast_draft_state(league)
     return state
 
 
@@ -189,3 +196,17 @@ def _require_picks(league: League) -> list[dict]:
         raise DraftStateError("Generate assignments before starting the draft.")
 
     return picks
+
+
+def broadcast_draft_state(league) -> None:
+    channel_layer = get_channel_layer()
+
+    if channel_layer is None:
+        return
+
+    async_to_sync(channel_layer.group_send)(
+        f"draft_{league.slug}",
+        {
+            "type": "draft.state_changed",
+        },
+    )

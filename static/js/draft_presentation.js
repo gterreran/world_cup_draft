@@ -10,6 +10,8 @@
 
     let picks = [];
     let initialDraftState = {};
+    let reconnectTimer = null;
+    let draftSocket = null;
 
     try {
       const parsedPicks = JSON.parse(dataElement.textContent);
@@ -37,6 +39,7 @@
     };
 
     const canControl = shell.dataset.canControl === "true";
+    const leagueSlug = shell.dataset.leagueSlug;
 
     const urls = {
       state: shell.dataset.draftStateUrl,
@@ -541,6 +544,7 @@
       }
 
       syncAutoTimer();
+      closeDraftSocketIfComplete();
     }
 
     async function postDraftAction(url, body = null) {
@@ -641,6 +645,69 @@
       });
     }
 
+    function websocketUrlForLeague(slug) {
+      const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+      return `${protocol}://${window.location.host}/ws/draft/${slug}/`;
+    }
+
+    async function fetchLatestDraftState() {
+      if (!urls.state) {
+        return;
+      }
+
+      try {
+        const response = await window.fetch(urls.state, {
+          headers: {
+            "Accept": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Could not fetch latest draft state.");
+        }
+
+        const payload = await response.json();
+        applyServerState(payload);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    function connectDraftSocket() {
+      if (!leagueSlug || state.phase === "complete") {
+        return;
+      }
+
+      draftSocket = new WebSocket(websocketUrlForLeague(leagueSlug));
+
+      draftSocket.onmessage = (event) => {
+        let payload = {};
+
+        try {
+          payload = JSON.parse(event.data);
+        } catch (error) {
+          console.error("Invalid draft websocket payload.", error);
+          return;
+        }
+
+        if (payload.type === "draft.state_changed" && !state.isBusy) {
+          fetchLatestDraftState();
+        }
+      };
+
+      draftSocket.onclose = () => {
+        draftSocket = null;
+
+        if (state.phase !== "complete") {
+          reconnectTimer = window.setTimeout(connectDraftSocket, 2000);
+        }
+      };
+
+      draftSocket.onerror = (event) => {
+        console.error("Draft websocket error.", event);
+      };
+    }
+
     renderPotStrip();
     renderQueue();
 
@@ -664,7 +731,34 @@
       elements.autoButton.addEventListener("click", toggleAutoPlay);
     }
 
+    function closeDraftSocketIfComplete() {
+      if (state.phase !== "complete") {
+        return;
+      }
+
+      if (reconnectTimer) {
+        window.clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+
+      if (draftSocket && draftSocket.readyState === WebSocket.OPEN) {
+        draftSocket.close();
+      }
+    }
+
     applyServerState(initialDraftState, { animate: false });
+    if (state.phase !== "complete") {
+      connectDraftSocket();
+    }
+
+    window.addEventListener("beforeunload", () => {
+      if (reconnectTimer) {
+        window.clearTimeout(reconnectTimer);
+      }
+      if (draftSocket) {
+        draftSocket.close();
+      }
+    });
   }
 
   if (document.readyState === "loading") {
