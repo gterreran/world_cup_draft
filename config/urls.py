@@ -3,6 +3,7 @@ from django.urls import include, path
 
 from leagues import views as league_views
 from assignments import views as assignment_views
+from drafts import views as draft_views
 from scoring import views as scoring_views
 from tournaments import views as tournament_views
 
@@ -47,6 +48,36 @@ urlpatterns = [
         "leagues/<slug:slug>/draft-presentation/",
         league_views.draft_presentation,
         name="draft_presentation",
+    ),
+    path(
+        "leagues/<slug:slug>/draft/live/",
+        league_views.draft_live,
+        name="draft_live",
+    ),
+    path(
+        "leagues/<slug:slug>/draft/state/",
+        draft_views.draft_state,
+        name="draft_state",
+    ),
+    path(
+        "leagues/<slug:slug>/draft/start/",
+        draft_views.draft_start,
+        name="draft_start",
+    ),
+    path(
+        "leagues/<slug:slug>/draft/advance/",
+        draft_views.draft_advance,
+        name="draft_advance",
+    ),
+    path(
+        "leagues/<slug:slug>/draft/reset/",
+        draft_views.draft_reset,
+        name="draft_reset",
+    ),
+    path(
+        "leagues/<slug:slug>/draft/autoplay/",
+        draft_views.draft_autoplay,
+        name="draft_autoplay",
     ),
     path(
         "leagues/<slug:slug>/members/<int:member_id>/edit/",

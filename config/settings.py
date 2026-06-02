@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     'leagues',
     'tournaments',
     'assignments',
+    'drafts',
     'scoring',
     'django.contrib.admin',
     'django.contrib.auth',
