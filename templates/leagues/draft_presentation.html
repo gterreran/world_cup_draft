@@ -29,6 +29,13 @@
     </div>
     {% endif %}
 
+    {% if can_control %}
+    <div class="draft-viewer-counter">
+        <span class="draft-kicker">Watching live</span>
+        <strong id="draft-viewer-count">0</strong>
+    </div>
+    {% endif %}
+
     {% if picks %}
       <section
         class="draft-stage-shell"

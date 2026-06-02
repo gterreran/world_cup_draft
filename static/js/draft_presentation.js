@@ -69,6 +69,7 @@
       finishLink: document.getElementById("draft-finish-link"),
       progressFill: document.getElementById("draft-progress-fill"),
       grid: document.getElementById("draft-pick-grid"),
+      viewerCount: document.getElementById("draft-viewer-count"),
     };
 
     const requiredElements = [
@@ -692,6 +693,13 @@
 
         if (payload.type === "draft.state_changed" && !state.isBusy) {
           fetchLatestDraftState();
+        }
+
+        if (
+          payload.type === "draft.viewer_count_changed" &&
+          elements.viewerCount
+        ) {
+          elements.viewerCount.textContent = payload.viewer_count;
         }
       };
 
