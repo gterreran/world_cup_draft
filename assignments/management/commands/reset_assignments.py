@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 
 from leagues.models import League
-from scoring.projections import mark_projection_entries_stale
+from assignments.services import reset_assignments
 
 
 class Command(BaseCommand):
@@ -16,7 +16,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-
         league_slug = options["league_slug"]
 
         try:
@@ -24,33 +23,17 @@ class Command(BaseCommand):
         except League.DoesNotExist as exc:
             raise CommandError(f"League not found: {league_slug}") from exc
 
-        deleted_count, _ = league.team_assignments.all().delete()
-
-        if hasattr(league, "draft_state"):
-            league.draft_state.delete()
-
-        league.assignments_generated_at = None
-
-        if options["unlock"]:
-            league.assignments_locked = False
-
-        league.save(
-            update_fields=[
-                "assignments_generated_at",
-                "assignments_locked",
-            ]
-            if options["unlock"]
-            else ["assignments_generated_at"]
-        )
-
-        mark_projection_entries_stale(
+        deleted_count = reset_assignments(
             league,
-            reason="Team assignments were reset.",
+            unlock=options["unlock"],
         )
+
+        lock_message = "unlocked setup" if options["unlock"] else "kept setup locked"
 
         self.stdout.write(
             self.style.SUCCESS(
                 f"Reset assignments for {league.name}. "
-                f"Deleted {deleted_count} assignment object(s)."
+                f"Deleted {deleted_count} assignment object(s), "
+                f"{lock_message}, and reset the draft."
             )
         )

@@ -20,6 +20,26 @@ urlpatterns = [
         name="member_create",
     ),
     path(
+        "leagues/<slug:slug>/assignments/",
+        assignment_views.assignment_management,
+        name="assignment_management",
+    ),
+    path(
+        "leagues/<slug:slug>/assignments/reset/",
+        assignment_views.reset_assignment_view,
+        name="reset_assignments",
+    ),
+    path(
+        "leagues/<slug:slug>/assignments/manual/",
+        assignment_views.manual_assignment_create,
+        name="manual_assignment_create",
+    ),
+    path(
+        "leagues/<slug:slug>/assignments/<int:assignment_id>/delete/",
+        assignment_views.manual_assignment_delete,
+        name="manual_assignment_delete",
+    ),
+    path(
         "leagues/<slug:slug>/assign/random/",
         assignment_views.random_assignment,
         name="random_assignment",

@@ -94,6 +94,7 @@
           <a class="button secondary" href="{% url 'member_create' league.slug %}">Add manager</a>
         {% endif %}
         <a class="button secondary" href="{% url 'league_settings' league.slug %}">League settings</a>
+        <a class="button secondary" href="{% url 'assignment_management' league.slug %}">Manage assignments</a>
         <a class="button secondary" href="{% url 'league_scoring_settings' league.slug %}">Scoring & tiebreakers</a>
         <a class="button secondary" href="{% url 'match_list' league.slug %}">View/edit matches</a>
         <a class="button secondary" href="{% url 'draft_presentation' league.slug %}">Open animated draft</a>

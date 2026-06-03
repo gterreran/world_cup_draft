@@ -1,6 +1,7 @@
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.text import slugify
 
 from .forms import (
@@ -346,7 +347,7 @@ def lock_assignments(request, slug: str):
 
     league.lock_assignments()
     messages.success(request, "League setup locked.")
-    return redirect("league_detail", slug=league.slug)
+    return _redirect_after_assignment_lock_change(request, league)
 
 
 @login_required
@@ -365,6 +366,20 @@ def unlock_assignments(request, slug: str):
         request,
         "League setup unlocked. Existing assignments were preserved.",
     )
+    return _redirect_after_assignment_lock_change(request, league)
+
+
+def _redirect_after_assignment_lock_change(request, league: League):
+    """Return to the source page after lock/unlock, if the submitted URL is safe."""
+    next_url = request.POST.get("next", "")
+
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return redirect(next_url)
+
     return redirect("league_detail", slug=league.slug)
 
 

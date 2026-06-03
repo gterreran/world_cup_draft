@@ -1,13 +1,70 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 
 from leagues.models import League
+from tournaments.models import NationalTeam
 
-from .services import AssignmentError, assign_teams_randomly
+from .services import (
+    AssignmentError,
+    assign_team_to_member,
+    assign_teams_randomly,
+    remove_team_assignment,
+    reset_assignments,
+)
 from scoring.services import recompute_league_standings
 from scoring.projections import mark_projection_entries_stale
 from drafts.services import reset_draft
+
+
+@login_required
+def assignment_management(request, slug: str):
+    """Show commissioner controls for league team assignments."""
+    league = get_object_or_404(League, slug=slug)
+
+    if league.commissioner != request.user:
+        messages.error(request, "Only the commissioner can manage assignments.")
+        return redirect("league_detail", slug=league.slug)
+
+    members = league.members.all().order_by("display_name")
+    assignments = (
+        league.team_assignments.select_related("member", "national_team")
+        .order_by(
+            "member__display_name",
+            "national_team__pot",
+            "national_team__name",
+        )
+    )
+
+    assigned_team_ids = []
+    assignments_by_member: dict[int, list] = {}
+    assignment_counts_by_member: dict[int, int] = {}
+
+    for assignment in assignments:
+        assigned_team_ids.append(assignment.national_team_id)
+        assignments_by_member.setdefault(assignment.member_id, []).append(assignment)
+        assignment_counts_by_member[assignment.member_id] = (
+            assignment_counts_by_member.get(assignment.member_id, 0) + 1
+        )
+
+    unassigned_teams = NationalTeam.objects.filter(
+        tournament=league.tournament,
+    ).exclude(
+        id__in=assigned_team_ids,
+    ).order_by("pot", "group", "name")
+
+    return render(
+        request,
+        "leagues/assignment_management.html",
+        {
+            "league": league,
+            "members": members,
+            "assignments": assignments,
+            "assignments_by_member": assignments_by_member,
+            "assignment_counts_by_member": assignment_counts_by_member,
+            "unassigned_teams": unassigned_teams,
+        },
+    )
 
 
 @login_required
@@ -40,3 +97,81 @@ def random_assignment(request, slug: str):
         messages.success(request, "Teams assigned successfully. League setup is now locked.")
 
     return redirect("league_detail", slug=league.slug)
+
+
+@login_required
+def reset_assignment_view(request, slug: str):
+    """Clear all assignments from the commissioner assignment screen."""
+    league = get_object_or_404(League, slug=slug)
+
+    if league.commissioner != request.user:
+        messages.error(request, "Only the commissioner can reset assignments.")
+        return redirect("league_detail", slug=league.slug)
+
+    if request.method != "POST":
+        return redirect("assignment_management", slug=league.slug)
+
+    deleted_count = reset_assignments(league, unlock=True)
+
+    messages.success(
+        request,
+        f"Reset assignments. Deleted {deleted_count} assigned team"
+        f"{'s' if deleted_count != 1 else ''}, unlocked setup, and reset the draft.",
+    )
+    return redirect("assignment_management", slug=league.slug)
+
+
+@login_required
+def manual_assignment_create(request, slug: str):
+    """Assign one unassigned national team to one manager."""
+    league = get_object_or_404(League, slug=slug)
+
+    if league.commissioner != request.user:
+        messages.error(request, "Only the commissioner can manually edit assignments.")
+        return redirect("league_detail", slug=league.slug)
+
+    if request.method != "POST":
+        return redirect("assignment_management", slug=league.slug)
+
+    try:
+        assignment = assign_team_to_member(
+            league,
+            member_id=int(request.POST.get("member_id", "")),
+            national_team_id=int(request.POST.get("national_team_id", "")),
+        )
+    except (TypeError, ValueError):
+        messages.error(request, "Select both a manager and a team.")
+    except AssignmentError as exc:
+        messages.error(request, str(exc))
+    else:
+        messages.success(
+            request,
+            f"Assigned {assignment.national_team.name} to {assignment.member.display_name}.",
+        )
+
+    return redirect("assignment_management", slug=league.slug)
+
+
+@login_required
+def manual_assignment_delete(request, slug: str, assignment_id: int):
+    """Remove one team assignment from the commissioner assignment screen."""
+    league = get_object_or_404(League, slug=slug)
+
+    if league.commissioner != request.user:
+        messages.error(request, "Only the commissioner can manually edit assignments.")
+        return redirect("league_detail", slug=league.slug)
+
+    if request.method != "POST":
+        return redirect("assignment_management", slug=league.slug)
+
+    try:
+        assignment = remove_team_assignment(league, assignment_id=assignment_id)
+    except AssignmentError as exc:
+        messages.error(request, str(exc))
+    else:
+        messages.success(
+            request,
+            f"Removed {assignment.national_team.name} from {assignment.member.display_name}.",
+        )
+
+    return redirect("assignment_management", slug=league.slug)

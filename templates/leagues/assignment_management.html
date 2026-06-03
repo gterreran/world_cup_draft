@@ -1,0 +1,234 @@
+{% extends "base/base.html" %}
+
+{% load league_extras %}
+
+{% block title %}{{ league.name }} Assignments{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Commissioner controls</p>
+      <h1>Assignment Management</h1>
+      <p>{{ league.name }}</p>
+    </div>
+
+    <div class="header-actions">
+      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+      <a class="button secondary" href="{% url 'league_settings' league.slug %}">League settings</a>
+    </div>
+  </div>
+
+  <section class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-label">League setup</span>
+      <strong>{% if league.is_setup_locked %}🔒 Locked{% else %}🔓 Setup mode{% endif %}</strong>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-label">Managers</span>
+      <strong>{{ members|length }}</strong>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-label">Assigned teams</span>
+      <strong>{{ assignments|length }}</strong>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-label">Generated</span>
+      <strong>
+        {% if league.assignments_generated_at %}
+          {{ league.assignments_generated_at|date:"M j, g:i A" }}
+        {% else %}
+          Never
+        {% endif %}
+      </strong>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-header">
+      <div>
+        <h2>Assignment controls</h2>
+        <p>Reset or regenerate team assignments. Resetting also unlocks setup, marks projections stale, and resets the animated draft.</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      {% if league.is_setup_locked %}
+        <form method="post" action="{% url 'unlock_assignments' league.slug %}" class="inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'assignment_management' league.slug %}">
+          <button
+            type="submit"
+            class="secondary-button"
+            onclick="return confirm('Unlock league setup? Existing assignments will remain visible, but managers and assignments can be changed again.');"
+          >
+            Unlock league
+          </button>
+        </form>
+      {% else %}
+        <form method="post" action="{% url 'lock_assignments' league.slug %}" class="inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'assignment_management' league.slug %}">
+          <button
+            type="submit"
+            class="secondary-button"
+            onclick="return confirm('Lock league setup? Managers, Sleeper import, and assignment settings will be protected until you unlock it again.');"
+          >
+            Lock league
+          </button>
+        </form>
+      {% endif %}
+
+      {% if not league.is_setup_locked %}
+        <form method="post" action="{% url 'random_assignment' league.slug %}" class="inline-form">
+          {% csrf_token %}
+          <button
+            type="submit"
+            onclick="return confirm('Randomly assign teams? This will replace existing assignments, recompute standings, reset the draft, and lock the league setup.');"
+          >
+            Randomly assign teams
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </section>
+
+  {% if not league.is_setup_locked %}
+    <section class="card">
+      <div class="section-header">
+        <div>
+          <h2>Manual assignment</h2>
+          <p>Assign one currently unassigned team to a manager. The app keeps the teams-per-manager and no-same-group rules.</p>
+        </div>
+      </div>
+
+      {% if members and unassigned_teams %}
+        <form method="post" action="{% url 'manual_assignment_create' league.slug %}" class="manual-assignment-form">
+          {% csrf_token %}
+
+          <label>
+            <span>Manager</span>
+            <select name="member_id" required>
+              <option value="">Select manager</option>
+              {% for member in members %}
+                {% with assignment_count=assignment_counts_by_member|get_item:member.id %}
+                  <option value="{{ member.id }}">
+                    {{ member.display_name }}{% if assignment_count %} — {{ assignment_count }}/{{ league.teams_per_manager }}{% else %} — 0/{{ league.teams_per_manager }}{% endif %}
+                  </option>
+                {% endwith %}
+              {% endfor %}
+            </select>
+          </label>
+
+          <label>
+            <span>Team</span>
+            <select name="national_team_id" required>
+              <option value="">Select unassigned team</option>
+              {% for team in unassigned_teams %}
+                <option value="{{ team.id }}">
+                  {{ team.flag }} {{ team.name }}{% if team.group %} — Group {{ team.group }}{% endif %}{% if team.pot %} — Pot {{ team.pot }}{% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </label>
+
+          <button type="submit">Assign team</button>
+        </form>
+      {% elif not members %}
+        <p class="muted">Add managers before manually assigning teams.</p>
+      {% else %}
+        <p class="muted">All teams in this tournament are already assigned.</p>
+      {% endif %}
+    </section>
+  {% else %}
+    <section class="card">
+      <h2>Manual assignment</h2>
+      <p class="muted">Unlock the league to manually add or remove assigned teams.</p>
+    </section>
+  {% endif %}
+
+  <section class="card danger-card">
+    <div class="section-header">
+      <div>
+        <h2>Reset assignments</h2>
+        <p>This removes every assigned team, unlocks setup, resets the animated draft, recomputes standings, and marks projections stale.</p>
+      </div>
+    </div>
+
+    {% if assignments %}
+      <form method="post" action="{% url 'reset_assignments' league.slug %}">
+        {% csrf_token %}
+        <button
+          type="submit"
+          class="danger-button"
+          onclick="return confirm('Reset all assignments for {{ league.name|escapejs }}? This cannot be undone.');"
+        >
+          Reset all assignments
+        </button>
+      </form>
+    {% else %}
+      <p class="muted">There are no assignments to reset.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <div class="section-header">
+      <div>
+        <h2>Current assignments</h2>
+        <p>Review assigned teams by manager before making changes.</p>
+      </div>
+    </div>
+
+    <div class="manager-grid">
+      {% for member in members %}
+        <article class="manager-card">
+          <div class="manager-card-header">
+            <h3>{{ member.display_name }}</h3>
+            {% with assignment_count=assignment_counts_by_member|get_item:member.id %}
+              <span class="assignment-count">{% if assignment_count %}{{ assignment_count }}{% else %}0{% endif %}/{{ league.teams_per_manager }}</span>
+            {% endwith %}
+          </div>
+
+          <ul class="team-list">
+            {% with member_assignments=assignments_by_member|get_item:member.id %}
+              {% for assignment in member_assignments %}
+                <li>
+                  <span class="team-list-main">
+                    <span class="team-flag">{{ assignment.national_team.flag }}</span>
+                    <span>
+                      {{ assignment.national_team.name }}
+                      <small>
+                        {% if assignment.national_team.group %}Group {{ assignment.national_team.group }}{% endif %}
+                        {% if assignment.national_team.group and assignment.national_team.pot %} · {% endif %}
+                        {% if assignment.national_team.pot %}Pot {{ assignment.national_team.pot }}{% endif %}
+                      </small>
+                    </span>
+                  </span>
+
+                  {% if not league.is_setup_locked %}
+                    <form method="post" action="{% url 'manual_assignment_delete' league.slug assignment.id %}" class="inline-form">
+                      {% csrf_token %}
+                      <button
+                        type="submit"
+                        class="link-button danger-link"
+                        onclick="return confirm('Remove {{ assignment.national_team.name|escapejs }} from {{ member.display_name|escapejs }}? This will reset the animated draft and mark projections stale.');"
+                      >
+                        Remove
+                      </button>
+                    </form>
+                  {% endif %}
+                </li>
+              {% empty %}
+                <li>No teams assigned yet.</li>
+              {% endfor %}
+            {% endwith %}
+          </ul>
+        </article>
+      {% empty %}
+        <p>No managers yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

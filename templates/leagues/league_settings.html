@@ -12,6 +12,7 @@
 
     <div class="header-actions">
       <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+      <a class="button secondary" href="{% url 'assignment_management' league.slug %}">Manage assignments</a>
     </div>
   </div>
 
@@ -24,6 +25,17 @@
       <a class="button secondary" href="{% url 'league_detail' league.slug %}">Cancel</a>
     </div>
   </form>
+
+  <section class="card settings-form">
+    <div class="section-header">
+      <div>
+        <h2>Assignments</h2>
+        <p class="section-help">Review, reset, lock, unlock, or regenerate assigned teams from the assignment management page.</p>
+      </div>
+    </div>
+
+    <a class="button secondary" href="{% url 'assignment_management' league.slug %}">Manage assignments</a>
+  </section>
 
   <section class="card settings-form">
     <div class="section-header">
