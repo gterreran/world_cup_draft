@@ -10,9 +10,9 @@
     </div>
 
     <div class="header-actions">
-      <a class="button secondary" href="{% url 'tournament_schedule' league.slug %}">Full schedule</a>
-      <a class="button secondary" href="{% url 'group_stage' league.slug %}">Group stage</a>
-      <a class="button secondary" href="{% url 'bracket_stage' league.slug %}">Bracket</a>
+      <a class="button secondary" href="{% url 'tournament_schedule' league.tournament.slug %}">Full schedule</a>
+      <a class="button secondary" href="{% url 'group_stage' league.tournament.slug %}">Group stage</a>
+      <a class="button secondary" href="{% url 'bracket_stage' league.tournament.slug %}">Bracket</a>
       <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
     </div>
   </div>
@@ -91,7 +91,7 @@
                 </span>
               </td>
               <td class="right-cell">
-                {% if request.user == league.commissioner %}
+                {% if can_edit_match_results %}
                   <a class="button secondary small-button" href="{% url 'match_result_edit' league.slug match.id %}">Edit</a>
                 {% endif %}
               </td>

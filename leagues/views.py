@@ -1,5 +1,6 @@
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.text import slugify
@@ -11,6 +12,7 @@ from .forms import (
     LeagueSettingsForm,
 )
 from .models import League, LeagueMember
+from .permissions import can_manage_league, is_participant, is_commissioner, is_platform_owner
 from scoring.services import (
     compute_team_contribution,
     recompute_league_standings,
@@ -35,15 +37,44 @@ def home(request):
 
 @login_required
 def league_list(request):
-    leagues = League.objects.filter(members__user=request.user).distinct()
-    commissioned = League.objects.filter(commissioner=request.user)
+    if request.user.is_staff or request.user.is_superuser:
+        leagues = League.objects.select_related("commissioner", "tournament")
+    else:
+        leagues = (
+            League.objects.filter(members__user=request.user)
+            | League.objects.filter(commissioner=request.user)
+        ).select_related("commissioner", "tournament").distinct()
+
+    league_rows = []
+    for league in leagues:
+        is_owner = is_platform_owner(request.user)
+        is_commissioner_for_league = is_commissioner(request.user, league)
+        is_participant_for_league = is_participant(request.user, league)
+
+        if is_owner:
+            role_label = "Platform owner"
+        elif is_commissioner_for_league and is_participant_for_league:
+            role_label = "Commissioner / participant"
+        elif is_commissioner_for_league:
+            role_label = "Commissioner"
+        else:
+            role_label = "Participant"
+
+        league_rows.append(
+            {
+                "league": league,
+                "role_label": role_label,
+                "is_commissioner": is_commissioner_for_league,
+                "is_participant": is_participant_for_league,
+                "is_platform_owner": is_owner,
+            }
+        )
 
     return render(
         request,
         "leagues/league_list.html",
         {
-            "leagues": leagues,
-            "commissioned": commissioned,
+            "league_rows": league_rows,
         },
     )
 
@@ -91,7 +122,6 @@ def league_create(request):
     return render(request, "leagues/league_create.html", {"form": form})
 
 
-@login_required
 def league_detail(request, slug: str):
     league = get_object_or_404(League, slug=slug)
 
@@ -113,7 +143,7 @@ def league_detail(request, slug: str):
     assignment_cards_by_member = _assignment_cards_by_member(
         league=league,
         assignments=assignments,
-        show_hidden=request.user == league.commissioner,
+        show_hidden=can_manage_league(request.user, league),
     )
 
     ensure_projection_entries_exist(league)
@@ -130,6 +160,8 @@ def league_detail(request, slug: str):
             "standings": standings,
             "projections_by_member_id": projections_by_member_id,
             "draft_is_running": draft_is_running(league),
+            "can_manage_league": can_manage_league(request.user, league),
+            "is_participant": is_participant(request.user, league),
         },
     )
 
@@ -193,8 +225,8 @@ def _unique_league_slug(name: str) -> str:
 def member_create(request, slug: str):
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
-        return redirect("league_detail", slug=league.slug)
+    if not can_manage_league(request.user, league):
+        raise PermissionDenied("Only the commissioner can manage this league.")
 
     if league.is_setup_locked:
         messages.error(request, "Unlock the league before adding managers.")
@@ -224,7 +256,6 @@ def member_create(request, slug: str):
     )
 
 
-@login_required
 def draft_presentation(request, slug: str):
     """Show the live draft reveal for the current team assignments."""
     league = get_object_or_404(League, slug=slug)
@@ -241,7 +272,7 @@ def draft_presentation(request, slug: str):
             "league": league,
             "picks": picks,
             "draft_state": draft_state,
-            "can_control": request.user == league.commissioner,
+            "can_control": can_manage_league(request.user, league),
             "is_live_view": False,
             "public_live_url": public_live_url,
         },
@@ -273,8 +304,8 @@ def member_update(request, slug: str, member_id: int):
     league = get_object_or_404(League, slug=slug)
     member = get_object_or_404(LeagueMember, id=member_id, league=league)
 
-    if league.commissioner != request.user:
-        return redirect("league_detail", slug=league.slug)
+    if not can_manage_league(request.user, league):
+        raise PermissionDenied("Only the commissioner can manage this league.")
 
     if league.is_setup_locked:
         messages.error(request, "Unlock the league before editing managers.")
@@ -307,8 +338,8 @@ def member_delete(request, slug: str, member_id: int):
     league = get_object_or_404(League, slug=slug)
     member = get_object_or_404(LeagueMember, id=member_id, league=league)
 
-    if league.commissioner != request.user:
-        return redirect("league_detail", slug=league.slug)
+    if not can_manage_league(request.user, league):
+        raise PermissionDenied("Only the commissioner can manage this league.")
 
     if league.is_setup_locked:
         messages.error(request, "Unlock the league before deleting managers.")
@@ -332,8 +363,8 @@ def member_delete(request, slug: str, member_id: int):
 def league_settings(request, slug: str):
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
-        return redirect("league_detail", slug=league.slug)
+    if not can_manage_league(request.user, league):
+        raise PermissionDenied("Only the commissioner can manage this league.")
 
     if request.method == "POST":
         form = LeagueSettingsForm(request.POST, instance=league)
@@ -358,7 +389,7 @@ def league_settings(request, slug: str):
 def lock_assignments(request, slug: str):
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can lock the league.")
         return redirect("league_detail", slug=league.slug)
 
@@ -374,7 +405,7 @@ def lock_assignments(request, slug: str):
 def unlock_assignments(request, slug: str):
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can unlock the league.")
         return redirect("league_detail", slug=league.slug)
 
@@ -407,8 +438,8 @@ def _redirect_after_assignment_lock_change(request, league: League):
 def league_scoring_settings(request, slug: str):
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
-        return redirect("league_detail", slug=league.slug)
+    if not can_manage_league(request.user, league):
+        raise PermissionDenied("Only the commissioner can manage this league.")
 
     if request.method == "POST":
         form = LeagueScoringSettingsForm(request.POST, league=league)
@@ -442,7 +473,7 @@ def league_scoring_settings(request, slug: str):
 def import_sleeper_members(request, slug: str):
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can import Sleeper members.")
         return redirect("league_detail", slug=league.slug)
 

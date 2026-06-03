@@ -72,7 +72,7 @@
         data-draft-start-url="{% url 'draft_start' league.slug %}"
         data-draft-advance-url="{% url 'draft_advance' league.slug %}"
         data-draft-autoplay-url="{% url 'draft_autoplay' league.slug %}"
-        data-can-control="{% if request.user == league.commissioner %}true{% else %}false{% endif %}"
+        data-can-control="{% if can_control %}true{% else %}false{% endif %}"
       >
         <div class="draft-scoreboard">
           <div>

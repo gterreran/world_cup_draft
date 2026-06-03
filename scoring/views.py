@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 
 from leagues.models import League
+from leagues.permissions import can_manage_league
 
 from .services import recompute_league_standings
 from .projections import mark_projection_entries_stale, recompute_projection_entries
@@ -12,7 +13,7 @@ from .projections import mark_projection_entries_stale, recompute_projection_ent
 def recompute_standings(request, slug: str):
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can recompute standings.")
         return redirect("league_detail", slug=league.slug)
 
@@ -33,7 +34,7 @@ def recompute_standings(request, slug: str):
 def recompute_projections(request, slug: str):
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can recompute projections.")
         return redirect("league_detail", slug=league.slug)
 

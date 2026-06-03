@@ -1,18 +1,16 @@
 {% extends "base/base.html" %}
-{% load league_extras %}
-{% block title %}{{ league.name }} Schedule{% endblock %}
+{% block title %}{{ tournament }} Schedule{% endblock %}
 
 {% block content %}
   <div class="page-header">
     <div>
       <p class="eyebrow">Tournament schedule</p>
-      <h1>{{ league.tournament }}</h1>
+      <h1>{{ tournament }}</h1>
     </div>
 
     <div class="header-actions">
-      <a class="button secondary" href="{% url 'group_stage' league.slug %}">Group stage</a>
-      <a class="button secondary" href="{% url 'bracket_stage' league.slug %}">Bracket</a>
-      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+      <a class="button secondary" href="{% url 'group_stage' tournament.slug %}">Group stage</a>
+      <a class="button secondary" href="{% url 'bracket_stage' tournament.slug %}">Bracket</a>
     </div>
   </div>
 
@@ -53,12 +51,6 @@
                 {% endif %}
                 <div>
                   <strong>{{ match.home_label }}</strong>
-
-                  {% if match.home_team_id in assignment_map %}
-                    <div class="fantasy-owner">
-                      {{ assignment_map|get_item:match.home_team_id }}
-                    </div>
-                  {% endif %}
                 </div>
               </div>
 
@@ -73,12 +65,6 @@
               <div class="match-team right">
                 <div>
                   <strong>{{ match.away_label }}</strong>
-
-                  {% if match.away_team_id in assignment_map %}
-                    <div class="fantasy-owner">
-                      {{ assignment_map|get_item:match.away_team_id }}
-                    </div>
-                  {% endif %}
                 </div>
                 {% if match.away_team %}
                   <span class="team-flag">{{ match.away_team.flag }}</span>

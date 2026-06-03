@@ -1,6 +1,6 @@
 {% extends "base/base.html" %}
-{% load league_extras static %}
-{% block title %}{{ league.name }} Bracket{% endblock %}
+{% load static %}
+{% block title %}{{ tournament }} Bracket{% endblock %}
 
 {% block content %}
   <div class="page-header">
@@ -10,9 +10,8 @@
     </div>
 
     <div class="header-actions">
-      <a class="button secondary" href="{% url 'tournament_schedule' league.slug %}">Full schedule</a>
-      <a class="button secondary" href="{% url 'group_stage' league.slug %}">Group stage</a>
-      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+      <a class="button secondary" href="{% url 'tournament_schedule' tournament.slug %}">Full schedule</a>
+      <a class="button secondary" href="{% url 'group_stage' tournament.slug %}">Group stage</a>
     </div>
   </div>
 
@@ -66,12 +65,6 @@
                           {% if match.home_team %}{{ match.home_team.flag }}{% endif %}
                           {{ match.home_label }}
                         </span>
-
-                        {% if match.home_team_id in assignment_map %}
-                          <div class="fantasy-owner">
-                            {{ assignment_map|get_item:match.home_team_id }}
-                          </div>
-                        {% endif %}
                       </div>
                       {% if match.is_complete %}
                         <strong class="bracket-score">{{ match.home_score }}</strong>
@@ -94,12 +87,6 @@
                           {% if match.away_team %}{{ match.away_team.flag }}{% endif %}
                           {{ match.away_label }}
                         </span>
-
-                        {% if match.away_team_id in assignment_map %}
-                          <div class="fantasy-owner">
-                            {{ assignment_map|get_item:match.away_team_id }}
-                          </div>
-                        {% endif %}
                       </div>
                       {% if match.is_complete %}
                         <strong class="bracket-score">{{ match.away_score }}</strong>
@@ -143,12 +130,6 @@
                                 {% if match.home_team %}{{ match.home_team.flag }}{% endif %}
                                 {{ match.home_label }}
                               </span>
-
-                              {% if match.home_team_id in assignment_map %}
-                                <div class="fantasy-owner">
-                                  {{ assignment_map|get_item:match.home_team_id }}
-                                </div>
-                              {% endif %}
                             </div>
                             {% if match.is_complete %}
                               <strong class="bracket-score">{{ match.home_score }}</strong>
@@ -171,12 +152,6 @@
                                 {% if match.away_team %}{{ match.away_team.flag }}{% endif %}
                                 {{ match.away_label }}
                               </span>
-
-                              {% if match.away_team_id in assignment_map %}
-                                <div class="fantasy-owner">
-                                  {{ assignment_map|get_item:match.away_team_id }}
-                                </div>
-                              {% endif %}
                             </div>
                             {% if match.is_complete %}
                               <strong class="bracket-score">{{ match.away_score }}</strong>

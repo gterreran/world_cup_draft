@@ -1,6 +1,5 @@
 {% extends "base/base.html" %}
-{% load league_extras %}
-{% block title %}{{ league.name }} Group Stage{% endblock %}
+{% block title %}{{ tournament }} Group Stage{% endblock %}
 
 {% block content %}
   <div class="page-header">
@@ -10,9 +9,8 @@
     </div>
 
     <div class="header-actions">
-      <a class="button secondary" href="{% url 'tournament_schedule' league.slug %}">Full schedule</a>
-      <a class="button secondary" href="{% url 'bracket_stage' league.slug %}">Bracket</a>
-      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+      <a class="button secondary" href="{% url 'tournament_schedule' tournament.slug %}">Full schedule</a>
+      <a class="button secondary" href="{% url 'bracket_stage' tournament.slug %}">Bracket</a>
     </div>
   </div>
 
@@ -51,12 +49,6 @@
                       <div>
                         <span class="team-flag">{{ row.standing.team.flag }}</span>
                         <strong>{{ row.standing.team.name }}</strong>
-
-                        {% if row.standing.team.id in assignment_map %}
-                          <div class="fantasy-owner">
-                            {{ assignment_map|get_item:row.standing.team.id }}
-                          </div>
-                        {% endif %}
                       </div>
                     </td>
                     <td>{{ row.standing.played }}</td>
@@ -88,12 +80,6 @@
                 <div class="mini-match-teams">
                   <div>
                     <span>{{ match.home_team.flag }} {{ match.home_label }}</span>
-
-                    {% if match.home_team_id in assignment_map %}
-                      <div class="fantasy-owner">
-                        {{ assignment_map|get_item:match.home_team_id }}
-                      </div>
-                    {% endif %}
                   </div>
                   <strong>
                     {% if match.is_complete %}
@@ -104,12 +90,6 @@
                   </strong>
                   <div class="right">
                     <span>{{ match.away_team.flag }} {{ match.away_label }}</span>
-
-                    {% if match.away_team_id in assignment_map %}
-                      <div class="fantasy-owner">
-                        {{ assignment_map|get_item:match.away_team_id }}
-                      </div>
-                    {% endif %}
                   </div>
                 </div>
               </article>

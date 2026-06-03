@@ -1,10 +1,10 @@
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
 
 from leagues.models import League
+from leagues.permissions import require_draft_controller
 
 from .services import (
     DraftStateError,
@@ -25,7 +25,7 @@ def draft_state(request, slug: str):
 @require_POST
 def draft_start(request, slug: str):
     league = get_object_or_404(League, slug=slug)
-    _require_commissioner(request, league)
+    require_draft_controller(request.user, league)
 
     try:
         start_draft(league)
@@ -39,7 +39,7 @@ def draft_start(request, slug: str):
 @require_POST
 def draft_advance(request, slug: str):
     league = get_object_or_404(League, slug=slug)
-    _require_commissioner(request, league)
+    require_draft_controller(request.user, league)
 
     try:
         advance_draft(league)
@@ -53,7 +53,7 @@ def draft_advance(request, slug: str):
 @require_POST
 def draft_reset(request, slug: str):
     league = get_object_or_404(League, slug=slug)
-    _require_commissioner(request, league)
+    require_draft_controller(request.user, league)
 
     reset_draft(league)
     return JsonResponse(serialize_draft_state(league))
@@ -63,13 +63,9 @@ def draft_reset(request, slug: str):
 @require_POST
 def draft_autoplay(request, slug: str):
     league = get_object_or_404(League, slug=slug)
-    _require_commissioner(request, league)
+    require_draft_controller(request.user, league)
 
     enabled = request.POST.get("enabled") == "true"
     set_autoplay(league, enabled)
     return JsonResponse(serialize_draft_state(league))
 
-
-def _require_commissioner(request, league: League) -> None:
-    if league.commissioner != request.user:
-        raise PermissionDenied("Only the commissioner can control the draft.")

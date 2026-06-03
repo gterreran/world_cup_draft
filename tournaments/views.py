@@ -3,17 +3,16 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from leagues.models import League
+from leagues.permissions import can_edit_match_results
 
 from .forms import MatchResultForm
-from .models import Match
+from .models import Match, Tournament
 from .services import build_group_stage_context
 from scoring.services import recompute_league_standings
 from scoring.projections import mark_projection_entries_stale
 from collections import defaultdict
-from assignments.models import TeamAssignment
 from tournaments.progression import recompute_tournament_progression
 
-@login_required
 def match_list(request, slug: str):
     league = get_object_or_404(League, slug=slug)
 
@@ -35,6 +34,7 @@ def match_list(request, slug: str):
         {
             "league": league,
             "matches": matches,
+            "can_edit_match_results": can_edit_match_results(request.user),
         },
     )
 
@@ -44,8 +44,8 @@ def match_result_edit(request, slug: str, match_id: int):
     league = get_object_or_404(League, slug=slug)
     match = get_object_or_404(Match, id=match_id, tournament=league.tournament)
 
-    if league.commissioner != request.user:
-        messages.error(request, "Only the commissioner can edit match results.")
+    if not can_edit_match_results(request.user):
+        messages.error(request, "Only platform owners can edit match results.")
         return redirect("match_list", slug=league.slug)
 
     if request.method == "POST":
@@ -78,24 +78,14 @@ def match_result_edit(request, slug: str, match_id: int):
         },
     )
 
-@login_required
-def tournament_schedule(request, slug: str):
-    league = get_object_or_404(League, slug=slug)
+def tournament_schedule(request, tournament_slug: str):
+    tournament = get_object_or_404(Tournament, slug=tournament_slug)
 
     matches = (
-        Match.objects.filter(tournament=league.tournament)
+        Match.objects.filter(tournament=tournament)
         .select_related("home_team", "away_team", "winner")
         .order_by("kickoff_time", "match_number", "id")
     )
-
-    assignment_map = {
-        assignment.national_team_id: assignment.member.display_name
-        for assignment in (
-            TeamAssignment.objects
-            .filter(league=league)
-            .select_related("member", "national_team")
-        )
-    }
 
     matches_by_stage = defaultdict(list)
 
@@ -106,50 +96,28 @@ def tournament_schedule(request, slug: str):
         request,
         "tournaments/schedule.html",
         {
-            "league": league,
+            "tournament": tournament,
             "matches_by_stage": dict(matches_by_stage),
-            "assignment_map": assignment_map,
         },
     )
 
-@login_required
-def group_stage(request, slug: str):
-    league = get_object_or_404(League, slug=slug)
+def group_stage(request, tournament_slug: str):
+    tournament = get_object_or_404(Tournament, slug=tournament_slug)
 
-    groups = build_group_stage_context(league.tournament)
-
-    assignment_map = {
-        assignment.national_team_id: assignment.member.display_name
-        for assignment in (
-            TeamAssignment.objects
-            .filter(league=league)
-            .select_related("member", "national_team")
-        )
-    }
+    groups = build_group_stage_context(tournament)
 
     return render(
         request,
         "tournaments/group_stage.html",
         {
-            "league": league,
+            "tournament": tournament,
             "groups": groups,
-            "assignment_map": assignment_map,
         },
     )
 
 
-@login_required
-def bracket_stage(request, slug: str):
-    league = get_object_or_404(League, slug=slug)
-
-    assignment_map = {
-        assignment.national_team_id: assignment.member.display_name
-        for assignment in (
-            TeamAssignment.objects
-            .filter(league=league)
-            .select_related("member", "national_team")
-        )
-    }
+def bracket_stage(request, tournament_slug: str):
+    tournament = get_object_or_404(Tournament, slug=tournament_slug)
 
     championship_stages = [
         Match.Stage.ROUND_OF_32,
@@ -164,7 +132,7 @@ def bracket_stage(request, slug: str):
 
     for round_index, stage in enumerate(championship_stages):
         matches = list(
-            Match.objects.filter(tournament=league.tournament, stage=stage)
+            Match.objects.filter(tournament=tournament, stage=stage)
             .select_related("home_team", "away_team", "winner")
             .order_by("match_number")
         )
@@ -196,7 +164,7 @@ def bracket_stage(request, slug: str):
         )
 
     third_place_matches = list(
-        Match.objects.filter(tournament=league.tournament, stage=Match.Stage.THIRD_PLACE)
+        Match.objects.filter(tournament=tournament, stage=Match.Stage.THIRD_PLACE)
         .select_related("home_team", "away_team", "winner")
         .order_by("match_number")
     )
@@ -205,10 +173,9 @@ def bracket_stage(request, slug: str):
         request,
         "tournaments/bracket_stage.html",
         {
-            "league": league,
+            "tournament": tournament,
             "championship_rounds": championship_rounds,
             "third_place_matches": third_place_matches,
             "base_match_count": base_match_count,
-            "assignment_map": assignment_map,
         },
     )

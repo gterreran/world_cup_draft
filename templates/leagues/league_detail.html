@@ -12,10 +12,12 @@
     </div>
 
     <div class="header-actions">
-      <a class="button secondary" href="{% url 'league_list' %}">Back to leagues</a>
-      <a class="button secondary" href="{% url 'tournament_schedule' league.slug %}">Full schedule</a>
-      <a class="button secondary" href="{% url 'group_stage' league.slug %}">Group stage</a>
-      <a class="button secondary" href="{% url 'bracket_stage' league.slug %}">Bracket</a>
+      {% if request.user.is_authenticated %}
+        <a class="button secondary" href="{% url 'league_list' %}">Back to leagues</a>
+      {% endif %}
+      <a class="button secondary" href="{% url 'tournament_schedule' league.tournament.slug %}">Full schedule</a>
+      <a class="button secondary" href="{% url 'group_stage' league.tournament.slug %}">Group stage</a>
+      <a class="button secondary" href="{% url 'bracket_stage' league.tournament.slug %}">Bracket</a>
       <a class="button" href="{% url 'draft_presentation' league.slug %}">Draft Room</a>
     </div>
   </div>
@@ -42,7 +44,7 @@
     </div>
   </section>
 
-  {% if request.user == league.commissioner %}
+  {% if can_manage_league %}
     <section class="card">
       <div class="section-header">
         <div>
@@ -122,10 +124,6 @@
           <button type="submit" class="secondary-button">Recalculate max points</button>
         </form>
       </div>
-    </section>
-  {% else %}
-    <section class="card">
-      <a class="button secondary" href="{% url 'match_list' league.slug %}">View matches</a>
     </section>
   {% endif %}
 
@@ -211,7 +209,7 @@
           <div class="manager-card-header">
             <h3>{{ member.display_name }}</h3>
 
-            {% if request.user == league.commissioner and not league.is_setup_locked %}
+            {% if can_manage_league and not league.is_setup_locked %}
               <div class="manager-actions">
                 <a href="{% url 'member_update' league.slug member.id %}">Edit</a>
                 <a href="{% url 'member_delete' league.slug member.id %}">Delete</a>
@@ -238,7 +236,7 @@
                         {% if card.team.pot %}Pot {{ card.team.pot }}{% endif %}
                       </small>
 
-                      {% if request.user == league.commissioner %}
+                      {% if can_manage_league %}
                         {% if card.assignment.revealed %}
                           <span class="assignment-visibility-label is-revealed">Revealed</span>
                         {% else %}

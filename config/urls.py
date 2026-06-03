@@ -155,17 +155,17 @@ urlpatterns = [
         name="import_sleeper_members",
     ),
     path(
-        "leagues/<slug:slug>/schedule/",
+        "tournaments/<slug:tournament_slug>/schedule/",
         tournament_views.tournament_schedule,
         name="tournament_schedule",
     ),
     path(
-        "leagues/<slug:slug>/groups/",
+        "tournaments/<slug:tournament_slug>/groups/",
         tournament_views.group_stage,
         name="group_stage",
     ),
     path(
-        "leagues/<slug:slug>/bracket/",
+        "tournaments/<slug:tournament_slug>/bracket/",
         tournament_views.bracket_stage,
         name="bracket_stage",
     ),

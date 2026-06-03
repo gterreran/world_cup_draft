@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from leagues.models import League
+from leagues.permissions import can_manage_league
 from tournaments.models import NationalTeam
 
 from .services import (
@@ -27,7 +28,7 @@ def assignment_management(request, slug: str):
     """Show commissioner controls for league team assignments."""
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can manage assignments.")
         return redirect("league_detail", slug=league.slug)
 
@@ -77,7 +78,7 @@ def assignment_management(request, slug: str):
 def random_assignment(request, slug: str):
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can assign teams.")
         return redirect("league_detail", slug=league.slug)
 
@@ -110,7 +111,7 @@ def reset_assignment_view(request, slug: str):
     """Clear all assignments from the commissioner assignment screen."""
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can reset assignments.")
         return redirect("league_detail", slug=league.slug)
 
@@ -132,7 +133,7 @@ def manual_assignment_create(request, slug: str):
     """Assign one unassigned national team to one manager."""
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can manually edit assignments.")
         return redirect("league_detail", slug=league.slug)
 
@@ -163,7 +164,7 @@ def manual_assignment_delete(request, slug: str, assignment_id: int):
     """Remove one team assignment from the commissioner assignment screen."""
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can manually edit assignments.")
         return redirect("league_detail", slug=league.slug)
 
@@ -188,7 +189,7 @@ def assignment_reveal(request, slug: str, assignment_id: int):
     """Reveal one team assignment from the commissioner screens."""
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can reveal assignments.")
         return redirect("league_detail", slug=league.slug)
 
@@ -217,7 +218,7 @@ def assignment_hide(request, slug: str, assignment_id: int):
     """Hide one team assignment from the commissioner screens."""
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can hide assignments.")
         return redirect("league_detail", slug=league.slug)
 
@@ -246,7 +247,7 @@ def assignment_reveal_all(request, slug: str):
     """Reveal all assignments in a league."""
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can reveal assignments.")
         return redirect("league_detail", slug=league.slug)
 
@@ -267,7 +268,7 @@ def assignment_hide_all(request, slug: str):
     """Hide all assignments in a league unless the live draft is running."""
     league = get_object_or_404(League, slug=slug)
 
-    if league.commissioner != request.user:
+    if not can_manage_league(request.user, league):
         messages.error(request, "Only the commissioner can hide assignments.")
         return redirect("league_detail", slug=league.slug)
 
