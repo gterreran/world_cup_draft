@@ -1077,7 +1077,7 @@ tbody tr:hover {
   font-style: italic;
 }
 
-/* Animated draft presentation */
+/* Live draft presentation */
 .draft-stage-page {
   --draft-blue: #155eef;
   --draft-dark: #08111f;
@@ -1355,7 +1355,7 @@ tbody tr:hover {
   }
 }
 
-/* Animated draft pot ceremony upgrades */
+/* Live draft pot ceremony upgrades */
 .draft-scoreboard {
   align-items: stretch;
 }
@@ -1551,7 +1551,7 @@ tbody tr:hover {
   }
 }
 
-/* Animated draft: fixed ceremony geometry and two-step reveal polish */
+/* Live draft: fixed ceremony geometry and two-step reveal polish */
 .draft-reveal-layout {
   min-height: 560px;
   align-items: stretch;
@@ -1687,7 +1687,7 @@ tbody tr:hover {
 }
 
 
-/* Animated draft: keep ceremony area stable through the full draw. */
+/* Live draft: keep ceremony area stable through the full draw. */
 @media (min-width: 981px) {
   .draft-reveal-layout {
     height: 560px;
@@ -1730,7 +1730,7 @@ tbody tr:hover {
 }
 
 
-/* Animated draft: stage-based controls and extra breathing room. */
+/* Live draft: stage-based controls and extra breathing room. */
 .draft-reveal-layout {
   margin-bottom: 30px;
 }
@@ -1749,7 +1749,7 @@ tbody tr:hover {
 }
 
 
-/* Animated draft: keep controls inside the reveal card footer. */
+/* Live draft: keep controls inside the reveal card footer. */
 .draft-reveal-card {
   justify-content: space-between;
   gap: 14px;
@@ -1938,4 +1938,41 @@ tbody tr:hover {
   .manual-assignment-form {
     grid-template-columns: 1fr;
   }
+}
+
+.assignment-visibility-label {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: 5px;
+  border-radius: 999px;
+  padding: 2px 7px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.assignment-visibility-label.is-revealed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.assignment-visibility-label.is-hidden {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.assignment-row-actions,
+.team-contribution-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.team-contribution-row.is-hidden-assignment-slot {
+  min-height: 54px;
+  background: #fff;
+  border-style: dashed;
+  border-color: #f3f4f6;
 }

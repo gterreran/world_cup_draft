@@ -9,10 +9,13 @@ class TeamAssignment(models.Model):
     member = models.ForeignKey(LeagueMember, on_delete=models.CASCADE, related_name="team_assignments")
     national_team = models.ForeignKey(NationalTeam, on_delete=models.CASCADE, related_name="fantasy_assignments")
     assigned_at = models.DateTimeField(auto_now_add=True)
+    revealed = models.BooleanField(default=False)
+    revealed_at = models.DateTimeField(null=True, blank=True)
+    reveal_order = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         unique_together = [("league", "national_team")]
-        ordering = ["member__display_name", "national_team__pot", "national_team__name"]
+        ordering = ["reveal_order", "member__display_name", "national_team__pot", "national_team__name"]
 
     def __str__(self) -> str:
         return f"{self.member.display_name}: {self.national_team.name}"

@@ -27,6 +27,7 @@ from django.contrib import messages
 
 from integrations.sleeper import SleeperAPIError, get_rosters, get_users
 from drafts.services import get_draft_picks, serialize_draft_state
+from assignments.services import draft_is_running
 
 def home(request):
     return render(request, "base/home.html")
@@ -112,6 +113,7 @@ def league_detail(request, slug: str):
     assignment_cards_by_member = _assignment_cards_by_member(
         league=league,
         assignments=assignments,
+        show_hidden=request.user == league.commissioner,
     )
 
     ensure_projection_entries_exist(league)
@@ -127,17 +129,34 @@ def league_detail(request, slug: str):
             "assignment_cards_by_member": assignment_cards_by_member,
             "standings": standings,
             "projections_by_member_id": projections_by_member_id,
+            "draft_is_running": draft_is_running(league),
         },
     )
 
 
 
-def _assignment_cards_by_member(*, league: League, assignments) -> dict[int, list[dict]]:
+def _assignment_cards_by_member(
+    *,
+    league: League,
+    assignments,
+    show_hidden: bool,
+) -> dict[int, list[dict]]:
     """Build display-ready assigned-team cards for the league dashboard."""
     cards_by_member: dict[int, list[dict]] = {}
 
     for assignment in assignments:
         team = assignment.national_team
+
+        if not assignment.revealed and not show_hidden:
+            cards_by_member.setdefault(assignment.member_id, []).append(
+                {
+                    "assignment": assignment,
+                    "team": None,
+                    "is_hidden_blank": True,
+                }
+            )
+            continue
+
         contribution = compute_team_contribution(league, team)
 
         cards_by_member.setdefault(assignment.member_id, []).append(
@@ -152,6 +171,7 @@ def _assignment_cards_by_member(*, league: League, assignments) -> dict[int, lis
                 "goals_scored": contribution["goals_scored"],
                 "teams_advanced": contribution["teams_advanced"],
                 "is_eliminated": team_is_eliminated_from_scoring(league, team),
+                "is_hidden_blank": False,
             }
         )
 
@@ -206,7 +226,7 @@ def member_create(request, slug: str):
 
 @login_required
 def draft_presentation(request, slug: str):
-    """Show the animated draft reveal for the current team assignments."""
+    """Show the live draft reveal for the current team assignments."""
     league = get_object_or_404(League, slug=slug)
     picks = get_draft_picks(league)
     draft_state = serialize_draft_state(league)
@@ -221,7 +241,7 @@ def draft_presentation(request, slug: str):
             "league": league,
             "picks": picks,
             "draft_state": draft_state,
-            "can_control": True,
+            "can_control": request.user == league.commissioner,
             "is_live_view": False,
             "public_live_url": public_live_url,
         },

@@ -9,8 +9,13 @@ from .services import (
     AssignmentError,
     assign_team_to_member,
     assign_teams_randomly,
+    draft_is_running,
+    hide_all_assignments,
+    hide_assignment,
     remove_team_assignment,
     reset_assignments,
+    reveal_all_assignments,
+    reveal_assignment,
 )
 from scoring.services import recompute_league_standings
 from scoring.projections import mark_projection_entries_stale
@@ -63,6 +68,7 @@ def assignment_management(request, slug: str):
             "assignments_by_member": assignments_by_member,
             "assignment_counts_by_member": assignment_counts_by_member,
             "unassigned_teams": unassigned_teams,
+            "draft_is_running": draft_is_running(league),
         },
     )
 
@@ -172,6 +178,111 @@ def manual_assignment_delete(request, slug: str, assignment_id: int):
         messages.success(
             request,
             f"Removed {assignment.national_team.name} from {assignment.member.display_name}.",
+        )
+
+    return redirect("assignment_management", slug=league.slug)
+
+
+@login_required
+def assignment_reveal(request, slug: str, assignment_id: int):
+    """Reveal one team assignment from the commissioner screens."""
+    league = get_object_or_404(League, slug=slug)
+
+    if league.commissioner != request.user:
+        messages.error(request, "Only the commissioner can reveal assignments.")
+        return redirect("league_detail", slug=league.slug)
+
+    if request.method != "POST":
+        return redirect("league_detail", slug=league.slug)
+
+    try:
+        assignment = reveal_assignment(league, assignment_id=assignment_id)
+    except AssignmentError as exc:
+        messages.error(request, str(exc))
+    else:
+        messages.success(
+            request,
+            f"Revealed {assignment.national_team.name} for {assignment.member.display_name}.",
+        )
+
+    next_url = request.POST.get("next")
+    if next_url:
+        return redirect(next_url)
+
+    return redirect("league_detail", slug=league.slug)
+
+
+@login_required
+def assignment_hide(request, slug: str, assignment_id: int):
+    """Hide one team assignment from the commissioner screens."""
+    league = get_object_or_404(League, slug=slug)
+
+    if league.commissioner != request.user:
+        messages.error(request, "Only the commissioner can hide assignments.")
+        return redirect("league_detail", slug=league.slug)
+
+    if request.method != "POST":
+        return redirect("league_detail", slug=league.slug)
+
+    try:
+        assignment = hide_assignment(league, assignment_id=assignment_id)
+    except AssignmentError as exc:
+        messages.error(request, str(exc))
+    else:
+        messages.success(
+            request,
+            f"Hid {assignment.national_team.name} for {assignment.member.display_name}.",
+        )
+
+    next_url = request.POST.get("next")
+    if next_url:
+        return redirect(next_url)
+
+    return redirect("league_detail", slug=league.slug)
+
+
+@login_required
+def assignment_reveal_all(request, slug: str):
+    """Reveal all assignments in a league."""
+    league = get_object_or_404(League, slug=slug)
+
+    if league.commissioner != request.user:
+        messages.error(request, "Only the commissioner can reveal assignments.")
+        return redirect("league_detail", slug=league.slug)
+
+    if request.method != "POST":
+        return redirect("assignment_management", slug=league.slug)
+
+    revealed_count = reveal_all_assignments(league)
+    messages.success(
+        request,
+        f"Revealed {revealed_count} hidden assignment"
+        f"{'s' if revealed_count != 1 else ''}.",
+    )
+    return redirect("assignment_management", slug=league.slug)
+
+
+@login_required
+def assignment_hide_all(request, slug: str):
+    """Hide all assignments in a league unless the live draft is running."""
+    league = get_object_or_404(League, slug=slug)
+
+    if league.commissioner != request.user:
+        messages.error(request, "Only the commissioner can hide assignments.")
+        return redirect("league_detail", slug=league.slug)
+
+    if request.method != "POST":
+        return redirect("assignment_management", slug=league.slug)
+
+    try:
+        hidden_count = hide_all_assignments(league)
+    except AssignmentError as exc:
+        messages.error(request, str(exc))
+    else:
+        messages.success(
+            request,
+            f"Hid {hidden_count} revealed assignment"
+            f"{'s' if hidden_count != 1 else ''}.",
         )
 
     return redirect("assignment_management", slug=league.slug)

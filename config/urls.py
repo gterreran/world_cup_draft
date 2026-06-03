@@ -40,6 +40,26 @@ urlpatterns = [
         name="manual_assignment_delete",
     ),
     path(
+        "leagues/<slug:slug>/assignments/reveal-all/",
+        assignment_views.assignment_reveal_all,
+        name="assignment_reveal_all",
+    ),
+    path(
+        "leagues/<slug:slug>/assignments/hide-all/",
+        assignment_views.assignment_hide_all,
+        name="assignment_hide_all",
+    ),
+    path(
+        "leagues/<slug:slug>/assignments/<int:assignment_id>/reveal/",
+        assignment_views.assignment_reveal,
+        name="assignment_reveal",
+    ),
+    path(
+        "leagues/<slug:slug>/assignments/<int:assignment_id>/hide/",
+        assignment_views.assignment_hide,
+        name="assignment_hide",
+    ),
+    path(
         "leagues/<slug:slug>/assign/random/",
         assignment_views.random_assignment,
         name="random_assignment",

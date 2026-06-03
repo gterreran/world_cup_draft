@@ -16,7 +16,7 @@
       <a class="button secondary" href="{% url 'tournament_schedule' league.slug %}">Full schedule</a>
       <a class="button secondary" href="{% url 'group_stage' league.slug %}">Group stage</a>
       <a class="button secondary" href="{% url 'bracket_stage' league.slug %}">Bracket</a>
-      <a class="button" href="{% url 'draft_presentation' league.slug %}">Animated draft</a>
+      <a class="button" href="{% url 'draft_presentation' league.slug %}">Draft Room</a>
     </div>
   </div>
 
@@ -97,7 +97,6 @@
         <a class="button secondary" href="{% url 'assignment_management' league.slug %}">Manage assignments</a>
         <a class="button secondary" href="{% url 'league_scoring_settings' league.slug %}">Scoring & tiebreakers</a>
         <a class="button secondary" href="{% url 'match_list' league.slug %}">View/edit matches</a>
-        <a class="button secondary" href="{% url 'draft_presentation' league.slug %}">Open animated draft</a>
       </div>
 
       <div class="actions">
@@ -223,29 +222,43 @@
           <ul class="team-list team-contribution-list">
             {% with team_cards=assignment_cards_by_member|get_item:member.id %}
               {% for card in team_cards %}
-                <li class="team-contribution-row {% if card.is_eliminated %}is-eliminated{% endif %}">
-                  <div class="team-contribution-main">
-                    <span class="team-contribution-name">
-                      <span class="team-flag">{{ card.team.flag }}</span>
-                      {{ card.team.name }}
-                    </span>
+                {% if card.is_hidden_blank %}
+                  <li class="team-contribution-row is-hidden-assignment-slot" aria-label="Unrevealed assignment"></li>
+                {% else %}
+                  <li class="team-contribution-row {% if card.is_eliminated %}is-eliminated{% endif %}">
+                    <div class="team-contribution-main">
+                      <span class="team-contribution-name">
+                        <span class="team-flag">{{ card.team.flag }}</span>
+                        {{ card.team.name }}
+                      </span>
 
-                    <small>
-                      {% if card.team.group %}Group {{ card.team.group }}{% endif %}
-                      {% if card.team.group and card.team.pot %} · {% endif %}
-                      {% if card.team.pot %}Pot {{ card.team.pot }}{% endif %}
-                    </small>
+                      <small>
+                        {% if card.team.group %}Group {{ card.team.group }}{% endif %}
+                        {% if card.team.group and card.team.pot %} · {% endif %}
+                        {% if card.team.pot %}Pot {{ card.team.pot }}{% endif %}
+                      </small>
 
-                    {% if card.is_eliminated %}
-                      <span class="team-eliminated-label">Eliminated</span>
-                    {% endif %}
-                  </div>
+                      {% if request.user == league.commissioner %}
+                        {% if card.assignment.revealed %}
+                          <span class="assignment-visibility-label is-revealed">Revealed</span>
+                        {% else %}
+                          <span class="assignment-visibility-label is-hidden">Hidden</span>
+                        {% endif %}
+                      {% endif %}
 
-                  <div class="team-contribution-points" title="Fantasy points contributed by {{ card.team.name }}">
-                    <strong>{{ card.points }}</strong>
-                    <span>pts</span>
-                  </div>
-                </li>
+                      {% if card.is_eliminated %}
+                        <span class="team-eliminated-label">Eliminated</span>
+                      {% endif %}
+                    </div>
+
+                    <div class="team-contribution-actions">
+                      <div class="team-contribution-points" title="Fantasy points contributed by {{ card.team.name }}">
+                        <strong>{{ card.points }}</strong>
+                        <span>pts</span>
+                      </div>
+                    </div>
+                  </li>
+                {% endif %}
               {% empty %}
                 <li class="team-contribution-row is-empty">
                   <span>No teams assigned yet.</span>

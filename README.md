@@ -17,7 +17,7 @@ Managers are assigned national teams, earn points based on tournament performanc
 
 * Random team assignment with constraints
 * Tier-aware assignment support
-* Animated draft presentation
+* Live draft presentation
 * Assignment locking for league integrity
 
 ### Tournament Tracking
@@ -55,7 +55,7 @@ The application is actively developed and currently supports:
 * League creation and management
 * Sleeper manager imports
 * Team assignment workflows
-* Animated draft ceremonies
+* Live draft presentation
 * Tournament progression tracking
 * Projection calculations
 

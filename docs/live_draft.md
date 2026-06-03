@@ -4,7 +4,7 @@ This document summarizes the development of the live draft feature for the World
 
 ## Goal
 
-The goal was to turn the existing animated draft presentation into a live shared event.
+The goal was to turn the existing draft room presentation into a live shared event.
 
 The commissioner should be able to control the draft from one page, while viewers with the live link should be able to follow the reveal in real time without refreshing.
 
@@ -55,7 +55,7 @@ The assigned teams themselves are not duplicated in the draft state. They remain
 
 ## Commissioner and Viewer Pages
 
-The original animated draft page was split conceptually into two roles:
+The original draft room page was split conceptually into two roles:
 
 ```text
 Commissioner page

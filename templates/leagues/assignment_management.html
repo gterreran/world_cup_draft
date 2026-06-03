@@ -50,7 +50,7 @@
     <div class="section-header">
       <div>
         <h2>Assignment controls</h2>
-        <p>Reset or regenerate team assignments. Resetting also unlocks setup, marks projections stale, and resets the animated draft.</p>
+        <p>Reset or regenerate team assignments. Resetting also unlocks setup, marks projections stale, and resets the live draft.</p>
       </div>
     </div>
 
@@ -91,6 +91,35 @@
             Randomly assign teams
           </button>
         </form>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-header">
+      <div>
+        <h2>Reveal controls</h2>
+        <p>Assignments can exist in the database while staying hidden from league members until draft night.</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      {% if assignments %}
+        <form method="post" action="{% url 'assignment_reveal_all' league.slug %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="secondary-button">Reveal all assignments</button>
+        </form>
+
+        {% if not draft_is_running %}
+          <form method="post" action="{% url 'assignment_hide_all' league.slug %}" class="inline-form">
+            {% csrf_token %}
+            <button type="submit" class="secondary-button">Hide all assignments</button>
+          </form>
+        {% else %}
+          <span class="muted">Hide all is disabled while the live draft is running.</span>
+        {% endif %}
+      {% else %}
+        <p class="muted">Generate or manually create assignments before reveal controls become useful.</p>
       {% endif %}
     </div>
   </section>
@@ -153,7 +182,7 @@
     <div class="section-header">
       <div>
         <h2>Reset assignments</h2>
-        <p>This removes every assigned team, unlocks setup, resets the animated draft, recomputes standings, and marks projections stale.</p>
+        <p>This removes every assigned team, unlocks setup, resets the live draft, recomputes standings, and marks projections stale.</p>
       </div>
     </div>
 
@@ -204,21 +233,44 @@
                         {% if assignment.national_team.group and assignment.national_team.pot %} · {% endif %}
                         {% if assignment.national_team.pot %}Pot {{ assignment.national_team.pot }}{% endif %}
                       </small>
+                      {% if assignment.revealed %}
+                        <span class="assignment-visibility-label is-revealed">Revealed</span>
+                      {% else %}
+                        <span class="assignment-visibility-label is-hidden">Hidden</span>
+                      {% endif %}
                     </span>
                   </span>
 
-                  {% if not league.is_setup_locked %}
-                    <form method="post" action="{% url 'manual_assignment_delete' league.slug assignment.id %}" class="inline-form">
-                      {% csrf_token %}
-                      <button
-                        type="submit"
-                        class="link-button danger-link"
-                        onclick="return confirm('Remove {{ assignment.national_team.name|escapejs }} from {{ member.display_name|escapejs }}? This will reset the animated draft and mark projections stale.');"
-                      >
-                        Remove
-                      </button>
-                    </form>
-                  {% endif %}
+                  <span class="assignment-row-actions">
+                    {% if assignment.revealed %}
+                      {% if not draft_is_running %}
+                        <form method="post" action="{% url 'assignment_hide' league.slug assignment.id %}" class="inline-form">
+                          {% csrf_token %}
+                          <input type="hidden" name="next" value="{% url 'assignment_management' league.slug %}">
+                          <button type="submit" class="link-button">Hide</button>
+                        </form>
+                      {% endif %}
+                    {% else %}
+                      <form method="post" action="{% url 'assignment_reveal' league.slug assignment.id %}" class="inline-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{% url 'assignment_management' league.slug %}">
+                        <button type="submit" class="link-button">Reveal</button>
+                      </form>
+                    {% endif %}
+
+                    {% if not league.is_setup_locked %}
+                      <form method="post" action="{% url 'manual_assignment_delete' league.slug assignment.id %}" class="inline-form">
+                        {% csrf_token %}
+                        <button
+                          type="submit"
+                          class="link-button danger-link"
+                          onclick="return confirm('Remove {{ assignment.national_team.name|escapejs }} from {{ member.display_name|escapejs }}? This will reset the live draft and mark projections stale.');"
+                        >
+                          Remove
+                        </button>
+                      </form>
+                    {% endif %}
+                  </span>
                 </li>
               {% empty %}
                 <li>No teams assigned yet.</li>

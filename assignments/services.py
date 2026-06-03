@@ -1,6 +1,7 @@
 import random
 
 from django.db import transaction
+from django.utils import timezone
 
 from leagues.models import League, LeagueMember
 from tournaments.models import NationalTeam
@@ -43,6 +44,114 @@ def assign_teams_randomly(league: League, *, clear_existing: bool = True) -> Non
         )
 
     TeamAssignment.objects.bulk_create(assignments)
+
+    created_assignments = list(
+        TeamAssignment.objects.filter(league=league).order_by(
+            *_draft_assignment_ordering(league)
+        )
+    )
+    for reveal_order, assignment in enumerate(created_assignments, start=1):
+        assignment.reveal_order = reveal_order
+
+    TeamAssignment.objects.bulk_update(created_assignments, ["reveal_order"])
+
+
+@transaction.atomic
+def reveal_assignment(
+    league: League,
+    *,
+    assignment_id: int,
+) -> TeamAssignment:
+    """Mark one assignment as visible to league members and public pages."""
+    try:
+        assignment = TeamAssignment.objects.select_related(
+            "member",
+            "national_team",
+        ).get(pk=assignment_id, league=league)
+    except TeamAssignment.DoesNotExist as exc:
+        raise AssignmentError("Selected assignment does not exist in this league.") from exc
+
+    if not assignment.revealed:
+        assignment.revealed = True
+        assignment.revealed_at = timezone.now()
+        assignment.save(update_fields=["revealed", "revealed_at"])
+
+    return assignment
+
+
+@transaction.atomic
+def hide_assignment(
+    league: League,
+    *,
+    assignment_id: int,
+) -> TeamAssignment:
+    """Mark one assignment as hidden, unless the live draft is currently running."""
+    _require_draft_not_running(league)
+
+    try:
+        assignment = TeamAssignment.objects.select_related(
+            "member",
+            "national_team",
+        ).get(pk=assignment_id, league=league)
+    except TeamAssignment.DoesNotExist as exc:
+        raise AssignmentError("Selected assignment does not exist in this league.") from exc
+
+    if assignment.revealed:
+        assignment.revealed = False
+        assignment.revealed_at = None
+        assignment.save(update_fields=["revealed", "revealed_at"])
+
+    return assignment
+
+
+@transaction.atomic
+def reveal_all_assignments(league: League) -> int:
+    """Reveal all assignments in a league."""
+    now = timezone.now()
+    return TeamAssignment.objects.filter(
+        league=league,
+        revealed=False,
+    ).update(revealed=True, revealed_at=now)
+
+
+@transaction.atomic
+def hide_all_assignments(league: League) -> int:
+    """Hide all assignments in a league, unless the draft is currently running."""
+    _require_draft_not_running(league)
+    return TeamAssignment.objects.filter(league=league, revealed=True).update(
+        revealed=False,
+        revealed_at=None,
+    )
+
+
+def draft_is_running(league: League) -> bool:
+    """Return whether the live draft is currently running."""
+    from drafts.models import DraftState
+
+    return DraftState.objects.filter(
+        league=league,
+        status=DraftState.Status.RUNNING,
+    ).exists()
+
+
+def _require_draft_not_running(league: League) -> None:
+    if draft_is_running(league):
+        raise AssignmentError("Assignments cannot be hidden while the live draft is running.")
+
+
+def _draft_assignment_ordering(league: League) -> tuple[str, ...]:
+    if league.assignment_method == League.AssignmentMethod.TIERED_RANDOM:
+        return (
+            "national_team__pot",
+            "member__display_name",
+            "national_team__name",
+        )
+
+    return (
+        "member__display_name",
+        "national_team__pot",
+        "national_team__name",
+    )
 
 
 @transaction.atomic
@@ -162,10 +271,19 @@ def assign_team_to_member(
                 f"{national_team.group}."
             )
 
+    next_reveal_order = (
+        TeamAssignment.objects.filter(league=league)
+        .order_by("-reveal_order")
+        .values_list("reveal_order", flat=True)
+        .first()
+        or 0
+    ) + 1
+
     assignment = TeamAssignment.objects.create(
         league=league,
         member=member,
         national_team=national_team,
+        reveal_order=next_reveal_order,
     )
 
     _refresh_assignment_dependents(

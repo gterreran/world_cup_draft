@@ -16,15 +16,47 @@
     </div>
   </div>
 
-  <form method="post" class="card settings-form">
-    {% csrf_token %}
-    {{ form.as_p }}
-
-    <div class="actions">
-      <button type="submit">Save settings</button>
-      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Cancel</a>
+  <section class="card settings-form">
+    <div class="section-header">
+      <div>
+        <h2>Basic settings</h2>
+        <p class="section-help">Update the league name and assignment setup.</p>
+      </div>
     </div>
-  </form>
+
+    <form method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <p>
+        {{ form.name.label_tag }}
+        {{ form.name }}
+        {{ form.name.errors }}
+        {% if form.name.help_text %}<span class="helptext">{{ form.name.help_text }}</span>{% endif %}
+      </p>
+
+      <p>
+        {{ form.teams_per_manager.label_tag }}
+        {{ form.teams_per_manager }}
+        {{ form.teams_per_manager.errors }}
+        {% if form.teams_per_manager.help_text %}<span class="helptext">{{ form.teams_per_manager.help_text }}</span>{% endif %}
+      </p>
+
+      <p>
+        {{ form.assignment_method.label_tag }}
+        {{ form.assignment_method }}
+        {{ form.assignment_method.errors }}
+        {% if form.assignment_method.help_text %}<span class="helptext">{{ form.assignment_method.help_text }}</span>{% endif %}
+      </p>
+
+      <input type="hidden" name="sleeper_league_id" value="{{ form.sleeper_league_id.value|default_if_none:'' }}">
+
+      <div class="actions">
+        <button type="submit">Save settings</button>
+        <a class="button secondary" href="{% url 'league_detail' league.slug %}">Cancel</a>
+      </div>
+    </form>
+  </section>
 
   <section class="card settings-form">
     <div class="section-header">
@@ -42,12 +74,30 @@
       <div>
         <h2>Sleeper managers</h2>
         {% if league.is_setup_locked %}
-          <p class="section-help">League setup is locked. Unlock the league before importing or refreshing managers.</p>
+          <p class="section-help">League setup is locked. Unlock the league before changing the Sleeper league ID or importing managers.</p>
         {% else %}
-          <p class="section-help">Save a Sleeper league ID above, then import or refresh managers from that league.</p>
+          <p class="section-help">Save a Sleeper league ID, then import or refresh managers from that league.</p>
         {% endif %}
       </div>
     </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="name" value="{{ form.name.value|default_if_none:'' }}">
+      <input type="hidden" name="teams_per_manager" value="{{ form.teams_per_manager.value|default_if_none:'' }}">
+      <input type="hidden" name="assignment_method" value="{{ form.assignment_method.value|default_if_none:'' }}">
+
+      <p>
+        {{ form.sleeper_league_id.label_tag }}
+        {{ form.sleeper_league_id }}
+        {{ form.sleeper_league_id.errors }}
+        {% if form.sleeper_league_id.help_text %}<span class="helptext">{{ form.sleeper_league_id.help_text }}</span>{% endif %}
+      </p>
+
+      <div class="actions">
+        <button type="submit">Save Sleeper ID</button>
+      </div>
+    </form>
 
     {% if league.is_setup_locked %}
       <p class="muted">Sleeper import is unavailable while the league is locked.</p>

@@ -87,7 +87,8 @@
       return;
     }
 
-    const pots = [...new Set(picks.map((pick) => potKey(pick)))];
+    let pots = [...new Set(picks.map((pick) => potKey(pick)))];
+    let picksSignature = signatureForPicks(picks);
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -96,6 +97,30 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
+
+    function signatureForPicks(value) {
+      return Array.isArray(value)
+        ? value.map((pick) => pick.id || `${pick.manager}:${pick.team}:${pick.pot}`).join("|")
+        : "";
+    }
+
+    function replacePicks(nextPicks) {
+      if (!Array.isArray(nextPicks)) {
+        return;
+      }
+
+      const nextSignature = signatureForPicks(nextPicks);
+      const shouldRerender = nextSignature !== picksSignature;
+
+      picks = nextPicks;
+      picksSignature = nextSignature;
+      pots = [...new Set(picks.map((pick) => potKey(pick)))];
+
+      if (shouldRerender) {
+        renderPotStrip();
+        renderQueue();
+      }
     }
 
     function getCookie(name) {
@@ -415,7 +440,7 @@
       elements.nextButton.classList.toggle("is-draft-control-hidden", !isActive);
       elements.autoButton.classList.toggle("is-draft-control-hidden", !isActive);
 
-      elements.startButton.disabled = !picks.length || hasStarted || isComplete || state.isBusy;
+      elements.startButton.disabled = hasStarted || isComplete || state.isBusy;
       elements.nextButton.disabled = !isActive || state.isBusy;
       elements.autoButton.disabled = !isActive || state.isBusy;
       elements.autoButton.textContent = state.isAutoPlaying ? "Pause auto-play" : "Auto-play";
@@ -464,7 +489,9 @@
       elements.pickLabel.textContent = "Ready to begin";
       elements.flag.textContent = "🏆";
       elements.teamName.textContent = "World Cup Draft";
-      elements.teamMeta.textContent = "Press Start draft to reveal the first manager.";
+      elements.teamMeta.textContent = picks.length
+        ? "Press Start draft to reveal the first manager."
+        : "Press Start draft to generate hidden assignments and begin the reveal.";
       elements.managerPill.textContent = "Waiting for commissioner";
       updateDraftState();
     }
@@ -521,6 +548,8 @@
     }
 
     function applyServerState(payload, { animate = true } = {}) {
+      replacePicks(payload.picks);
+
       const previousIndex = state.index;
       const previousPhase = state.phase;
 
