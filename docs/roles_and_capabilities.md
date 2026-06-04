@@ -26,19 +26,38 @@ The application supports four conceptual roles:
 ```text
 Platform Owner
 Commissioner
-Participant
-Public Viewer
+Registered User
+Anonymous Visitor
 ```
 
-A user may have different roles in different leagues.
+---
 
-For example:
+# Identity Model
+
+The application intentionally separates app accounts from fantasy managers.
+
+There are three distinct concepts:
 
 ```text
-Commissioner in League A
-Participant in League B
-Public Viewer in League C
+User
+Profile
+LeagueMember
 ```
+
+User
+: Django authentication account.
+
+Profile
+: Stores user-specific preferences and followed leagues.
+
+LeagueMember
+: Represents a fantasy manager/team slot inside a league.
+
+A LeagueMember is not automatically associated with a User account.
+
+For example, importing managers from Sleeper creates LeagueMember records but does not create User accounts.
+
+This separation allows leagues to be imported and managed independently of application registration.
 
 ---
 
@@ -52,8 +71,6 @@ Determined by:
 user.is_staff or user.is_superuser
 ```
 
-Platform Owners have access to all leagues and administrative functionality.
-
 Capabilities:
 
 * View all leagues
@@ -62,8 +79,6 @@ Capabilities:
 * Edit match results
 * Access Django Admin
 * Override league-level restrictions when necessary
-
-Platform Owners exist primarily for application administration and maintenance.
 
 ---
 
@@ -76,8 +91,6 @@ Determined by:
 ```python
 league.commissioner == user
 ```
-
-Commissioners control league configuration and management.
 
 Capabilities:
 
@@ -95,51 +108,66 @@ Capabilities:
 * Import Sleeper managers
 * Recompute league-specific data when required
 
-Commissioners are responsible for running the league.
-
----
-
 ## Becoming a Commissioner
 
 Any registered user may create a league.
 
 The creator of a league automatically becomes its commissioner.
 
-Commissioners retain all participant privileges while also gaining access to league management tools.
+Commissioners automatically see their leagues in their dashboard and gain access to league management tools.
 
 ---
 
-# Participant
+# Registered User
 
-A Participant is a user who belongs to a league through a LeagueMember entry.
+A Registered User is an authenticated account in the application.
 
-Determined by:
+Registered users may:
 
-```python
-LeagueMember(user=user, league=league)
-```
+* Follow leagues
+* Maintain a personal league dashboard
+* Create leagues
+* Become commissioners
+* Access account-specific features
 
-Participants can track leagues they belong to through their personal league dashboard.
+Registered users do not automatically become fantasy managers inside a league.
 
-Capabilities:
-
-* View their league list
-* Access leagues they participate in
-* View league standings
-* View revealed assignments
-* Watch animated drafts
-
-Participants cannot modify league configuration.
+League membership and application accounts are intentionally independent concepts.
 
 ---
 
-# Public Viewer
+# Registration
 
-A Public Viewer is any visitor who is not acting as a commissioner or participant for a league.
+Anonymous visitors may create an account using the signup page.
 
-Public viewers may be anonymous users or authenticated users without a relationship to the league.
+Once registered, a Profile is automatically created for the user.
 
-The application intentionally allows broad visibility of league information.
+The Profile stores user-specific preferences and followed leagues.
+
+Registration is optional for viewing public league and tournament pages.
+
+---
+
+# Following Leagues
+
+Registered users may follow leagues.
+
+Following a league adds that league to the user's personal dashboard.
+
+This relationship is stored through the user's Profile and is independent of fantasy league membership.
+
+A user may:
+
+* Follow a league
+* Unfollow a league
+* Follow multiple leagues
+* Follow leagues without participating in them
+
+---
+
+# Anonymous Visitor
+
+An Anonymous Visitor is any user who is not logged in.
 
 Capabilities:
 
@@ -150,8 +178,6 @@ Capabilities:
 * View tournament schedule
 * View group standings
 * View tournament bracket
-
-Public viewers cannot modify league data.
 
 ---
 
@@ -167,9 +193,7 @@ Anyone with a league URL may view:
 * Draft results
 * Draft viewer page
 
-This behavior is similar to platforms such as Sleeper.
-
-The application assumes that league URLs may be shared freely.
+This behavior is similar to Sleeper.
 
 ---
 
@@ -177,7 +201,7 @@ The application assumes that league URLs may be shared freely.
 
 Tournament information is public.
 
-The following pages are available without league membership:
+The following pages are available without authentication:
 
 * Tournament schedule
 * Group stage standings
@@ -189,39 +213,22 @@ Tournament pages belong to the tournament itself and are not tied to a specific 
 
 # League Dashboard
 
-The league list page acts as a personal dashboard.
+The league dashboard acts as a personalized entry point.
 
-Anonymous users cannot access it.
+Anonymous visitors cannot access it.
 
-Authenticated users see only leagues relevant to them.
+Registered users see:
 
-Participants see:
+* Leagues they follow
+* Leagues they commission
 
-```text
-Leagues they participate in
-```
+Commissioners automatically see their own leagues.
 
-Commissioners see:
+Platform Owners may view all leagues.
 
-```text
-Leagues they commission
-Leagues they participate in
-```
+Viewing a league through a direct URL does not automatically add that league to the dashboard.
 
-Platform Owners see:
-
-```text
-All leagues
-```
-
-Each league row displays the user's role:
-
-```text
-Participant
-Commissioner
-Commissioner / Participant
-Platform Owner
-```
+A user must explicitly follow the league.
 
 ---
 
@@ -240,13 +247,9 @@ Only Commissioners and Platform Owners may:
 * Control reveals
 * Reset draft state
 
-Participants and Public Viewers are spectators.
-
 ---
 
 # League Settings Permissions
-
-League settings are restricted.
 
 Only Commissioners and Platform Owners may:
 
@@ -255,13 +258,9 @@ Only Commissioners and Platform Owners may:
 * Configure Sleeper integration
 * Change assignment configuration
 
-Participants and Public Viewers have read-only access.
-
 ---
 
 # Match Editing Permissions
-
-Match result editing is highly restricted.
 
 Only Platform Owners may:
 
@@ -270,8 +269,6 @@ Only Platform Owners may:
 * Modify tournament progression manually
 
 Commissioners do not have tournament-level editing permissions.
-
-This separation prevents league managers from altering tournament results.
 
 ---
 
@@ -283,29 +280,12 @@ Permissions are centralized in:
 leagues/permissions.py
 ```
 
-Views should use the permission helpers rather than directly checking:
-
-```python
-league.commissioner == request.user
-```
-
-or
-
-```python
-request.user.is_staff
-```
-
-This ensures that permission logic remains consistent throughout the application.
-
 Typical helper functions include:
 
 ```python
 is_platform_owner()
 is_commissioner()
-is_participant()
 can_manage_league()
 can_control_draft()
 can_edit_match_results()
 ```
-
----

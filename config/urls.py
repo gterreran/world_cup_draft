@@ -9,11 +9,14 @@ from tournaments import views as tournament_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("accounts/", include("accounts.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
     path("", league_views.home, name="home"),
     path("leagues/", league_views.league_list, name="league_list"),
     path("leagues/create/", league_views.league_create, name="league_create"),
     path("leagues/<slug:slug>/", league_views.league_detail, name="league_detail"),
+    path("leagues/<slug:slug>/follow/", league_views.follow_league, name="follow_league"),
+    path("leagues/<slug:slug>/unfollow/", league_views.unfollow_league, name="unfollow_league"),
     path(
         "leagues/<slug:slug>/members/create/",
         league_views.member_create,

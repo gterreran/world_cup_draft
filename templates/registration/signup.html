@@ -1,0 +1,44 @@
+{% extends "base/base.html" %}
+
+{% block title %}Sign up{% endblock %}
+
+{% block content %}
+  <section class="card narrow-card">
+    <h1>Create an account</h1>
+    <p>Create an account to follow leagues and keep them in your league dashboard.</p>
+
+    <form method="post" class="stacked-form" novalidate>
+      {% csrf_token %}
+
+      {% if form.errors %}
+        <div class="message error">
+          Please fix the errors below.
+        </div>
+      {% endif %}
+
+      {{ form.non_field_errors }}
+
+      {% for field in form %}
+        <p>
+          {{ field.label_tag }}
+          {{ field }}
+
+          {% if field.help_text %}
+            <span class="muted-text">{{ field.help_text }}</span>
+          {% endif %}
+
+          {% for error in field.errors %}
+            <span class="form-error">{{ error }}</span>
+          {% endfor %}
+        </p>
+      {% endfor %}
+
+      <button type="submit">Sign up</button>
+    </form>
+
+    <p class="muted-text">
+      Already have an account?
+      <a href="{% url 'login' %}">Log in</a>.
+    </p>
+  </section>
+{% endblock %}

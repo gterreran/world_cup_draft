@@ -1,4 +1,5 @@
 from django.urls import reverse
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
@@ -12,7 +13,7 @@ from .forms import (
     LeagueSettingsForm,
 )
 from .models import League, LeagueMember
-from .permissions import can_manage_league, is_participant, is_commissioner, is_platform_owner
+from .permissions import can_manage_league, is_commissioner, is_participant, is_platform_owner
 from scoring.services import (
     compute_team_contribution,
     recompute_league_standings,
@@ -30,6 +31,7 @@ from django.contrib import messages
 from integrations.sleeper import SleeperAPIError, get_rosters, get_users
 from drafts.services import get_draft_picks, serialize_draft_state
 from assignments.services import draft_is_running
+from accounts.services import get_or_create_profile
 
 def home(request):
     return render(request, "base/home.html")
@@ -37,35 +39,41 @@ def home(request):
 
 @login_required
 def league_list(request):
-    if request.user.is_staff or request.user.is_superuser:
+    profile = get_or_create_profile(request.user)
+
+    if is_platform_owner(request.user):
         leagues = League.objects.select_related("commissioner", "tournament")
     else:
         leagues = (
-            League.objects.filter(members__user=request.user)
-            | League.objects.filter(commissioner=request.user)
-        ).select_related("commissioner", "tournament").distinct()
+            League.objects.filter(
+                Q(commissioner=request.user)
+                | Q(followers__user=request.user)
+            )
+            .select_related("commissioner", "tournament")
+            .distinct()
+        )
 
     league_rows = []
     for league in leagues:
         is_owner = is_platform_owner(request.user)
         is_commissioner_for_league = is_commissioner(request.user, league)
-        is_participant_for_league = is_participant(request.user, league)
+        is_following_league = profile.leagues_followed.filter(pk=league.pk).exists()
 
         if is_owner:
             role_label = "Platform owner"
-        elif is_commissioner_for_league and is_participant_for_league:
-            role_label = "Commissioner / participant"
+        elif is_commissioner_for_league and is_following_league:
+            role_label = "Commissioner / following"
         elif is_commissioner_for_league:
             role_label = "Commissioner"
         else:
-            role_label = "Participant"
+            role_label = "Following"
 
         league_rows.append(
             {
                 "league": league,
                 "role_label": role_label,
                 "is_commissioner": is_commissioner_for_league,
-                "is_participant": is_participant_for_league,
+                "is_participant": is_following_league,
                 "is_platform_owner": is_owner,
             }
         )
@@ -77,6 +85,38 @@ def league_list(request):
             "league_rows": league_rows,
         },
     )
+
+
+@login_required
+def follow_league(request, slug: str):
+    """Add a public league to the authenticated user's dashboard."""
+    league = get_object_or_404(League, slug=slug)
+
+    if request.method != "POST":
+        return redirect("league_detail", slug=league.slug)
+
+    profile = get_or_create_profile(request.user)
+    profile.leagues_followed.add(league)
+    messages.success(request, f"{league.name} was added to your leagues.")
+    return redirect("league_detail", slug=league.slug)
+
+
+@login_required
+def unfollow_league(request, slug: str):
+    """Remove a followed league from the authenticated user's dashboard."""
+    league = get_object_or_404(League, slug=slug)
+
+    if request.method != "POST":
+        return redirect("league_detail", slug=league.slug)
+
+    if is_commissioner(request.user, league):
+        messages.error(request, "Commissioners cannot unfollow leagues they manage.")
+        return redirect("league_detail", slug=league.slug)
+
+    profile = get_or_create_profile(request.user)
+    profile.leagues_followed.remove(league)
+    messages.success(request, f"{league.name} was removed from your leagues.")
+    return redirect("league_detail", slug=league.slug)
 
 
 @login_required
@@ -162,6 +202,7 @@ def league_detail(request, slug: str):
             "draft_is_running": draft_is_running(league),
             "can_manage_league": can_manage_league(request.user, league),
             "is_participant": is_participant(request.user, league),
+            "is_following": is_participant(request.user, league),
         },
     )
 

@@ -24,12 +24,17 @@ def is_commissioner(user, league: League) -> bool:
     )
 
 
+def is_registered_user(user) -> bool:
+    """Return True when the visitor has an authenticated app account."""
+    return bool(user and user.is_authenticated)
+
+
 def is_participant(user, league: League) -> bool:
-    """Return True when the user is linked to a member in the league."""
-    if not user or not user.is_authenticated:
+    """Return True when the user follows the league in their dashboard."""
+    if not is_registered_user(user):
         return False
 
-    return league.members.filter(user=user).exists()
+    return league.followers.filter(user=user).exists()
 
 
 def can_manage_league(user, league: League) -> bool:

@@ -1,15 +1,21 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>World Cup Draft Order</title>
-</head>
-<body>
-  <main>
+{% extends "base/base.html" %}
+
+{% block title %}World Cup Draft Order{% endblock %}
+
+{% block content %}
+  <section class="card">
     <h1>World Cup Draft Order</h1>
     <p>Turn an international soccer tournament into your fantasy football draft order.</p>
     <p>Create a league, assign national teams, track results, and let the standings decide the picks.</p>
-  </main>
-</body>
-</html>
+
+    <div class="actions">
+      {% if request.user.is_authenticated %}
+        <a class="button" href="{% url 'league_list' %}">View your leagues</a>
+        <a class="button secondary" href="{% url 'league_create' %}">Create a league</a>
+      {% else %}
+        <a class="button" href="{% url 'signup' %}">Sign up</a>
+        <a class="button secondary" href="{% url 'login' %}">Log in</a>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

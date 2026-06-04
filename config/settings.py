@@ -98,6 +98,7 @@ if RAILWAY_PUBLIC_DOMAIN:
 # Application definition
 
 INSTALLED_APPS = [
+    'accounts.apps.AccountsConfig',
     'leagues',
     'tournaments',
     'assignments',
