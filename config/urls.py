@@ -23,6 +23,7 @@ urlpatterns = [
     path("leagues/", league_views.league_list, name="league_list"),
     path("leagues/create/", league_views.league_create, name="league_create"),
     path("leagues/<slug:slug>/", league_views.league_detail, name="league_detail"),
+    path("leagues/<slug:slug>/delete/", league_views.league_delete, name="league_delete"),
     path("leagues/<slug:slug>/follow/", league_views.follow_league, name="follow_league"),
     path("leagues/<slug:slug>/unfollow/", league_views.unfollow_league, name="unfollow_league"),
     path(

@@ -123,7 +123,8 @@ def reset_assignment_view(request, slug: str):
     messages.success(
         request,
         f"Reset assignments. Deleted {deleted_count} assigned team"
-        f"{'s' if deleted_count != 1 else ''}, unlocked setup, and reset the draft.",
+        f"{'s' if deleted_count != 1 else ''}, unlocked setup, reset the draft, "
+        "and cleared standings/projections.",
     )
     return redirect("assignment_management", slug=league.slug)
 

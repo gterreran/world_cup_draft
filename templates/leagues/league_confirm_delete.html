@@ -1,0 +1,35 @@
+{% extends "base/base.html" %}
+
+{% block title %}Delete League{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Commissioner controls</p>
+      <h1>Delete League</h1>
+    </div>
+
+    <div class="header-actions">
+      <a class="button secondary" href="{% url 'league_list' %}">Back to leagues</a>
+    </div>
+  </div>
+
+  <section class="card danger-card">
+    <h2>Delete {{ league.name }}?</h2>
+
+    <p>
+      This will permanently remove the league, its managers, team assignments,
+      standings, projection cache, draft state, and follower links.
+    </p>
+
+    <p>
+      The underlying tournament, national teams, and match schedule will not be deleted.
+    </p>
+
+    <form method="post" class="actions">
+      {% csrf_token %}
+      <button type="submit" class="danger-button">Yes, delete this league</button>
+      <a class="button secondary" href="{% url 'league_list' %}">Cancel</a>
+    </form>
+  </section>
+{% endblock %}

@@ -99,6 +99,53 @@ def refresh_leagues_after_tournament_change(
     return results
 
 
+def reset_league_scoring_state(
+    league: League,
+    *,
+    projection_reason: str = "Team assignments were reset.",
+) -> dict[str, int]:
+    """Clear cached standings/projections for a league with no assignments.
+
+    Assignment reset is different from a normal assignment edit: once every
+    assignment is deleted, standings and projections are no longer meaningful.
+    Therefore we remove cached rows instead of recomputing placeholder standings
+    or leaving stale projection values visible.
+
+    Returns a small summary of deleted rows for tests/logs.
+    """
+    from scoring.models import ProjectionEntry, ProjectionJobState
+
+    standings_deleted, _ = StandingEntry.objects.filter(league=league).delete()
+    projections_deleted, _ = ProjectionEntry.objects.filter(league=league).delete()
+
+    job_state, _ = ProjectionJobState.objects.get_or_create(league=league)
+    job_state.status = ProjectionJobState.Status.IDLE
+    job_state.last_job_id = ""
+    job_state.requested_at = None
+    job_state.started_at = None
+    job_state.finished_at = None
+    job_state.last_heartbeat_at = None
+    job_state.error_message = projection_reason[:500]
+    job_state.save(
+        update_fields=[
+            "status",
+            "last_job_id",
+            "requested_at",
+            "started_at",
+            "finished_at",
+            "last_heartbeat_at",
+            "error_message",
+            "updated_at",
+        ]
+    )
+
+    return {
+        "standings_deleted": standings_deleted,
+        "projections_deleted": projections_deleted,
+    }
+
+
+
 
 def compute_team_contribution(league: League, team: NationalTeam) -> dict:
     """Return the current fantasy contribution for one national team.

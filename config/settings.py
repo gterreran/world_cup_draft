@@ -94,6 +94,9 @@ if RAILWAY_PUBLIC_DOMAIN:
     ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
     CSRF_TRUSTED_ORIGINS.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
 
+# Health check endpoint for platforms like Railway that require one.
+ALLOWED_HOSTS.append("healthcheck.railway.app")
+
 
 # Application definition
 

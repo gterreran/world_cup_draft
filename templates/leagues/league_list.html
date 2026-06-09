@@ -30,6 +30,7 @@
             <th>Role</th>
             <th>Tournament</th>
             <th>Managers</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -49,10 +50,18 @@
               </td>
               <td>{{ row.league.tournament }}</td>
               <td>{{ row.league.members.count }}</td>
+              <td>
+                <div class="table-actions">
+                  <a class="button small secondary" href="{% url 'league_detail' row.league.slug %}">Open</a>
+                  {% if row.is_commissioner or row.is_platform_owner %}
+                    <a class="button small danger-link" href="{% url 'league_delete' row.league.slug %}">Delete</a>
+                  {% endif %}
+                </div>
+              </td>
             </tr>
           {% empty %}
             <tr>
-              <td colspan="4">No leagues yet. Create one, or follow a public league link shared by a commissioner.</td>
+              <td colspan="5">No leagues yet. Create one, or follow a public league link shared by a commissioner.</td>
             </tr>
           {% endfor %}
         </tbody>

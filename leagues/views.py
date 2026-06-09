@@ -121,6 +121,24 @@ def unfollow_league(request, slug: str):
 
 
 @login_required
+def league_delete(request, slug: str):
+    """Allow a commissioner to safely delete one of their leagues."""
+    league = get_object_or_404(League, slug=slug)
+
+    if not can_manage_league(request.user, league):
+        messages.error(request, "Only the commissioner can delete this league.")
+        return redirect("league_list")
+
+    if request.method == "POST":
+        league_name = league.name
+        league.delete()
+        messages.success(request, f"Deleted league {league_name}.")
+        return redirect("league_list")
+
+    return render(request, "leagues/league_confirm_delete.html", {"league": league})
+
+
+@login_required
 def league_create(request):
     if request.method == "POST":
         form = LeagueCreateForm(request.POST)

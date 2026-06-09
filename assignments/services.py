@@ -6,7 +6,7 @@ from django.utils import timezone
 from leagues.models import League, LeagueMember
 from tournaments.models import NationalTeam
 from scoring.projections import mark_projection_entries_stale
-from scoring.services import recompute_league_standings
+from scoring.services import recompute_league_standings, reset_league_scoring_state
 from drafts.services import reset_draft
 
 from .models import TeamAssignment
@@ -222,7 +222,8 @@ def reset_assignments(
 
     league.save(update_fields=update_fields)
 
-    _refresh_assignment_dependents(league, stale_reason=stale_reason)
+    reset_draft(league)
+    reset_league_scoring_state(league, projection_reason=stale_reason)
 
     return deleted_count
 

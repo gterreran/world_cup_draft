@@ -973,6 +973,29 @@ tbody tr:hover {
   width: auto;
 }
 
+
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.button.small {
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+
+.button.danger-link {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.button.danger-link:hover {
+  background: #fecaca;
+  color: #7f1d1d;
+}
+
 .danger-card {
   border-color: #fecaca;
   background: #fff7f7;
