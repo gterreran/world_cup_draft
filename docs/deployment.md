@@ -220,6 +220,115 @@ However this needs to be manually generated.
 
 ---
 
+---
+
+# Railway Service Settings
+
+The production deployment uses separate Railway services for separate long-running processes.
+
+The web app and the projection worker use the same GitHub repository and the same Django codebase, but they run different start commands.
+
+```text
+web service
+  command: ./start.sh
+  public domain: yes
+
+projection worker service
+  command: python manage.py run_projection_worker
+  public domain: no
+```
+
+## Web Service Settings
+
+Recommended settings for the main web app:
+
+```text
+Serverless: OFF
+Public domain: YES
+Deployment overlap: 30 seconds
+Deployment draining / teardown: 30 seconds
+Healthcheck: /healthz/
+```
+
+Serverless mode can work for a normal HTTP app, but it is better to keep this app always-on during active testing and tournament use.
+
+Reasons:
+
+* login/signup should feel responsive
+* commissioner actions should not cold-start
+* draft presentation pages should stay responsive
+* future websocket/live-score behavior will be easier to reason about
+
+Suggested Railway variables:
+
+```text
+RAILWAY_DEPLOYMENT_OVERLAP_SECONDS=30
+RAILWAY_DEPLOYMENT_DRAINING_SECONDS=30
+```
+
+## Projection Worker Service Settings
+
+Recommended settings for the projection worker:
+
+```text
+Serverless: OFF
+Public domain: NO
+Deployment overlap: 0 seconds or very low
+Deployment draining / teardown: 30 seconds
+Healthcheck: not required
+```
+
+The worker must not use Serverless mode.
+
+The projection worker listens to Redis. It is not woken by browser traffic. If the worker sleeps, projection jobs can remain queued without being processed.
+
+The worker should not have a public domain because it does not serve HTTP traffic.
+
+Suggested Railway variable:
+
+```text
+RAILWAY_DEPLOYMENT_DRAINING_SECONDS=30
+```
+
+---
+
+# Healthcheck Endpoint
+
+The main web service should expose a simple healthcheck endpoint.
+
+Suggested path:
+
+```text
+/healthz/
+```
+
+Example view:
+
+```python
+from django.http import HttpResponse
+
+
+def healthz(request):
+    return HttpResponse("ok", content_type="text/plain")
+```
+
+Example URL entry:
+
+```python
+path("healthz/", healthz, name="healthz")
+```
+
+Configure the Railway web service healthcheck path as:
+
+```text
+/healthz/
+```
+
+The healthcheck should be lightweight. It does not need to perform expensive database queries or projection checks.
+
+The worker does not need an HTTP healthcheck. Worker availability is tracked internally through `ProjectionWorkerStatus`.
+
+
 # Railway CLI
 
 In order to run commands locally that connect to the production database, the Railway CLI is required.
