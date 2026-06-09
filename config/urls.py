@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.urls import include, path
 from django.http import HttpResponse
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.views.generic.base import RedirectView
 
 from leagues import views as league_views
 from assignments import views as assignment_views
@@ -13,6 +15,7 @@ def healthz(request):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("favicon.ico",RedirectView.as_view(url=staticfiles_storage.url("img/favicon.ico")),),
     path("healthz/", healthz, name="healthz"),
     path("accounts/", include("accounts.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
