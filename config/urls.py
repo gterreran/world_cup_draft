@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import include, path
+from django.http import HttpResponse
 
 from leagues import views as league_views
 from assignments import views as assignment_views
@@ -7,8 +8,12 @@ from drafts import views as draft_views
 from scoring import views as scoring_views
 from tournaments import views as tournament_views
 
+def healthz(request):
+    return HttpResponse("ok", content_type="text/plain")
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("healthz/", healthz, name="healthz"),
     path("accounts/", include("accounts.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
     path("", league_views.home, name="home"),
