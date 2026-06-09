@@ -6,11 +6,53 @@ from tournaments.models import Match, NationalTeam
 from tournaments.standings import compute_group_standings
 
 
+@dataclass(frozen=True)
+class GroupResultRecord:
+    """Remaining group-stage W/D/L record for one team in one scenario.
+
+    The record intentionally counts only matches that have not yet been
+    completed. This makes it directly useful for projection logic, where the
+    current fantasy score is already known and only remaining points should be
+    maximized.
+    """
+
+    wins: int = 0
+    draws: int = 0
+    losses: int = 0
+
+
+@dataclass
+class PositionOutcomeEnvelope:
+    """Compact description of how a team can still reach one position."""
+
+    position: int
+    possible_table_points: set[int]
+    possible_result_records: set[GroupResultRecord]
+
+    @property
+    def best_table_points(self) -> int | None:
+        if not self.possible_table_points:
+            return None
+        return max(self.possible_table_points)
+
+    @property
+    def worst_table_points(self) -> int | None:
+        if not self.possible_table_points:
+            return None
+        return min(self.possible_table_points)
+
+
 @dataclass
 class TeamOutcomeEnvelope:
     possible_positions: set[int]
     best_third_place_points: int | None
     worst_third_place_points: int | None
+    position_outcomes: dict[int, PositionOutcomeEnvelope]
+
+    def outcome_for_position(self, position: int) -> PositionOutcomeEnvelope | None:
+        """Return compact scenario information for a reachable position."""
+
+        return self.position_outcomes.get(position)
 
 
 @dataclass
@@ -287,6 +329,22 @@ def _compute_group_outcome_envelope(tournament, group: str) -> GroupOutcomeEnvel
         for team_id in team_ids
     }
 
+    position_table_points = {
+        team_id: {
+            position: set()
+            for position in (1, 2, 3, 4)
+        }
+        for team_id in team_ids
+    }
+
+    position_result_records = {
+        team_id: {
+            position: set()
+            for position in (1, 2, 3, 4)
+        }
+        for team_id in team_ids
+    }
+
     max_third_place_points = 0
     min_third_place_points = None
 
@@ -297,6 +355,10 @@ def _compute_group_outcome_envelope(tournament, group: str) -> GroupOutcomeEnvel
 
     for outcomes in outcomes_iterator:
         scenario_points = dict(base_points)
+        scenario_records = {
+            team_id: GroupResultRecord()
+            for team_id in team_ids
+        }
 
         for match, outcome in zip(remaining_matches, outcomes):
             home_points, away_points = POINTS_PER_RESULT[outcome]
@@ -304,12 +366,25 @@ def _compute_group_outcome_envelope(tournament, group: str) -> GroupOutcomeEnvel
             scenario_points[match.home_team_id] += home_points
             scenario_points[match.away_team_id] += away_points
 
+            scenario_records[match.home_team_id] = _updated_record_for_outcome(
+                scenario_records[match.home_team_id],
+                home_points,
+            )
+            scenario_records[match.away_team_id] = _updated_record_for_outcome(
+                scenario_records[match.away_team_id],
+                away_points,
+            )
+
         scenario_positions = _possible_positions_by_points_only(scenario_points)
 
         scenario_third_points = []
 
         for team_id, positions in scenario_positions.items():
             possible_positions[team_id].update(positions)
+
+            for position in positions:
+                position_table_points[team_id][position].add(scenario_points[team_id])
+                position_result_records[team_id][position].add(scenario_records[team_id])
 
             if 3 in positions:
                 points = scenario_points[team_id]
@@ -339,6 +414,14 @@ def _compute_group_outcome_envelope(tournament, group: str) -> GroupOutcomeEnvel
                 possible_positions=possible_positions[team_id],
                 best_third_place_points=best_third_place_points[team_id],
                 worst_third_place_points=worst_third_place_points[team_id],
+                position_outcomes={
+                    position: PositionOutcomeEnvelope(
+                        position=position,
+                        possible_table_points=position_table_points[team_id][position],
+                        possible_result_records=position_result_records[team_id][position],
+                    )
+                    for position in sorted(possible_positions[team_id])
+                },
             )
             for team_id in team_ids
         },
@@ -442,6 +525,33 @@ def _third_place_points_guarantee_elimination(
             higher_groups += 1
 
     return higher_groups >= 8
+
+
+def _updated_record_for_outcome(
+    record: GroupResultRecord,
+    table_points: int,
+) -> GroupResultRecord:
+    """Return a new W/D/L record after one remaining group result."""
+
+    if table_points == 3:
+        return GroupResultRecord(
+            wins=record.wins + 1,
+            draws=record.draws,
+            losses=record.losses,
+        )
+
+    if table_points == 1:
+        return GroupResultRecord(
+            wins=record.wins,
+            draws=record.draws + 1,
+            losses=record.losses,
+        )
+
+    return GroupResultRecord(
+        wins=record.wins,
+        draws=record.draws,
+        losses=record.losses + 1,
+    )
 
 
 def _apply_completed_match(points: dict[int, int], match: Match) -> None:

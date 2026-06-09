@@ -349,10 +349,61 @@ def _refresh_assignment_dependents(
     *,
     stale_reason: str,
 ) -> None:
-    """Refresh derived state after assignment changes."""
+    """Refresh derived state after assignment changes.
+
+    Assignment edits should immediately refresh cheap derived state and reset the
+    draft reveal state. Projection entries are always marked stale, but the
+    expensive background recomputation is only requested once the league has a
+    complete assignment set.
+    """
     recompute_league_standings(league)
     mark_projection_entries_stale(league, reason=stale_reason)
     reset_draft(league)
+    request_projection_recompute_when_assignments_complete(
+        league,
+        reason=stale_reason,
+    )
+
+
+def required_assignment_count(league: League) -> int:
+    """Return how many team assignments are required for a complete league."""
+    return league.members.count() * league.teams_per_manager
+
+
+def assignments_are_complete(league: League) -> bool:
+    """Return whether every manager slot has an assigned team."""
+    required_count = required_assignment_count(league)
+
+    if required_count <= 0:
+        return False
+
+    current_count = TeamAssignment.objects.filter(league=league).count()
+    return current_count == required_count
+
+
+def request_projection_recompute_when_assignments_complete(
+    league: League,
+    *,
+    reason: str,
+) -> bool:
+    """Queue projection recomputation if the league assignment set is complete.
+
+    Returns
+    -------
+    bool
+        Whether a projection recompute request was scheduled.
+    """
+    if not assignments_are_complete(league):
+        return False
+
+    def _queue_recompute() -> None:
+        from scoring.jobs import request_projection_recompute
+
+        refreshed_league = League.objects.get(pk=league.pk)
+        request_projection_recompute(refreshed_league, reason=reason)
+
+    transaction.on_commit(_queue_recompute)
+    return True
 
 
 def _build_tiered_random_assignments_without_group_duplicates(

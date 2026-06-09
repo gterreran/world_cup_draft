@@ -25,6 +25,7 @@ from scoring.projections import (
     mark_projection_entries_stale,
 )
 from scoring.defaults import default_scoring_config, default_tiebreaker_config
+from scoring.models import ProjectionJobState, ProjectionWorkerStatus
 
 from django.contrib import messages
 
@@ -188,6 +189,8 @@ def league_detail(request, slug: str):
 
     ensure_projection_entries_exist(league)
     projections_by_member_id = get_projection_entries_by_member_id(league)
+    projection_job_state, _ = ProjectionJobState.objects.get_or_create(league=league)
+    projection_worker_status = ProjectionWorkerStatus.get_default()
 
     return render(
         request,
@@ -199,6 +202,12 @@ def league_detail(request, slug: str):
             "assignment_cards_by_member": assignment_cards_by_member,
             "standings": standings,
             "projections_by_member_id": projections_by_member_id,
+            "projection_job_state": projection_job_state,
+            "projection_job_effective_status": projection_job_state.effective_status,
+            "projection_job_effective_status_label": projection_job_state.effective_status_label,
+            "projection_worker_status": projection_worker_status,
+            "projection_worker_status_slug": projection_worker_status.status_slug,
+            "projection_worker_status_label": projection_worker_status.status_label,
             "draft_is_running": draft_is_running(league),
             "can_manage_league": can_manage_league(request.user, league),
             "is_participant": is_participant(request.user, league),

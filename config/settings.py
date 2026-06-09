@@ -249,3 +249,10 @@ else:
             "BACKEND": "channels.layers.InMemoryChannelLayer",
         },
     }
+
+# Background projection worker settings
+PROJECTION_REDIS_URL = os.getenv("PROJECTION_REDIS_URL") or os.getenv("REDIS_URL")
+PROJECTION_JOB_QUEUE = os.getenv(
+    "PROJECTION_JOB_QUEUE",
+    "worldcupdraft:projection_jobs",
+)

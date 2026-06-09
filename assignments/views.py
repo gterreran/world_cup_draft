@@ -15,11 +15,11 @@ from .services import (
     hide_assignment,
     remove_team_assignment,
     reset_assignments,
+    request_projection_recompute_when_assignments_complete,
     reveal_all_assignments,
     reveal_assignment,
 )
 from scoring.services import recompute_league_standings
-from scoring.projections import mark_projection_entries_stale
 from drafts.services import reset_draft
 
 
@@ -92,7 +92,7 @@ def random_assignment(request, slug: str):
     try:
         assign_teams_randomly(league)
         recompute_league_standings(league)
-        mark_projection_entries_stale(
+        request_projection_recompute_when_assignments_complete(
             league,
             reason="Assignments regenerated.",
         )

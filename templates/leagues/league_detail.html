@@ -137,7 +137,7 @@
 
         <form method="post" action="{% url 'recompute_projections' league.slug %}" class="inline-form">
           {% csrf_token %}
-          <button type="submit" class="secondary-button">Recalculate max points</button>
+          <button type="submit" class="secondary-button">Queue max-points recompute</button>
         </form>
       </div>
     </section>
@@ -147,7 +147,41 @@
     <div class="section-header">
       <div>
         <h2>Standings</h2>
-        <p>Current draft order based on tournament scoring. Max points are cached and recalculated on demand.</p>
+        <p>Current draft order based on tournament scoring. Max points are cached and recomputed by the background worker.</p>
+        {% if projection_job_state %}
+          <p class="muted-text">
+            Projection job:
+            <span class="status-pill projection-job-{{ projection_job_effective_status }}">{{ projection_job_effective_status_label }}</span>
+            {% if projection_job_effective_status == "interrupted" %}
+              Last job heartbeat: {{ projection_job_state.last_heartbeat_at|date:"M j, Y, g:i a" }}.
+              The previous job likely stopped before finishing. Queue recompute again to recover.
+            {% elif projection_job_state.finished_at %}
+              Last finished: {{ projection_job_state.finished_at|date:"M j, Y, g:i a" }}.
+            {% elif projection_job_state.started_at %}
+              Started: {{ projection_job_state.started_at|date:"M j, Y, g:i a" }}.
+            {% elif projection_job_state.requested_at %}
+              Requested: {{ projection_job_state.requested_at|date:"M j, Y, g:i a" }}.
+            {% endif %}
+            {% if projection_job_state.error_message %}
+              <span class="form-error">{{ projection_job_state.error_message }}</span>
+            {% endif %}
+          </p>
+        {% endif %}
+
+        {% if projection_worker_status %}
+          <p class="muted-text">
+            Worker process:
+            <span class="status-pill projection-worker-{{ projection_worker_status_slug }}">{{ projection_worker_status_label }}</span>
+            {% if projection_worker_status.last_seen_at %}
+              Last seen: {{ projection_worker_status.last_seen_at|date:"M j, Y, g:i a" }}.
+            {% else %}
+              No worker heartbeat has been recorded yet.
+            {% endif %}
+            {% if projection_worker_status_slug == "offline" and projection_job_effective_status == "queued" %}
+              Queued jobs will wait until the worker is started.
+            {% endif %}
+          </p>
+        {% endif %}
       </div>
     </div>
 

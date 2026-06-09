@@ -206,13 +206,15 @@ def _ensure_draft_assignments(league: League) -> None:
     if TeamAssignment.objects.filter(league=league).exists():
         return
 
-    from assignments.services import assign_teams_randomly
-    from scoring.projections import mark_projection_entries_stale
+    from assignments.services import (
+        assign_teams_randomly,
+        request_projection_recompute_when_assignments_complete,
+    )
     from scoring.services import recompute_league_standings
 
     assign_teams_randomly(league)
     recompute_league_standings(league)
-    mark_projection_entries_stale(
+    request_projection_recompute_when_assignments_complete(
         league,
         reason="Assignments generated from live draft start.",
     )

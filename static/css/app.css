@@ -1989,3 +1989,38 @@ tbody tr:hover {
   color: #912018;
   border: 1px solid #fda29b;
 }
+.projection-job-queued {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.projection-job-running {
+  background: #eef2ff;
+  color: #155eef;
+}
+
+.projection-job-succeeded,
+.projection-job-idle {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.projection-job-failed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.projection-job-interrupted {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.projection-worker-online {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.projection-worker-offline {
+  background: #fee2e2;
+  color: #991b1b;
+}

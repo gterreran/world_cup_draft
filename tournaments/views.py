@@ -8,8 +8,7 @@ from leagues.permissions import can_edit_match_results
 from .forms import MatchResultForm
 from .models import Match, Tournament
 from .services import build_group_stage_context
-from scoring.services import recompute_league_standings
-from scoring.projections import mark_projection_entries_stale
+from scoring.services import refresh_leagues_after_tournament_change
 from collections import defaultdict
 from tournaments.progression import recompute_tournament_progression
 
@@ -55,14 +54,27 @@ def match_result_edit(request, slug: str, match_id: int):
             form.save()
 
             recompute_tournament_progression(league.tournament)
-            recompute_league_standings(league)
-            mark_projection_entries_stale(
-                league,
+            refresh_results = refresh_leagues_after_tournament_change(
+                league.tournament,
                 reason="Match result changed.",
             )
+
+            unavailable_messages = [
+                result["message"]
+                for result in refresh_results
+                if result["status"] == "unavailable"
+            ]
+            for warning_message in unavailable_messages:
+                messages.warning(request, warning_message)
+
+            queued_count = sum(1 for result in refresh_results if result["queued"])
             messages.success(
                 request,
-                "Match result updated and standings recomputed. Max-points projections need to be recomputed.",
+                "Match result updated. "
+                f"Recomputed standings for {len(refresh_results)} league"
+                f"{'s' if len(refresh_results) != 1 else ''}; "
+                f"queued {queued_count} projection recompute job"
+                f"{'s' if queued_count != 1 else ''}.",
             )
             return redirect("match_list", slug=league.slug)
     else:

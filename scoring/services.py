@@ -52,6 +52,53 @@ def recompute_league_standings(league: League) -> list[StandingEntry]:
     return StandingEntry.objects.bulk_create(entries)
 
 
+def refresh_leagues_after_tournament_change(
+    tournament,
+    *,
+    reason: str = "Tournament state changed.",
+) -> list[dict]:
+    """Refresh league scoring caches after a tournament-level change.
+
+    A match result belongs to the tournament, not to one specific league.
+    Therefore every league using that tournament needs fresh standings and a
+    projection refresh request. Projection recomputation is queued through the
+    public background-job API so callers do not need to know about Redis.
+
+    Returns a small list of per-league results for UI messages or logs.
+    """
+    from scoring.jobs import ProjectionQueueUnavailable, request_projection_recompute
+
+    results = []
+
+    leagues = League.objects.filter(tournament=tournament).order_by("slug")
+
+    for league in leagues:
+        recompute_league_standings(league)
+
+        try:
+            queue_result = request_projection_recompute(league, reason=reason)
+        except ProjectionQueueUnavailable as exc:
+            results.append(
+                {
+                    "league": league,
+                    "queued": False,
+                    "status": "unavailable",
+                    "message": str(exc),
+                }
+            )
+        else:
+            results.append(
+                {
+                    "league": league,
+                    "queued": queue_result.queued,
+                    "status": queue_result.status,
+                    "message": queue_result.message,
+                }
+            )
+
+    return results
+
+
 
 def compute_team_contribution(league: League, team: NationalTeam) -> dict:
     """Return the current fantasy contribution for one national team.

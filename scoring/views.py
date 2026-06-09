@@ -5,8 +5,9 @@ from django.shortcuts import get_object_or_404, redirect
 from leagues.models import League
 from leagues.permissions import can_manage_league
 
+from .jobs import ProjectionQueueUnavailable, request_projection_recompute
 from .services import recompute_league_standings
-from .projections import mark_projection_entries_stale, recompute_projection_entries
+from .projections import mark_projection_entries_stale
 
 
 @login_required
@@ -30,6 +31,7 @@ def recompute_standings(request, slug: str):
 
     return redirect("league_detail", slug=league.slug)
 
+
 @login_required
 def recompute_projections(request, slug: str):
     league = get_object_or_404(League, slug=slug)
@@ -39,7 +41,17 @@ def recompute_projections(request, slug: str):
         return redirect("league_detail", slug=league.slug)
 
     if request.method == "POST":
-        recompute_projection_entries(league)
-        messages.success(request, "Max-points projections recomputed.")
+        try:
+            result = request_projection_recompute(
+                league,
+                reason="Manual projection recompute requested.",
+            )
+        except ProjectionQueueUnavailable as exc:
+            messages.error(request, str(exc))
+        else:
+            if result.queued:
+                messages.success(request, result.message)
+            else:
+                messages.info(request, result.message)
 
     return redirect("league_detail", slug=league.slug)
