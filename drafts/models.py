@@ -10,6 +10,7 @@ class DraftState(models.Model):
         FINISHED = "finished", "Finished"
 
     class RevealPhase(models.TextChoices):
+        BUFFER = "buffer", "Draft started"
         MANAGER = "manager", "Manager revealed"
         TEAM = "team", "Team revealed"
         COMPLETE = "complete", "Complete"

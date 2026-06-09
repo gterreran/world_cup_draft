@@ -44,16 +44,7 @@ def assign_teams_randomly(league: League, *, clear_existing: bool = True) -> Non
         )
 
     TeamAssignment.objects.bulk_create(assignments)
-
-    created_assignments = list(
-        TeamAssignment.objects.filter(league=league).order_by(
-            *_draft_assignment_ordering(league)
-        )
-    )
-    for reveal_order, assignment in enumerate(created_assignments, start=1):
-        assignment.reveal_order = reveal_order
-
-    TeamAssignment.objects.bulk_update(created_assignments, ["reveal_order"])
+    _assign_random_reveal_order(league)
 
 
 @transaction.atomic
@@ -152,6 +143,49 @@ def _draft_assignment_ordering(league: League) -> tuple[str, ...]:
         "national_team__pot",
         "national_team__name",
     )
+
+
+def _assign_random_reveal_order(league: League) -> None:
+    """Assign a randomized live-draft reveal order without changing assignments.
+
+    The reveal order is presentation-only: all teams are still assigned before the
+    draft starts. For tiered/pot drafts we keep pots grouped in order, but shuffle
+    the assignments inside each pot so the side-by-side display cannot reveal the
+    whole pot at once.
+    """
+    assignments = list(
+        TeamAssignment.objects.filter(league=league)
+        .select_related("member", "national_team")
+        .order_by(*_draft_assignment_ordering(league))
+    )
+
+    if not assignments:
+        return
+
+    randomized_assignments: list[TeamAssignment] = []
+
+    if league.assignment_method == League.AssignmentMethod.TIERED_RANDOM:
+        pots = sorted(
+            {assignment.national_team.pot for assignment in assignments},
+            key=lambda value: (value is None, value or 0),
+        )
+
+        for pot in pots:
+            pot_assignments = [
+                assignment
+                for assignment in assignments
+                if assignment.national_team.pot == pot
+            ]
+            random.shuffle(pot_assignments)
+            randomized_assignments.extend(pot_assignments)
+    else:
+        randomized_assignments = assignments[:]
+        random.shuffle(randomized_assignments)
+
+    for reveal_order, assignment in enumerate(randomized_assignments, start=1):
+        assignment.reveal_order = reveal_order
+
+    TeamAssignment.objects.bulk_update(randomized_assignments, ["reveal_order"])
 
 
 @transaction.atomic

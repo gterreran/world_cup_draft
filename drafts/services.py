@@ -98,6 +98,9 @@ def serialize_draft_state(league: League) -> dict:
     elif state.status == DraftState.Status.WAITING:
         index = -1
         phase = "idle"
+    elif state.reveal_phase == DraftState.RevealPhase.BUFFER:
+        index = -1
+        phase = "buffer"
     else:
         index = min(state.current_pick_index, len(picks) - 1)
         phase = state.reveal_phase
@@ -121,7 +124,7 @@ def start_draft(league: League) -> DraftState:
     state = get_or_create_draft_state(league)
     state.status = DraftState.Status.RUNNING
     state.current_pick_index = 0
-    state.reveal_phase = DraftState.RevealPhase.MANAGER
+    state.reveal_phase = DraftState.RevealPhase.BUFFER
     state.autoplay = False
     state.save(
         update_fields=[
@@ -147,7 +150,9 @@ def advance_draft(league: League) -> DraftState:
     if state.status == DraftState.Status.FINISHED:
         return state
 
-    if state.reveal_phase == DraftState.RevealPhase.MANAGER:
+    if state.reveal_phase == DraftState.RevealPhase.BUFFER:
+        state.reveal_phase = DraftState.RevealPhase.MANAGER
+    elif state.reveal_phase == DraftState.RevealPhase.MANAGER:
         _reveal_assignment_for_pick(league, state.current_pick_index)
         state.reveal_phase = DraftState.RevealPhase.TEAM
     elif state.current_pick_index + 1 < len(picks):

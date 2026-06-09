@@ -32,7 +32,7 @@
 
     const state = {
       index: Number.isInteger(initialDraftState.index) ? initialDraftState.index : -1,
-      phase: initialDraftState.phase || "idle", // idle, manager, team, complete
+      phase: initialDraftState.phase || "idle", // idle, buffer, manager, team, complete
       timer: null,
       isAutoPlaying: Boolean(initialDraftState.autoplay),
       isBusy: false,
@@ -155,6 +155,33 @@
       }
 
       return parts.join(" · ") || "World Cup team";
+    }
+
+    function compareStrings(left, right) {
+      return String(left || "").localeCompare(String(right || ""), undefined, {
+        sensitivity: "base",
+        numeric: true,
+      });
+    }
+
+    function sortManagerPicksForDisplay(value) {
+      return [...value].sort((left, right) => {
+        const byManager = compareStrings(left.manager, right.manager);
+        if (byManager !== 0) {
+          return byManager;
+        }
+        return compareStrings(left.team, right.team);
+      });
+    }
+
+    function sortTeamPicksForDisplay(value) {
+      return [...value].sort((left, right) => {
+        const byTeam = compareStrings(left.team, right.team);
+        if (byTeam !== 0) {
+          return byTeam;
+        }
+        return compareStrings(left.manager, right.manager);
+      });
     }
 
     function getCurrentPick() {
@@ -378,8 +405,12 @@
 
     function renderRemainingLists() {
       const activePot = getActivePot();
-      const managerPicks = activePot ? getRemainingManagerPicks(activePot) : [];
-      const teamPicks = activePot ? getRemainingTeamPicks(activePot) : [];
+      const managerPicks = activePot
+        ? sortManagerPicksForDisplay(getRemainingManagerPicks(activePot))
+        : [];
+      const teamPicks = activePot
+        ? sortTeamPicksForDisplay(getRemainingTeamPicks(activePot))
+        : [];
       const currentPick = getCurrentPick();
       const highlightedManager = state.phase === "manager" && currentPick ? currentPick.manager : null;
 
@@ -445,7 +476,9 @@
       elements.autoButton.disabled = !isActive || state.isBusy;
       elements.autoButton.textContent = state.isAutoPlaying ? "Pause auto-play" : "Auto-play";
 
-      if (state.phase === "manager") {
+      if (state.phase === "buffer") {
+        elements.nextButton.textContent = "Draw first manager";
+      } else if (state.phase === "manager") {
         elements.nextButton.textContent = "Reveal team";
       } else if (state.phase === "team") {
         elements.nextButton.textContent = state.index >= picks.length - 1 ? "Complete draft" : "Next manager";
@@ -493,6 +526,16 @@
         ? "Press Start draft to reveal the first manager."
         : "Press Start draft to generate hidden assignments and begin the reveal.";
       elements.managerPill.textContent = "Waiting for commissioner";
+      updateDraftState();
+    }
+
+    function renderBuffer() {
+      elements.card.classList.remove("is-revealing", "is-manager-revealing");
+      elements.pickLabel.textContent = "Draft started";
+      elements.flag.textContent = "🎲";
+      elements.teamName.textContent = "Ready for the first draw";
+      elements.teamMeta.textContent = "Waiting for the commissioner to start the draft.";
+      elements.managerPill.textContent = "Ready for the first draw";
       updateDraftState();
     }
 
@@ -563,6 +606,8 @@
 
       if (state.phase === "idle") {
         renderIdle();
+      } else if (state.phase === "buffer") {
+        renderBuffer();
       } else if (state.phase === "manager") {
         renderCurrentManager(shouldAnimate);
       } else if (state.phase === "team") {
