@@ -133,10 +133,11 @@ class LeagueScoringSettingsForm(forms.Form):
         help_text="Applied in order after total fantasy points.",
     )
 
-    def __init__(self, *args, league=None, **kwargs):
+    def __init__(self, *args, league=None, read_only: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.league = league
+        self.read_only = read_only
 
         if league is None:
             return
@@ -148,6 +149,10 @@ class LeagueScoringSettingsForm(forms.Form):
             self.fields[key].initial = scoring_config[key]
 
         self.fields["tiebreakers"].initial = tiebreaker_config
+
+        if read_only:
+            for field in self.fields.values():
+                field.disabled = True
 
     def save(self):
         if self.league is None:

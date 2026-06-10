@@ -5,7 +5,7 @@
 {% block content %}
   <div class="page-header">
     <div>
-      <p class="eyebrow">Commissioner controls</p>
+      <p class="eyebrow">League rules</p>
       <h1>Scoring &amp; Tiebreakers</h1>
       <p>{{ league.name }}</p>
     </div>
@@ -17,6 +17,12 @@
 
   <form method="post" class="card settings-form">
     {% csrf_token %}
+
+    {% if not can_manage_league %}
+      <div class="message message-info">
+        You are viewing this league's scoring and tiebreakers. Only the commissioner can change these values.
+      </div>
+    {% endif %}
 
     {% if form.non_field_errors %}
       <div class="message message-error">{{ form.non_field_errors }}</div>
@@ -57,8 +63,12 @@
     </section>
 
     <div class="actions">
-      <button type="submit">Save scoring settings</button>
-      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Cancel</a>
+      {% if can_manage_league %}
+        <button type="submit">Save scoring settings</button>
+        <a class="button secondary" href="{% url 'league_detail' league.slug %}">Cancel</a>
+      {% else %}
+        <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+      {% endif %}
     </div>
   </form>
 {% endblock %}

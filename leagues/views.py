@@ -502,14 +502,14 @@ def _redirect_after_assignment_lock_change(request, league: League):
     return redirect("league_detail", slug=league.slug)
 
 
-@login_required
 def league_scoring_settings(request, slug: str):
     league = get_object_or_404(League, slug=slug)
-
-    if not can_manage_league(request.user, league):
-        raise PermissionDenied("Only the commissioner can manage this league.")
+    can_manage = can_manage_league(request.user, league)
 
     if request.method == "POST":
+        if not can_manage:
+            raise PermissionDenied("Only the commissioner can change scoring settings.")
+
         form = LeagueScoringSettingsForm(request.POST, league=league)
 
         if form.is_valid():
@@ -525,7 +525,7 @@ def league_scoring_settings(request, slug: str):
             )
             return redirect("league_detail", slug=league.slug)
     else:
-        form = LeagueScoringSettingsForm(league=league)
+        form = LeagueScoringSettingsForm(league=league, read_only=not can_manage)
 
     return render(
         request,
@@ -533,6 +533,7 @@ def league_scoring_settings(request, slug: str):
         {
             "league": league,
             "form": form,
+            "can_manage_league": can_manage,
         },
     )
 

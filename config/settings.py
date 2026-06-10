@@ -97,6 +97,9 @@ if RAILWAY_PUBLIC_DOMAIN:
 # Health check endpoint for platforms like Railway that require one.
 ALLOWED_HOSTS.append("healthcheck.railway.app")
 
+# Allow localhost for local development and testing.
+ALLOWED_HOSTS.append('127.0.0.1')
+
 
 # Application definition
 

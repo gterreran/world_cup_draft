@@ -34,6 +34,7 @@
       <a class="button secondary" href="{% url 'tournament_schedule' league.tournament.slug %}">Full schedule</a>
       <a class="button secondary" href="{% url 'group_stage' league.tournament.slug %}">Group stage</a>
       <a class="button secondary" href="{% url 'bracket_stage' league.tournament.slug %}">Bracket</a>
+      <a class="button secondary" href="{% url 'league_scoring_settings' league.slug %}">Scoring &amp; tiebreakers</a>
       <a class="button" href="{% url 'draft_presentation' league.slug %}">Draft Room</a>
     </div>
   </div>
@@ -113,7 +114,6 @@
         {% endif %}
         <a class="button secondary" href="{% url 'league_settings' league.slug %}">League settings</a>
         <a class="button secondary" href="{% url 'assignment_management' league.slug %}">Manage assignments</a>
-        <a class="button secondary" href="{% url 'league_scoring_settings' league.slug %}">Scoring & tiebreakers</a>
         <a class="button secondary" href="{% url 'match_list' league.slug %}">View/edit matches</a>
       </div>
 
