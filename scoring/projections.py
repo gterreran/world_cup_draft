@@ -9,12 +9,14 @@ import re
 import time
 from typing import Callable, Iterable
 
+from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
 from leagues.models import League, LeagueMember
 from scoring.defaults import default_scoring_config
 from scoring.models import ProjectionEntry, StandingEntry
+from scoring.simulations import SimulationSettings, simulate_league_forecast
 from tournaments.bracket_nodes import BracketInputNode, build_bracket_graph
 from tournaments.mathematical_status import _compute_group_outcome_envelope
 from tournaments.models import Match, NationalTeam, TeamTournamentStatus
@@ -121,6 +123,40 @@ def get_projection_entries_by_member_id(
     }
 
 
+
+def _simulation_settings_from_django_settings() -> SimulationSettings:
+    return SimulationSettings(
+        runs=getattr(settings, "PROJECTION_SIMULATION_RUNS", 10000),
+        mode=getattr(settings, "PROJECTION_SIMULATION_MODE", "seeded"),
+        seed=getattr(settings, "PROJECTION_SIMULATION_SEED", 42),
+        draw_prob=getattr(settings, "PROJECTION_SIMULATION_DRAW_PROB", 0.24),
+        rank_elo_step=getattr(settings, "PROJECTION_SIMULATION_RANK_ELO_STEP", 8.0),
+        regulation_prob=getattr(settings, "PROJECTION_SIMULATION_REGULATION_PROB", 0.75),
+        extra_time_prob=getattr(settings, "PROJECTION_SIMULATION_EXTRA_TIME_PROB", 0.15),
+    )
+
+
+def _simulation_defaults_for_member(simulation_result, member_id: int, computed_at):
+    projection = simulation_result.projections.get(member_id)
+    if projection is None:
+        return {
+            "simulated_average_score": Decimal("0"),
+            "simulated_average_rank": Decimal("0"),
+            "simulated_first_pick_probability": Decimal("0"),
+            "simulation_runs": simulation_result.runs,
+            "simulation_mode": simulation_result.mode,
+            "simulated_at": computed_at,
+        }
+
+    return {
+        "simulated_average_score": projection.average_score,
+        "simulated_average_rank": projection.average_rank,
+        "simulated_first_pick_probability": projection.first_pick_probability,
+        "simulation_runs": simulation_result.runs,
+        "simulation_mode": simulation_result.mode,
+        "simulated_at": computed_at,
+    }
+
 def mark_projection_entries_stale(
     league: League,
     *,
@@ -181,6 +217,16 @@ def recompute_projection_entries(
         verbose=verbose,
         logger=logger,
     )
+    logger("Starting Monte Carlo standings forecast.")
+    simulation_result = simulate_league_forecast(
+        league,
+        settings=_simulation_settings_from_django_settings(),
+        progress_logger=logger if verbose else None,
+    )
+    logger(
+        "Finished Monte Carlo standings forecast "
+        f"runs={simulation_result.runs:,} mode={simulation_result.mode!r}."
+    )
     now = timezone.now()
 
     with transaction.atomic():
@@ -201,6 +247,11 @@ def recompute_projection_entries(
                         str(team_id): slot
                         for team_id, slot in projection.best_case_slots.items()
                     },
+                    **_simulation_defaults_for_member(
+                        simulation_result,
+                        projection.member.id,
+                        now,
+                    ),
                     "is_stale": False,
                     "stale_reason": "",
                     "computed_at": now,

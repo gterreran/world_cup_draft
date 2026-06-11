@@ -12,11 +12,8 @@ def get_item(mapping, key):
 
 @register.filter
 def percent_1(value):
-    """Format a decimal probability as a percentage with one decimal place."""
-
     if value is None:
         return "—"
-
     try:
         return f"{float(value) * 100:.1f}%"
     except (TypeError, ValueError):

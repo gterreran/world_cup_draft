@@ -37,6 +37,13 @@ class ProjectionEntry(models.Model):
     remaining_possible_points = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     best_case_slots = models.JSONField(default=dict, blank=True)
 
+    simulated_average_score = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    simulated_average_rank = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    simulated_first_pick_probability = models.DecimalField(max_digits=6, decimal_places=4, default=0)
+    simulation_runs = models.PositiveIntegerField(default=0)
+    simulation_mode = models.CharField(max_length=20, blank=True)
+    simulated_at = models.DateTimeField(null=True, blank=True)
+
     is_stale = models.BooleanField(default=True)
     stale_reason = models.CharField(max_length=160, blank=True)
     computed_at = models.DateTimeField(null=True, blank=True)

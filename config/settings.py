@@ -41,6 +41,27 @@ def env_list(name: str, default: list[str] | None = None) -> list[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
+
+def env_int(name: str, default: int) -> int:
+    value = os.getenv(name)
+    if value is None or value == "":
+        return default
+    return int(value)
+
+
+def env_float(name: str, default: float) -> float:
+    value = os.getenv(name)
+    if value is None or value == "":
+        return default
+    return float(value)
+
+
+def env_optional_int(name: str, default: int | None = None) -> int | None:
+    value = os.getenv(name)
+    if value is None or value == "":
+        return default
+    return int(value)
+
 def database_from_url(url: str) -> dict:
     """Build a Django DATABASES['default'] config from DATABASE_URL.
 
@@ -262,3 +283,11 @@ PROJECTION_JOB_QUEUE = os.getenv(
     "PROJECTION_JOB_QUEUE",
     "worldcupdraft:projection_jobs",
 )
+
+PROJECTION_SIMULATION_RUNS = env_int("PROJECTION_SIMULATION_RUNS", 10000)
+PROJECTION_SIMULATION_MODE = os.getenv("PROJECTION_SIMULATION_MODE", "seeded")
+PROJECTION_SIMULATION_SEED = env_optional_int("PROJECTION_SIMULATION_SEED", 42)
+PROJECTION_SIMULATION_DRAW_PROB = env_float("PROJECTION_SIMULATION_DRAW_PROB", 0.24)
+PROJECTION_SIMULATION_RANK_ELO_STEP = env_float("PROJECTION_SIMULATION_RANK_ELO_STEP", 8.0)
+PROJECTION_SIMULATION_REGULATION_PROB = env_float("PROJECTION_SIMULATION_REGULATION_PROB", 0.75)
+PROJECTION_SIMULATION_EXTRA_TIME_PROB = env_float("PROJECTION_SIMULATION_EXTRA_TIME_PROB", 0.15)

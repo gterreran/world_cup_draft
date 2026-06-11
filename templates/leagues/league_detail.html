@@ -195,8 +195,9 @@
             <th>Manager</th>
             <th>Points</th>
             <th>Max</th>
-            <th>Still possible</th>
-            <th>Projection</th>
+            <th>Expected</th>
+            <th>Avg rank</th>
+            <th>First pick</th>
             <th>Wins</th>
             <th>Draws</th>
             <th>Losses</th>
@@ -217,18 +218,14 @@
               {% with projection=projections_by_member_id|get_item:entry.member_id %}
                 {% if projection %}
                   <td class="points-cell projection-max">{{ projection.max_possible_points }}</td>
-                  <td>{{ projection.remaining_possible_points }}</td>
-                  <td>
-                    {% if projection.is_stale %}
-                      <span class="status-pill projection-stale" title="{{ projection.stale_reason }}">Stale</span>
-                    {% else %}
-                      <span class="status-pill projection-fresh">Fresh</span>
-                    {% endif %}
-                  </td>
+                  <td class="points-cell">{{ projection.simulated_average_score }}</td>
+                  <td>{{ projection.simulated_average_rank }}</td>
+                  <td>{{ projection.simulated_first_pick_probability|percent_1 }}</td>
                 {% else %}
                   <td>—</td>
                   <td>—</td>
-                  <td><span class="status-pill projection-stale">Missing</span></td>
+                  <td>—</td>
+                  <td>—</td>
                 {% endif %}
               {% endwith %}
               <td>{{ entry.wins }}</td>
@@ -239,7 +236,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="11">No standings yet.</td>
+              <td colspan="12">No standings yet.</td>
             </tr>
           {% endfor %}
         </tbody>

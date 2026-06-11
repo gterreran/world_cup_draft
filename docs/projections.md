@@ -444,3 +444,97 @@ projection layer
 ```
 
 This keeps the calculation fast, understandable, and reusable by the background worker.
+
+---
+
+# Simulated Standings Forecast
+
+The projection worker now computes two complementary projection families:
+
+```text
+Max possible points
+Expected simulated standings
+```
+
+Max possible points are an optimistic ceiling. They answer:
+
+```text
+What is the best total this manager can still theoretically reach?
+```
+
+The simulated standings forecast answers:
+
+```text
+Given the current tournament state and a seeded Monte Carlo model, where is this manager likely to finish?
+```
+
+The simulation uses completed matches as fixed facts and simulates only the remaining matches. This means the forecast naturally becomes more constrained as the tournament progresses.
+
+## Cached fields
+
+The forecast is cached on `ProjectionEntry` together with max-points projections:
+
+```text
+simulated_average_score
+simulated_average_rank
+simulated_first_pick_probability
+simulation_runs
+simulation_mode
+simulated_at
+```
+
+The league detail standings table displays:
+
+```text
+Max
+Expected
+Avg rank
+First pick
+```
+
+The older per-row `Still possible` and `Projection` freshness columns were removed from the standings table. Worker/job freshness is still shown near the projection controls instead of being repeated for every manager.
+
+## Worker behavior
+
+When a projection job runs, the worker now:
+
+```text
+1. recomputes current max possible points
+2. runs Monte Carlo simulations from the current tournament state
+3. caches both outputs on ProjectionEntry
+```
+
+The same triggers still apply:
+
+```text
+assignments completed
+match result finalized
+scoring settings changed
+manual recompute requested
+```
+
+## Production settings
+
+Default simulation settings are configured in `config/settings.py` and can be overridden with environment variables:
+
+```env
+PROJECTION_SIMULATION_RUNS=10000
+PROJECTION_SIMULATION_MODE=seeded
+PROJECTION_SIMULATION_SEED=42
+PROJECTION_SIMULATION_DRAW_PROB=0.24
+PROJECTION_SIMULATION_RANK_ELO_STEP=8.0
+PROJECTION_SIMULATION_REGULATION_PROB=0.75
+PROJECTION_SIMULATION_EXTRA_TIME_PROB=0.15
+```
+
+Use a lower `PROJECTION_SIMULATION_RUNS` value locally when quick feedback matters.
+
+## Simulator command
+
+The management command remains available for balance testing and debugging:
+
+```bash
+python manage.py simulate_scoring_balance test-league-2 --runs 10000 --mode seeded --seed 42
+```
+
+It now uses the same reusable simulation service as the projection worker, so command-line testing and cached web projections share the same assumptions.
