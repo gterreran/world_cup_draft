@@ -128,6 +128,85 @@ def group_stage(request, tournament_slug: str):
     )
 
 
+
+def _slot_winner_match_number(slot: str) -> int | None:
+    slot = (slot or "").strip()
+
+    if len(slot) < 2 or slot[0] != "W" or not slot[1:].isdigit():
+        return None
+
+    return int(slot[1:])
+
+
+def _match_sort_key(match: Match) -> tuple:
+    return (
+        match.match_number or 9999,
+        match.kickoff_time.isoformat() if match.kickoff_time else "",
+        match.id,
+    )
+
+
+def _order_matches_by_bracket_path(
+    *,
+    matches: list[Match],
+    stages: list[str],
+) -> dict[str, list[Match]]:
+    """Return matches ordered by bracket topology rather than match number.
+
+    The official schedule match numbers are chronological, but the bracket UI
+    needs matches ordered by the tree path. For example, if match 89 is
+    ``W74`` vs ``W77``, then matches 74 and 77 need to sit next to each other
+    in the Round-of-32 column, even if match 73 has a lower match number.
+    """
+
+    matches_by_number = {
+        match.match_number: match
+        for match in matches
+        if match.match_number is not None
+    }
+    ordered_by_stage = {stage: [] for stage in stages}
+    seen_match_ids: set[int] = set()
+
+    def visit(match: Match | None) -> None:
+        if match is None or match.id in seen_match_ids:
+            return
+
+        seen_match_ids.add(match.id)
+
+        if match.stage in ordered_by_stage:
+            ordered_by_stage[match.stage].append(match)
+
+        for slot in (match.home_slot, match.away_slot):
+            source_match_number = _slot_winner_match_number(slot)
+            if source_match_number is None:
+                continue
+
+            visit(matches_by_number.get(source_match_number))
+
+    final_matches = sorted(
+        (match for match in matches if match.stage == Match.Stage.FINAL),
+        key=_match_sort_key,
+    )
+    for match in final_matches:
+        visit(match)
+
+    # Be defensive: if the schedule is incomplete, or if a future tournament
+    # contains disconnected placeholder matches, still render them in a stable
+    # fallback order after the bracket-path matches.
+    for stage in stages:
+        remaining_matches = sorted(
+            (
+                match
+                for match in matches
+                if match.stage == stage and match.id not in seen_match_ids
+            ),
+            key=_match_sort_key,
+        )
+        ordered_by_stage[stage].extend(remaining_matches)
+
+    return ordered_by_stage
+
+
 def bracket_stage(request, tournament_slug: str):
     tournament = get_object_or_404(Tournament, slug=tournament_slug)
 
@@ -139,15 +218,21 @@ def bracket_stage(request, tournament_slug: str):
         Match.Stage.FINAL,
     ]
 
+    championship_matches = list(
+        Match.objects.filter(tournament=tournament, stage__in=championship_stages)
+        .select_related("home_team", "away_team", "winner")
+        .order_by("match_number", "id")
+    )
+    matches_by_stage = _order_matches_by_bracket_path(
+        matches=championship_matches,
+        stages=championship_stages,
+    )
+
     championship_rounds = []
     base_match_count = 16
 
     for round_index, stage in enumerate(championship_stages):
-        matches = list(
-            Match.objects.filter(tournament=tournament, stage=stage)
-            .select_related("home_team", "away_team", "winner")
-            .order_by("match_number")
-        )
+        matches = matches_by_stage[stage]
 
         row_span = 2 ** round_index
         entries = []

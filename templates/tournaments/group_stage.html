@@ -1,5 +1,11 @@
 {% extends "base/base.html" %}
+{% load static %}
 {% block title %}{{ tournament }} Group Stage{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'js/local_times.js' %}"></script>
+{% endblock %}
 
 {% block content %}
   <div class="page-header">
@@ -68,7 +74,7 @@
                 <div class="mini-match-meta">
                   <span>Match {{ match.match_number }}</span>
                   {% if match.kickoff_time %}
-                    <span>{{ match.kickoff_time|date:"M j · g:i A" }}</span>
+                    <span data-local-time="{{ match.kickoff_time|date:'c' }}" data-local-time-format="short">{{ match.kickoff_time|date:"M j · g:i A" }} UTC</span>
                   {% endif %}
                   {% if match.venue %}
                     <div class="right">

@@ -1,5 +1,11 @@
 {% extends "base/base.html" %}
+{% load static %}
 {% block title %}{{ tournament }} Schedule{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'js/local_times.js' %}"></script>
+{% endblock %}
 
 {% block content %}
   <div class="page-header">
@@ -32,7 +38,7 @@
               {% endif %}
 
               {% if match.kickoff_time %}
-                <span>{{ match.kickoff_time|date:"M j, Y · g:i A" }}</span>
+                <span data-local-time="{{ match.kickoff_time|date:'c' }}" data-local-time-format="long">{{ match.kickoff_time|date:"M j, Y · g:i A" }} UTC</span>
               {% else %}
                 <span>Date TBD</span>
               {% endif %}

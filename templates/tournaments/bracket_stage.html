@@ -39,7 +39,7 @@
                       <span>Match {{ match.match_number }}</span>
 
                       {% if match.kickoff_time %}
-                        <span>{{ match.kickoff_time|date:"M j · g:i A" }}</span>
+                        <span data-local-time="{{ match.kickoff_time|date:'c' }}" data-local-time-format="short">{{ match.kickoff_time|date:"M j · g:i A" }} UTC</span>
                       {% endif %}
 
                       {% if match.venue %}
@@ -104,7 +104,7 @@
                             <span>Match {{ match.match_number }}</span>
 
                             {% if match.kickoff_time %}
-                              <span>{{ match.kickoff_time|date:"M j · g:i A" }}</span>
+                              <span data-local-time="{{ match.kickoff_time|date:'c' }}" data-local-time-format="short">{{ match.kickoff_time|date:"M j · g:i A" }} UTC</span>
                             {% endif %}
 
                             {% if match.venue %}
@@ -169,5 +169,6 @@
       {% endfor %}
     </div>
   </div>
+  <script src="{% static 'js/local_times.js' %}"></script>
   <script src="{% static 'js/bracket.js' %}"></script>
 {% endblock %}
