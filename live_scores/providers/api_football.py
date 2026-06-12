@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+import re
 
 import requests
 from django.conf import settings
@@ -149,6 +150,28 @@ class ApiFootballClient:
             ),
         )
 
+    def fixtures_by_ids(
+        self,
+        fixture_ids: list[str] | tuple[str, ...],
+        *,
+        timezone: str | None = None,
+    ) -> dict[str, Any]:
+        """Fetch normal fixture details for one or more provider fixture ids.
+
+        The live worker uses this as a final-status safety check after a fixture
+        disappears from the live-only status filter. API-Football accepts a
+        hyphen-separated ``ids`` parameter for multiple fixtures.
+        """
+
+        ids = "-".join(str(value) for value in fixture_ids if value)
+        return self.get(
+            "/fixtures",
+            params={
+                "ids": ids,
+                "timezone": timezone,
+            },
+        )
+
     def normalize_fixture(self, raw: dict[str, Any]) -> NormalizedFixture:
         return normalize_fixture(raw)
 
@@ -188,8 +211,10 @@ def normalize_fixture(raw: dict[str, Any]) -> NormalizedFixture:
     score = raw.get("score") if isinstance(raw.get("score"), dict) else {}
     status = fixture.get("status") if isinstance(fixture.get("status"), dict) else {}
 
-    home_team = _extract_team(teams.get("home"), location="home")
-    away_team = _extract_team(teams.get("away"), location="away")
+    home_raw = teams.get("home") if isinstance(teams.get("home"), dict) else {}
+    away_raw = teams.get("away") if isinstance(teams.get("away"), dict) else {}
+    home_team = _extract_team(home_raw, location="home")
+    away_team = _extract_team(away_raw, location="away")
     home_score, away_score = _extract_current_score(goals, score)
     penalty_home_score, penalty_away_score = _extract_score_part(score, "penalty")
     state_code = str(status.get("short") or "")
@@ -198,6 +223,7 @@ def normalize_fixture(raw: dict[str, Any]) -> NormalizedFixture:
     return NormalizedFixture(
         provider=PROVIDER_API_FOOTBALL,
         provider_fixture_id=str(fixture.get("id") or ""),
+        provider_match_number=_extract_match_number(raw),
         name=_fixture_name(home_team, away_team),
         league_id=str(league.get("id") or ""),
         season_id=str(league.get("season") or ""),
@@ -210,6 +236,8 @@ def normalize_fixture(raw: dict[str, Any]) -> NormalizedFixture:
         away_team=away_team,
         home_score=home_score,
         away_score=away_score,
+        home_winner=_bool_or_none(home_raw.get("winner")),
+        away_winner=_bool_or_none(away_raw.get("winner")),
         penalty_home_score=penalty_home_score,
         penalty_away_score=penalty_away_score,
         minute=int_or_none(status.get("elapsed")),
@@ -217,6 +245,66 @@ def normalize_fixture(raw: dict[str, Any]) -> NormalizedFixture:
         went_to_penalties=_has_score_part(score, "penalty") or state_code in {"P", "PEN"},
         raw=raw,
     )
+
+
+def _extract_match_number(raw: dict[str, Any]) -> int | None:
+    """Extract an explicit tournament match number if the provider exposes one.
+
+    This is deliberately conservative: we do not infer a match number from the
+    API fixture id or from broad round labels such as "Group Stage - 1". The
+    value is only used by diagnostics/mapping safety checks.
+    """
+
+    fixture = raw.get("fixture") if isinstance(raw.get("fixture"), dict) else {}
+    metadata = raw.get("metadata") if isinstance(raw.get("metadata"), dict) else {}
+    fixture_metadata = fixture.get("metadata") if isinstance(fixture.get("metadata"), dict) else {}
+
+    candidates = [
+        raw.get("match_number"),
+        raw.get("matchNumber"),
+        raw.get("match_no"),
+        raw.get("matchNo"),
+        fixture.get("match_number"),
+        fixture.get("matchNumber"),
+        fixture.get("match_no"),
+        fixture.get("matchNo"),
+        metadata.get("match_number"),
+        metadata.get("matchNumber"),
+        metadata.get("match_no"),
+        metadata.get("matchNo"),
+        fixture_metadata.get("match_number"),
+        fixture_metadata.get("matchNumber"),
+        fixture_metadata.get("match_no"),
+        fixture_metadata.get("matchNo"),
+    ]
+
+    for candidate in candidates:
+        number = _parse_match_number(candidate)
+        if number is not None:
+            return number
+
+    return None
+
+
+def _parse_match_number(value: Any) -> int | None:
+    if value in (None, ""):
+        return None
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value if value > 0 else None
+
+    text = str(value).strip()
+    if not text:
+        return None
+
+    # Accept explicit-looking values such as "21", "Match 21", or "match_no=21".
+    match = re.search(r"(?:match\s*(?:number|no\.?|#)?\s*)?(\d+)", text, flags=re.IGNORECASE)
+    if not match:
+        return None
+
+    number = int(match.group(1))
+    return number if number > 0 else None
 
 
 def normalize_state(*, state_code: str = "") -> str:
@@ -242,6 +330,21 @@ def normalize_state(*, state_code: str = "") -> str:
     if code in SCHEDULED_STATUS_CODES:
         return "scheduled"
     return "unknown"
+
+
+def _bool_or_none(value: Any) -> bool | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    text = str(value).strip().lower()
+    if text in {"true", "1", "yes", "y"}:
+        return True
+    if text in {"false", "0", "no", "n"}:
+        return False
+    return None
 
 
 def _extract_team(raw_team: Any, *, location: str) -> NormalizedTeam | None:

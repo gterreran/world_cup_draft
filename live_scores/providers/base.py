@@ -38,6 +38,7 @@ class NormalizedFixture:
 
     provider: str
     provider_fixture_id: str
+    provider_match_number: int | None
     name: str
     league_id: str
     season_id: str
@@ -50,6 +51,8 @@ class NormalizedFixture:
     away_team: NormalizedTeam | None
     home_score: int | None
     away_score: int | None
+    home_winner: bool | None
+    away_winner: bool | None
     penalty_home_score: int | None
     penalty_away_score: int | None
     minute: int | None

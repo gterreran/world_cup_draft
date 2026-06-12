@@ -65,19 +65,19 @@
       "match_date": "2026-06-13",
       "kickoff_time": "2026-06-13T21:00:00-04:00",
       "venue": "Boston",
-      "home_team": "Scotland",
-      "away_team": "Haiti",
+      "home_team": "Haiti",
+      "away_team": "Scotland",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "SCO v HAI"
+      "source_matchup": "HAI v SCO"
     },
     {
       "match_number": 6,
       "stage": "group",
       "group": "D",
-      "match_date": "2026-06-13",
-      "kickoff_time": "2026-06-13T23:59:00-04:00",
+      "match_date": "2026-06-14",
+      "kickoff_time": "2026-06-14T00:00:00-04:00",
       "venue": "Vancouver",
       "home_team": "Australia",
       "away_team": "Türkiye",
@@ -107,12 +107,12 @@
       "match_date": "2026-06-13",
       "kickoff_time": "2026-06-13T15:00:00-04:00",
       "venue": "San Francisco",
-      "home_team": "Switzerland",
-      "away_team": "Qatar",
+      "home_team": "Qatar",
+      "away_team": "Switzerland",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "SUI v QAT"
+      "source_matchup": "QAT v SUI"
     },
     {
       "match_number": 9,
@@ -177,12 +177,12 @@
       "match_date": "2026-06-15",
       "kickoff_time": "2026-06-15T18:00:00-04:00",
       "venue": "Miami",
-      "home_team": "Uruguay",
-      "away_team": "Saudi Arabia",
+      "home_team": "Saudi Arabia",
+      "away_team": "Uruguay",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "URU v KSA"
+      "source_matchup": "KSA v URU"
     },
     {
       "match_number": 14,
@@ -247,12 +247,12 @@
       "match_date": "2026-06-16",
       "kickoff_time": "2026-06-16T18:00:00-04:00",
       "venue": "Boston",
-      "home_team": "Norway",
-      "away_team": "Iraq",
+      "home_team": "Iraq",
+      "away_team": "Norway",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "NOR v IRQ"
+      "source_matchup": "IRQ v NOR"
     },
     {
       "match_number": 19,
@@ -272,8 +272,8 @@
       "match_number": 20,
       "stage": "group",
       "group": "J",
-      "match_date": "2026-06-16",
-      "kickoff_time": "2026-06-16T23:59:00-04:00",
+      "match_date": "2026-06-17",
+      "kickoff_time": "2026-06-17T00:00:00-04:00",
       "venue": "San Francisco",
       "home_team": "Austria",
       "away_team": "Jordan",
@@ -288,20 +288,6 @@
       "group": "L",
       "match_date": "2026-06-17",
       "kickoff_time": "2026-06-17T16:00:00-04:00",
-      "venue": "Toronto",
-      "home_team": "Panama",
-      "away_team": "Ghana",
-      "home_slot": "",
-      "away_slot": "",
-      "status": "scheduled",
-      "source_matchup": "PAN v GHA"
-    },
-    {
-      "match_number": 22,
-      "stage": "group",
-      "group": "L",
-      "match_date": "2026-06-17",
-      "kickoff_time": "2026-06-17T19:00:00-04:00",
       "venue": "Dallas",
       "home_team": "England",
       "away_team": "Croatia",
@@ -309,6 +295,20 @@
       "away_slot": "",
       "status": "scheduled",
       "source_matchup": "ENG v CRO"
+    },
+    {
+      "match_number": 22,
+      "stage": "group",
+      "group": "L",
+      "match_date": "2026-06-17",
+      "kickoff_time": "2026-06-17T19:00:00-04:00",
+      "venue": "Toronto",
+      "home_team": "Ghana",
+      "away_team": "Panama",
+      "home_slot": "",
+      "away_slot": "",
+      "status": "scheduled",
+      "source_matchup": "GHA v PAN"
     },
     {
       "match_number": 23,
@@ -331,12 +331,12 @@
       "match_date": "2026-06-17",
       "kickoff_time": "2026-06-17T22:00:00-04:00",
       "venue": "Mexico City",
-      "home_team": "Colombia",
-      "away_team": "Uzbekistan",
+      "home_team": "Uzbekistan",
+      "away_team": "Colombia",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "COL v UZB"
+      "source_matchup": "UZB v COL"
     },
     {
       "match_number": 25,
@@ -345,12 +345,12 @@
       "match_date": "2026-06-18",
       "kickoff_time": "2026-06-18T12:00:00-04:00",
       "venue": "Atlanta",
-      "home_team": "South Africa",
-      "away_team": "Czechia",
+      "home_team": "Czechia",
+      "away_team": "South Africa",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "RSA v CZE"
+      "source_matchup": "CZE v RSA"
     },
     {
       "match_number": 26,
@@ -399,7 +399,7 @@
       "stage": "group",
       "group": "C",
       "match_date": "2026-06-19",
-      "kickoff_time": "2026-06-19T21:00:00-04:00",
+      "kickoff_time": "2026-06-19T20:30:00-04:00",
       "venue": "Philadelphia",
       "home_team": "Brazil",
       "away_team": "Haiti",
@@ -415,26 +415,26 @@
       "match_date": "2026-06-19",
       "kickoff_time": "2026-06-19T18:00:00-04:00",
       "venue": "Boston",
-      "home_team": "Morocco",
-      "away_team": "Scotland",
+      "home_team": "Scotland",
+      "away_team": "Morocco",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "MAR v SCO"
+      "source_matchup": "SCO v MAR"
     },
     {
       "match_number": 31,
       "stage": "group",
       "group": "D",
       "match_date": "2026-06-19",
-      "kickoff_time": "2026-06-19T23:59:00-04:00",
+      "kickoff_time": "2026-06-19T23:00:00-04:00",
       "venue": "San Francisco",
-      "home_team": "Paraguay",
-      "away_team": "Türkiye",
+      "home_team": "Türkiye",
+      "away_team": "Paraguay",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "PAR v TUR"
+      "source_matchup": "TUR v PAR"
     },
     {
       "match_number": 32,
@@ -496,15 +496,15 @@
       "match_number": 36,
       "stage": "group",
       "group": "F",
-      "match_date": "2026-06-20",
-      "kickoff_time": "2026-06-20T23:59:00-04:00",
+      "match_date": "2026-06-21",
+      "kickoff_time": "2026-06-21T00:00:00-04:00",
       "venue": "Monterrey",
-      "home_team": "Japan",
-      "away_team": "Tunisia",
+      "home_team": "Tunisia",
+      "away_team": "Japan",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "JPN v TUN"
+      "source_matchup": "TUN v JPN"
     },
     {
       "match_number": 37,
@@ -555,12 +555,12 @@
       "match_date": "2026-06-21",
       "kickoff_time": "2026-06-21T21:00:00-04:00",
       "venue": "Vancouver",
-      "home_team": "Egypt",
-      "away_team": "New Zealand",
+      "home_team": "New Zealand",
+      "away_team": "Egypt",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "EGY v NZL"
+      "source_matchup": "NZL v EGY"
     },
     {
       "match_number": 41,
@@ -569,12 +569,12 @@
       "match_date": "2026-06-22",
       "kickoff_time": "2026-06-22T20:00:00-04:00",
       "venue": "NY / NJ",
-      "home_team": "Senegal",
-      "away_team": "Norway",
+      "home_team": "Norway",
+      "away_team": "Senegal",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "SEN v NOR"
+      "source_matchup": "NOR v SEN"
     },
     {
       "match_number": 42,
@@ -611,12 +611,12 @@
       "match_date": "2026-06-22",
       "kickoff_time": "2026-06-22T23:00:00-04:00",
       "venue": "San Francisco",
-      "home_team": "Algeria",
-      "away_team": "Jordan",
+      "home_team": "Jordan",
+      "away_team": "Algeria",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "ALG v JOR"
+      "source_matchup": "JOR v ALG"
     },
     {
       "match_number": 45,
@@ -639,12 +639,12 @@
       "match_date": "2026-06-23",
       "kickoff_time": "2026-06-23T19:00:00-04:00",
       "venue": "Toronto",
-      "home_team": "Croatia",
-      "away_team": "Panama",
+      "home_team": "Panama",
+      "away_team": "Croatia",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "CRO v PAN"
+      "source_matchup": "PAN v CRO"
     },
     {
       "match_number": 47,
@@ -681,12 +681,12 @@
       "match_date": "2026-06-24",
       "kickoff_time": "2026-06-24T18:00:00-04:00",
       "venue": "Miami",
-      "home_team": "Brazil",
-      "away_team": "Scotland",
+      "home_team": "Scotland",
+      "away_team": "Brazil",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "BRA v SCO"
+      "source_matchup": "SCO v BRA"
     },
     {
       "match_number": 50,
@@ -709,12 +709,12 @@
       "match_date": "2026-06-24",
       "kickoff_time": "2026-06-24T15:00:00-04:00",
       "venue": "Vancouver",
-      "home_team": "Canada",
-      "away_team": "Switzerland",
+      "home_team": "Switzerland",
+      "away_team": "Canada",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "CAN v SUI"
+      "source_matchup": "SUI v CAN"
     },
     {
       "match_number": 52,
@@ -723,12 +723,12 @@
       "match_date": "2026-06-24",
       "kickoff_time": "2026-06-24T15:00:00-04:00",
       "venue": "Seattle",
-      "home_team": "Qatar",
-      "away_team": "Bosnia and Herzegovina",
+      "home_team": "Bosnia and Herzegovina",
+      "away_team": "Qatar",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "QAT v BIH"
+      "source_matchup": "BIH v QAT"
     },
     {
       "match_number": 53,
@@ -737,12 +737,12 @@
       "match_date": "2026-06-24",
       "kickoff_time": "2026-06-24T21:00:00-04:00",
       "venue": "Mexico City",
-      "home_team": "Mexico",
-      "away_team": "Czechia",
+      "home_team": "Czechia",
+      "away_team": "Mexico",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "MEX v CZE"
+      "source_matchup": "CZE v MEX"
     },
     {
       "match_number": 54,
@@ -765,12 +765,12 @@
       "match_date": "2026-06-25",
       "kickoff_time": "2026-06-25T16:00:00-04:00",
       "venue": "Philadelphia",
-      "home_team": "Côte d'Ivoire",
-      "away_team": "Curaçao",
+      "home_team": "Curaçao",
+      "away_team": "Côte d'Ivoire",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "CIV v CUW"
+      "source_matchup": "CUW v CIV"
     },
     {
       "match_number": 56,
@@ -779,12 +779,12 @@
       "match_date": "2026-06-25",
       "kickoff_time": "2026-06-25T16:00:00-04:00",
       "venue": "NY / NJ",
-      "home_team": "Germany",
-      "away_team": "Ecuador",
+      "home_team": "Ecuador",
+      "away_team": "Germany",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "GER v ECU"
+      "source_matchup": "ECU v GER"
     },
     {
       "match_number": 57,
@@ -807,12 +807,12 @@
       "match_date": "2026-06-25",
       "kickoff_time": "2026-06-25T19:00:00-04:00",
       "venue": "Kansas City",
-      "home_team": "Netherlands",
-      "away_team": "Tunisia",
+      "home_team": "Tunisia",
+      "away_team": "Netherlands",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "NED v TUN"
+      "source_matchup": "TUN v NED"
     },
     {
       "match_number": 59,
@@ -821,12 +821,12 @@
       "match_date": "2026-06-25",
       "kickoff_time": "2026-06-25T22:00:00-04:00",
       "venue": "Los Angeles",
-      "home_team": "United States",
-      "away_team": "Türkiye",
+      "home_team": "Türkiye",
+      "away_team": "United States",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "USA v TUR"
+      "source_matchup": "TUR v USA"
     },
     {
       "match_number": 60,
@@ -835,12 +835,12 @@
       "match_date": "2026-06-25",
       "kickoff_time": "2026-06-25T22:00:00-04:00",
       "venue": "San Francisco",
-      "home_team": "Australia",
-      "away_team": "Paraguay",
+      "home_team": "Paraguay",
+      "away_team": "Australia",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "AUS v PAR"
+      "source_matchup": "PAR v AUS"
     },
     {
       "match_number": 61,
@@ -849,12 +849,12 @@
       "match_date": "2026-06-26",
       "kickoff_time": "2026-06-26T15:00:00-04:00",
       "venue": "Boston",
-      "home_team": "France",
-      "away_team": "Norway",
+      "home_team": "Norway",
+      "away_team": "France",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "FRA v NOR"
+      "source_matchup": "NOR v FRA"
     },
     {
       "match_number": 62,
@@ -877,12 +877,12 @@
       "match_date": "2026-06-26",
       "kickoff_time": "2026-06-26T23:00:00-04:00",
       "venue": "Seattle",
-      "home_team": "IR Iran",
-      "away_team": "Egypt",
+      "home_team": "Egypt",
+      "away_team": "IR Iran",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "IRN v EGY"
+      "source_matchup": "EGY v IRN"
     },
     {
       "match_number": 64,
@@ -891,12 +891,12 @@
       "match_date": "2026-06-26",
       "kickoff_time": "2026-06-26T23:00:00-04:00",
       "venue": "Vancouver",
-      "home_team": "Belgium",
-      "away_team": "New Zealand",
+      "home_team": "New Zealand",
+      "away_team": "Belgium",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "BEL v NZL"
+      "source_matchup": "NZL v BEL"
     },
     {
       "match_number": 65,
@@ -905,12 +905,12 @@
       "match_date": "2026-06-26",
       "kickoff_time": "2026-06-26T20:00:00-04:00",
       "venue": "Houston",
-      "home_team": "Saudi Arabia",
-      "away_team": "Cape Verde",
+      "home_team": "Cape Verde",
+      "away_team": "Saudi Arabia",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "KSA v CPV"
+      "source_matchup": "CPV v KSA"
     },
     {
       "match_number": 66,
@@ -919,12 +919,12 @@
       "match_date": "2026-06-26",
       "kickoff_time": "2026-06-26T20:00:00-04:00",
       "venue": "Guadalajara",
-      "home_team": "Spain",
-      "away_team": "Uruguay",
+      "home_team": "Uruguay",
+      "away_team": "Spain",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "ESP v URU"
+      "source_matchup": "URU v ESP"
     },
     {
       "match_number": 67,
@@ -933,12 +933,12 @@
       "match_date": "2026-06-27",
       "kickoff_time": "2026-06-27T17:00:00-04:00",
       "venue": "NY / NJ",
-      "home_team": "England",
-      "away_team": "Panama",
+      "home_team": "Panama",
+      "away_team": "England",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "ENG v PAN"
+      "source_matchup": "PAN v ENG"
     },
     {
       "match_number": 68,
@@ -961,12 +961,12 @@
       "match_date": "2026-06-27",
       "kickoff_time": "2026-06-27T22:00:00-04:00",
       "venue": "Kansas City",
-      "home_team": "Austria",
-      "away_team": "Algeria",
+      "home_team": "Algeria",
+      "away_team": "Austria",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "AUT v ALG"
+      "source_matchup": "ALG v AUT"
     },
     {
       "match_number": 70,
@@ -975,12 +975,12 @@
       "match_date": "2026-06-27",
       "kickoff_time": "2026-06-27T22:00:00-04:00",
       "venue": "Dallas",
-      "home_team": "Argentina",
-      "away_team": "Jordan",
+      "home_team": "Jordan",
+      "away_team": "Argentina",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "ARG v JOR"
+      "source_matchup": "JOR v ARG"
     },
     {
       "match_number": 71,
@@ -989,12 +989,12 @@
       "match_date": "2026-06-27",
       "kickoff_time": "2026-06-27T19:30:00-04:00",
       "venue": "Miami",
-      "home_team": "Portugal",
-      "away_team": "Colombia",
+      "home_team": "Colombia",
+      "away_team": "Portugal",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "POR v COL"
+      "source_matchup": "COL v POR"
     },
     {
       "match_number": 72,
@@ -1003,12 +1003,12 @@
       "match_date": "2026-06-27",
       "kickoff_time": "2026-06-27T19:30:00-04:00",
       "venue": "Atlanta",
-      "home_team": "Uzbekistan",
-      "away_team": "Congo DR",
+      "home_team": "Congo DR",
+      "away_team": "Uzbekistan",
       "home_slot": "",
       "away_slot": "",
       "status": "scheduled",
-      "source_matchup": "UZB v COD"
+      "source_matchup": "COD v UZB"
     },
     {
       "match_number": 73,

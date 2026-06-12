@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import timezone as datetime_timezone
 from decimal import Decimal
 from difflib import SequenceMatcher
+import unicodedata
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Max, Min
@@ -20,6 +21,32 @@ from live_scores.providers import (
     provider_label,
 )
 from tournaments.models import Match, Tournament
+
+
+# Provider/team names are not guaranteed to match FIFA/local names exactly.
+# Keep this list conservative: only aliases that are common and unambiguous.
+TEAM_NAME_ALIASES = {
+    "bosnia herzegovina": "bosnia and herzegovina",
+    "bosnia herzogovina": "bosnia and herzegovina",
+    "cape verde islands": "cape verde",
+    "cote divoire": "cote d ivoire",
+    "cote d ivoire": "cote d ivoire",
+    "côte d ivoire": "cote d ivoire",
+    "czech republic": "czechia",
+    "d r congo": "congo dr",
+    "democratic republic of congo": "congo dr",
+    "dr congo": "congo dr",
+    "iran": "ir iran",
+    "ivory coast": "cote d ivoire",
+    "korea republic": "korea republic",
+    "republic of korea": "korea republic",
+    "south korea": "korea republic",
+    "turkey": "turkiye",
+    "türkiye": "turkiye",
+    "u s a": "united states",
+    "usa": "united states",
+    "united states of america": "united states",
+}
 
 
 @dataclass(frozen=True)
@@ -131,6 +158,9 @@ class Command(BaseCommand):
         created = 0
         updated = 0
         skipped = 0
+        match_number_checked = 0
+        match_number_mismatches = 0
+        unmapped_match_numbers = 0
 
         for fixture in provider_fixtures:
             candidate = best_candidate(
@@ -146,10 +176,19 @@ class Command(BaseCommand):
             local = candidate.match
             provider_pair = _fixture_pair_label(fixture)
             local_pair = f"{local.home_label} vs {local.away_label}"
+            match_number_note = _match_number_note(fixture, local)
+            if fixture.provider_match_number is None:
+                unmapped_match_numbers += 1
+            else:
+                match_number_checked += 1
+                if _local_match_number(local) != fixture.provider_match_number:
+                    match_number_mismatches += 1
+
             line = (
                 f"{fixture.provider_fixture_id} | {provider_pair} | {fixture.starting_at or '—'} "
                 f"→ Match {local.match_number or local.id}: {local_pair} | "
                 f"confidence={candidate.confidence:.1f} | {candidate.reason}"
+                f"{match_number_note}"
             )
 
             if candidate.confidence < options["threshold"]:
@@ -158,7 +197,10 @@ class Command(BaseCommand):
                 continue
 
             if not options["commit"]:
-                self.stdout.write(line)
+                if "MATCH NUMBER MISMATCH" in match_number_note:
+                    self.stdout.write(self.style.WARNING(line))
+                else:
+                    self.stdout.write(line)
                 continue
 
             mapping, was_created = ProviderFixtureMapping.objects.update_or_create(
@@ -172,7 +214,7 @@ class Command(BaseCommand):
                     "provider_away_name": fixture.away_team.name if fixture.away_team else "",
                     "provider_starting_at": fixture.starting_at,
                     "confidence": Decimal(str(round(candidate.confidence, 2))),
-                    "notes": candidate.reason,
+                    "notes": _mapping_notes(candidate.reason, match_number_note),
                     "raw_payload": fixture.raw,
                 },
             )
@@ -182,6 +224,28 @@ class Command(BaseCommand):
             else:
                 updated += 1
                 self.stdout.write(self.style.SUCCESS(f"UPDATED: {line}"))
+
+        if match_number_checked:
+            if match_number_mismatches:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"Provider match-number check: {match_number_mismatches} mismatch(es) "
+                        f"out of {match_number_checked} fixture(s) with explicit provider match numbers."
+                    )
+                )
+            else:
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"Provider match-number check: all {match_number_checked} explicit provider match number(s) matched."
+                    )
+                )
+        elif unmapped_match_numbers:
+            self.stdout.write(
+                self.style.WARNING(
+                    "Provider match-number check: no explicit provider match-number field was found "
+                    "in the normalized fixture payloads. Mapping still used kickoff time + team names only."
+                )
+            )
 
         if options["commit"]:
             self.stdout.write(
@@ -258,13 +322,16 @@ def _similarity(left: str, right: str) -> float:
 
 
 def _normalize_name(value: str) -> str:
+    text = unicodedata.normalize("NFKD", value or "")
+    text = "".join(char for char in text if not unicodedata.combining(char))
     keep = []
-    for char in value.lower():
+    for char in text.lower():
         if char.isalnum() or char.isspace():
             keep.append(char)
         else:
             keep.append(" ")
-    return " ".join("".join(keep).split())
+    normalized = " ".join("".join(keep).split())
+    return TEAM_NAME_ALIASES.get(normalized, normalized)
 
 
 def _reason(minutes_apart: float | None, time_score: float, team_score: float) -> str:
@@ -286,6 +353,37 @@ def _format_unmapped(fixture: NormalizedFixture, reason: str) -> str:
         f"UNMAPPED: {fixture.provider_fixture_id} | {_fixture_pair_label(fixture)} | "
         f"{fixture.starting_at or '—'} | {reason}"
     )
+
+
+def _local_match_number(match: Match) -> int | None:
+    try:
+        if match.match_number is None:
+            return None
+        return int(match.match_number)
+    except (TypeError, ValueError):
+        return None
+
+
+def _match_number_note(fixture: NormalizedFixture, match: Match) -> str:
+    provider_number = fixture.provider_match_number
+    if provider_number is None:
+        return ""
+
+    local_number = _local_match_number(match)
+    if local_number is None:
+        return f"; provider_match_number={provider_number}; local match number unavailable"
+    if local_number == provider_number:
+        return f"; provider_match_number={provider_number} OK"
+    return (
+        f"; MATCH NUMBER MISMATCH provider={provider_number} "
+        f"local={local_number}"
+    )
+
+
+def _mapping_notes(reason: str, match_number_note: str) -> str:
+    if not match_number_note:
+        return reason
+    return f"{reason}{match_number_note}"
 
 
 def _get_tournament(slug: str) -> Tournament:

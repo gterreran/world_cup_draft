@@ -263,11 +263,20 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 USE_REDIS_CHANNEL_LAYER = os.getenv("USE_REDIS_CHANNEL_LAYER", "False") == "True"
 
 if USE_REDIS_CHANNEL_LAYER:
+    redis_url = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
+
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
             "CONFIG": {
-                "hosts": [os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")],
+                "hosts": [
+                    {
+                        "address": redis_url,
+                        "socket_connect_timeout": 5,
+                        "socket_timeout": 30,
+                        "health_check_interval": 30,
+                    }
+                ],
             },
         },
     }
@@ -310,7 +319,11 @@ API_FOOTBALL_LIVE_STATUS_CODES = os.getenv(
     "1H-HT-2H-ET-BT-P-LIVE",
 )
 
-# Live-score worker defaults. The worker itself will be introduced in a later slice.
-LIVE_SCORES_POLL_INTERVAL_SECONDS = env_int("LIVE_SCORES_POLL_INTERVAL_SECONDS", 15)
+# Live-score worker defaults. The first worker slice updates LiveMatchState only;
+# final Match results, standings, projections, and websocket broadcasts are handled
+# by later slices. The worker uses two cadences: fast polling when a game is
+# near kickoff or currently tracked as live, and slower fixture-detail checks
+# during idle periods.
+LIVE_SCORES_POLL_INTERVAL_SECONDS = env_int("LIVE_SCORES_POLL_INTERVAL_SECONDS", 30)
 LIVE_SCORES_IDLE_SLEEP_SECONDS = env_int("LIVE_SCORES_IDLE_SLEEP_SECONDS", 300)
 LIVE_SCORES_KICKOFF_BUFFER_MINUTES = env_int("LIVE_SCORES_KICKOFF_BUFFER_MINUTES", 15)

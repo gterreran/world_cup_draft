@@ -1,8 +1,9 @@
 {% extends "base/base.html" %}
+{% load static %}
 {% block title %}{{ tournament }} Group Stage{% endblock %}
 
 {% block content %}
-  <div class="page-header">
+  <div class="page-header" data-live-score-tournament-slug="{{ tournament.slug }}">
     <div>
       <p class="eyebrow">Tournament</p>
       <h1>Group Stage</h1>
@@ -64,39 +65,49 @@
 
           <div class="group-matches">
             {% for match in group.matches %}
-              <article class="mini-match-card">
-                <div class="mini-match-meta">
-                  <span>Match {{ match.match_number }}</span>
-                  {% if match.kickoff_time %}
-                    <span>{{ match.kickoff_time|date:"M j · g:i A" }}</span>
-                  {% endif %}
-                  {% if match.venue %}
-                    <div class="right">
-                      <span>{{ match.venue }}</span>
-                    </div>
-                  {% endif %}
-                </div>
-
-                <div class="mini-match-teams">
-                  <div>
-                    <span>{{ match.home_team.flag }} {{ match.home_label }}</span>
-                  </div>
-                  <strong>
-                    {% if match.is_complete %}
-                      {{ match.home_score }}–{{ match.away_score }}
-                    {% else %}
-                      vs
+              {% with score=match.score_display %}
+                <article class="mini-match-card {% if score.is_live %}has-live-score{% endif %}" data-live-score-match-id="{{ match.id }}">
+                  <div class="mini-match-meta">
+                    <span>Match {{ match.match_number }}</span>
+                    {% if match.kickoff_time %}
+                      <span>{{ match.kickoff_time|date:"M j · g:i A" }}</span>
                     {% endif %}
-                  </strong>
-                  <div class="right">
-                    <span>{{ match.away_team.flag }} {{ match.away_label }}</span>
+                    {% if match.venue %}
+                      <div class="right">
+                        <span>{{ match.venue }}</span>
+                      </div>
+                    {% endif %}
                   </div>
-                </div>
-              </article>
+
+                  <div class="mini-match-teams">
+                    <div>
+                      <span>{{ match.home_team.flag }} {{ match.home_label }}</span>
+                    </div>
+                    <div class="mini-match-score {% if score.is_live %}is-live{% endif %}">
+                      <strong data-live-score-main-score>
+                        {% if score.has_score %}
+                          {{ score.home_score }}–{{ score.away_score }}
+                        {% else %}
+                          vs
+                        {% endif %}
+                      </strong>
+                      <small data-live-score-status{% if not score.is_live %} hidden{% endif %}>{{ score.status_label }}</small>
+                    </div>
+                    <div class="right">
+                      <span>{{ match.away_team.flag }} {{ match.away_label }}</span>
+                    </div>
+                  </div>
+                </article>
+              {% endwith %}
             {% endfor %}
           </div>
         </div>
       </section>
     {% endfor %}
   </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'js/live_scores.js' %}"></script>
 {% endblock %}

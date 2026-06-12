@@ -973,29 +973,6 @@ tbody tr:hover {
   width: auto;
 }
 
-
-.table-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.button.small {
-  padding: 6px 10px;
-  font-size: 0.85rem;
-}
-
-.button.danger-link {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.button.danger-link:hover {
-  background: #fecaca;
-  color: #7f1d1d;
-}
-
 .danger-card {
   border-color: #fecaca;
   background: #fff7f7;
@@ -2046,4 +2023,56 @@ tbody tr:hover {
 .projection-worker-offline {
   background: #fee2e2;
   color: #991b1b;
+}
+
+.has-live-score {
+  border-color: #fecaca;
+  background: #fffafa;
+}
+
+.match-score.is-live,
+.bracket-score.is-live,
+.mini-match-score.is-live strong {
+  color: #991b1b;
+}
+
+.mini-match-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 44px;
+  text-align: center;
+}
+
+.mini-match-score small,
+.live-match-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 2px 6px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-halftime,
+.status-extra_time,
+.status-penalties {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-postponed,
+.status-cancelled,
+.status-delayed,
+.status-suspended,
+.status-unknown {
+  background: #f3f4f6;
+  color: #374151;
 }

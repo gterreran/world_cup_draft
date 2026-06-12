@@ -87,7 +87,13 @@ class Command(BaseCommand):
             home = fixture.home_team.name if fixture.home_team else "TBD"
             away = fixture.away_team.name if fixture.away_team else "TBD"
             minute = f" {fixture.minute}'" if fixture.minute is not None else ""
+            match_number = (
+                f"match_no={fixture.provider_match_number}"
+                if fixture.provider_match_number is not None
+                else "match_no=—"
+            )
             self.stdout.write(
                 f"{fixture.provider_fixture_id} | {home} {fixture.score_label} {away} | "
-                f"{fixture.status}{minute} | {fixture.state_code or '—'} | {fixture.starting_at or '—'}"
+                f"{fixture.status}{minute} | {fixture.state_code or '—'} | "
+                f"{fixture.starting_at or '—'} | {match_number}"
             )
