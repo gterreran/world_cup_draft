@@ -3,7 +3,7 @@
 {% block title %}{{ tournament }} Bracket{% endblock %}
 
 {% block content %}
-  <div class="page-header">
+  <div class="page-header" data-live-score-tournament-slug="{{ tournament.slug }}">
     <div>
       <p class="eyebrow">Tournament</p>
       <h1>Knockout Bracket</h1>
@@ -29,18 +29,20 @@
 
           <div class="bracket-grid-column">
             {% for entry in round.entries %}
-              {% with match=entry.match %}
+              {% with match=entry.match score=entry.match.score_display %}
                 <div
                   class="bracket-match-slot {% if entry.pair_position %}pair-{{ entry.pair_position }}{% endif %} {% if round.stage_value != 'final' %}has-next-round{% endif %} {% if round.stage_value != 'round_of_32' %}has-prev-round{% endif %}"
                   style="grid-row: {{ entry.row_start }} / span {{ entry.row_span }};"
                 >
-                  <article class="bracket-match-card {% if match.is_complete %}is-complete{% endif %}">
+                  <article class="bracket-match-card {% if match.is_complete %}is-complete{% endif %} {% if score.is_live %}has-live-score{% endif %}" data-live-score-match-id="{{ match.id }}">
                     <div class="match-meta">
                       <span>Match {{ match.match_number }}</span>
 
                       {% if match.kickoff_time %}
                         <span data-local-time="{{ match.kickoff_time|date:'c' }}" data-local-time-format="short">{{ match.kickoff_time|date:"M j · g:i A" }} UTC</span>
                       {% endif %}
+
+                      <span class="live-match-label" data-live-score-status{% if not score.is_live %} hidden{% endif %}>{{ score.status_label }}</span>
 
                       {% if match.venue %}
                         <div class="right">
@@ -59,16 +61,14 @@
                       {% elif not match.home_team_id %}
                         pending
                       {% endif %}
-                    ">
+                    " data-live-score-team-id="{{ match.home_team_id|default:'' }}">
                       <div class="bracket-team-main">
                         <span class="bracket-team-name">
                           {% if match.home_team %}{{ match.home_team.flag }}{% endif %}
                           {{ match.home_label }}
                         </span>
                       </div>
-                      {% if match.is_complete %}
-                        <strong class="bracket-score">{{ match.home_score }}</strong>
-                      {% endif %}
+                      <strong class="bracket-score {% if score.is_live %}is-live{% endif %}" data-live-score-home-score{% if not score.has_score %} hidden{% endif %}>{{ score.home_score }}</strong>
                     </div>
 
                     <div class="bracket-team
@@ -81,16 +81,14 @@
                       {% elif not match.away_team_id %}
                         pending
                       {% endif %}
-                    ">
+                    " data-live-score-team-id="{{ match.away_team_id|default:'' }}">
                       <div class="bracket-team-main">
                         <span class="bracket-team-name">
                           {% if match.away_team %}{{ match.away_team.flag }}{% endif %}
                           {{ match.away_label }}
                         </span>
                       </div>
-                      {% if match.is_complete %}
-                        <strong class="bracket-score">{{ match.away_score }}</strong>
-                      {% endif %}
+                      <strong class="bracket-score {% if score.is_live %}is-live{% endif %}" data-live-score-away-score{% if not score.has_score %} hidden{% endif %}>{{ score.away_score }}</strong>
                     </div>
                   </article>
 
@@ -99,65 +97,63 @@
                       <h3>Third-place match</h3>
 
                       {% for match in third_place_matches %}
-                        <article class="bracket-match-card third-place-card {% if match.is_complete %}is-complete{% endif %}">
-                          <div class="match-meta">
-                            <span>Match {{ match.match_number }}</span>
+                        {% with score=match.score_display %}
+                          <article class="bracket-match-card third-place-card {% if match.is_complete %}is-complete{% endif %} {% if score.is_live %}has-live-score{% endif %}" data-live-score-match-id="{{ match.id }}">
+                            <div class="match-meta">
+                              <span>Match {{ match.match_number }}</span>
 
                             {% if match.kickoff_time %}
                               <span data-local-time="{{ match.kickoff_time|date:'c' }}" data-local-time-format="short">{{ match.kickoff_time|date:"M j · g:i A" }} UTC</span>
                             {% endif %}
 
-                            {% if match.venue %}
-                              <div class="right">
-                                <span>{{ match.venue }}</span>
+                              {% if match.venue %}
+                                <div class="right">
+                                  <span>{{ match.venue }}</span>
+                                </div>
+                              {% endif %}
+                            </div>
+
+                            <div class="bracket-team
+                              {% if match.is_complete %}
+                                {% if match.winner_id == match.home_team_id %}
+                                  winner
+                                {% else %}
+                                  loser
+                                {% endif %}
+                              {% elif not match.home_team_id %}
+                                pending
+                              {% endif %}
+                            " data-live-score-team-id="{{ match.home_team_id|default:'' }}">
+                              <div class="bracket-team-main">
+                                <span class="bracket-team-name">
+                                  {% if match.home_team %}{{ match.home_team.flag }}{% endif %}
+                                  {{ match.home_label }}
+                                </span>
                               </div>
-                            {% endif %}
-                          </div>
-
-                          <div class="bracket-team
-                            {% if match.is_complete %}
-                              {% if match.winner_id == match.home_team_id %}
-                                winner
-                              {% else %}
-                                loser
-                              {% endif %}
-                            {% elif not match.home_team_id %}
-                              pending
-                            {% endif %}
-                          ">
-                            <div class="bracket-team-main">
-                              <span class="bracket-team-name">
-                                {% if match.home_team %}{{ match.home_team.flag }}{% endif %}
-                                {{ match.home_label }}
-                              </span>
+                              <strong class="bracket-score {% if score.is_live %}is-live{% endif %}" data-live-score-home-score{% if not score.has_score %} hidden{% endif %}>{{ score.home_score }}</strong>
                             </div>
-                            {% if match.is_complete %}
-                              <strong class="bracket-score">{{ match.home_score }}</strong>
-                            {% endif %}
-                          </div>
 
-                          <div class="bracket-team
-                            {% if match.is_complete %}
-                              {% if match.winner_id == match.away_team_id %}
-                                winner
-                              {% else %}
-                                loser
+                            <div class="bracket-team
+                              {% if match.is_complete %}
+                                {% if match.winner_id == match.away_team_id %}
+                                  winner
+                                {% else %}
+                                  loser
+                                {% endif %}
+                              {% elif not match.away_team_id %}
+                                pending
                               {% endif %}
-                            {% elif not match.away_team_id %}
-                              pending
-                            {% endif %}
-                          ">
-                            <div class="bracket-team-main">
-                              <span class="bracket-team-name">
-                                {% if match.away_team %}{{ match.away_team.flag }}{% endif %}
-                                {{ match.away_label }}
-                              </span>
+                            " data-live-score-team-id="{{ match.away_team_id|default:'' }}">
+                              <div class="bracket-team-main">
+                                <span class="bracket-team-name">
+                                  {% if match.away_team %}{{ match.away_team.flag }}{% endif %}
+                                  {{ match.away_label }}
+                                </span>
+                              </div>
+                              <strong class="bracket-score {% if score.is_live %}is-live{% endif %}" data-live-score-away-score{% if not score.has_score %} hidden{% endif %}>{{ score.away_score }}</strong>
                             </div>
-                            {% if match.is_complete %}
-                              <strong class="bracket-score">{{ match.away_score }}</strong>
-                            {% endif %}
-                          </div>
-                        </article>
+                          </article>
+                        {% endwith %}
                       {% endfor %}
                     </div>
                   {% endif %}
@@ -171,4 +167,9 @@
   </div>
   <script src="{% static 'js/local_times.js' %}"></script>
   <script src="{% static 'js/bracket.js' %}"></script>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'js/live_scores.js' %}"></script>
 {% endblock %}

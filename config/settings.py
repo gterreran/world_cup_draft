@@ -131,6 +131,7 @@ INSTALLED_APPS = [
     'assignments',
     'drafts',
     'scoring',
+    'live_scores',
     'channels',
     'daphne',
     'django.contrib.admin',
@@ -262,11 +263,20 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 USE_REDIS_CHANNEL_LAYER = os.getenv("USE_REDIS_CHANNEL_LAYER", "False") == "True"
 
 if USE_REDIS_CHANNEL_LAYER:
+    redis_url = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
+
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
             "CONFIG": {
-                "hosts": [os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")],
+                "hosts": [
+                    {
+                        "address": redis_url,
+                        "socket_connect_timeout": 5,
+                        "socket_timeout": 30,
+                        "health_check_interval": 30,
+                    }
+                ],
             },
         },
     }
@@ -284,6 +294,7 @@ PROJECTION_JOB_QUEUE = os.getenv(
     "worldcupdraft:projection_jobs",
 )
 
+# Simulation settings for the projection worker. These can be tuned to balance accuracy vs. speed.
 PROJECTION_SIMULATION_RUNS = env_int("PROJECTION_SIMULATION_RUNS", 10000)
 PROJECTION_SIMULATION_MODE = os.getenv("PROJECTION_SIMULATION_MODE", "seeded")
 PROJECTION_SIMULATION_SEED = env_optional_int("PROJECTION_SIMULATION_SEED", 42)
@@ -291,3 +302,28 @@ PROJECTION_SIMULATION_DRAW_PROB = env_float("PROJECTION_SIMULATION_DRAW_PROB", 0
 PROJECTION_SIMULATION_RANK_ELO_STEP = env_float("PROJECTION_SIMULATION_RANK_ELO_STEP", 8.0)
 PROJECTION_SIMULATION_REGULATION_PROB = env_float("PROJECTION_SIMULATION_REGULATION_PROB", 0.75)
 PROJECTION_SIMULATION_EXTRA_TIME_PROB = env_float("PROJECTION_SIMULATION_EXTRA_TIME_PROB", 0.15)
+
+# Live-score provider settings. The provider-neutral live_scores app uses this
+# value to select the concrete API client. API-Football/API-SPORTS is currently
+# the default provider because the World Cup is covered on the cheaper plans.
+LIVE_SCORES_PROVIDER = os.getenv("LIVE_SCORES_PROVIDER", "api_football")
+
+# API-Football / API-SPORTS live-score ingestion settings.
+API_FOOTBALL_API_KEY = os.getenv("API_FOOTBALL_API_KEY", "") or os.getenv("API_SPORTS_API_KEY", "")
+API_FOOTBALL_BASE_URL = os.getenv("API_FOOTBALL_BASE_URL", "https://v3.football.api-sports.io")
+API_FOOTBALL_WORLD_CUP_LEAGUE_ID = os.getenv("API_FOOTBALL_WORLD_CUP_LEAGUE_ID", "1")
+API_FOOTBALL_WORLD_CUP_SEASON = os.getenv("API_FOOTBALL_WORLD_CUP_SEASON", "2026")
+API_FOOTBALL_TIMEOUT_SECONDS = env_int("API_FOOTBALL_TIMEOUT_SECONDS", 15)
+API_FOOTBALL_LIVE_STATUS_CODES = os.getenv(
+    "API_FOOTBALL_LIVE_STATUS_CODES",
+    "1H-HT-2H-ET-BT-P-LIVE",
+)
+
+# Live-score worker defaults. The first worker slice updates LiveMatchState only;
+# final Match results, standings, projections, and websocket broadcasts are handled
+# by later slices. The worker uses two cadences: fast polling when a game is
+# near kickoff or currently tracked as live, and slower fixture-detail checks
+# during idle periods.
+LIVE_SCORES_POLL_INTERVAL_SECONDS = env_int("LIVE_SCORES_POLL_INTERVAL_SECONDS", 30)
+LIVE_SCORES_IDLE_SLEEP_SECONDS = env_int("LIVE_SCORES_IDLE_SLEEP_SECONDS", 300)
+LIVE_SCORES_KICKOFF_BUFFER_MINUTES = env_int("LIVE_SCORES_KICKOFF_BUFFER_MINUTES", 15)

@@ -4,13 +4,12 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from leagues.models import League
 from leagues.permissions import can_edit_match_results
+from live_scores.display import attach_live_score_displays
 
 from .forms import MatchResultForm
 from .models import Match, Tournament
-from .services import build_group_stage_context
-from scoring.services import refresh_leagues_after_tournament_change
+from .services import apply_final_match_result, build_group_stage_context
 from collections import defaultdict
-from tournaments.progression import recompute_tournament_progression
 
 def match_list(request, slug: str):
     league = get_object_or_404(League, slug=slug)
@@ -51,30 +50,26 @@ def match_result_edit(request, slug: str, match_id: int):
         form = MatchResultForm(request.POST, instance=match)
 
         if form.is_valid():
-            form.save()
-
-            recompute_tournament_progression(league.tournament)
-            refresh_results = refresh_leagues_after_tournament_change(
-                league.tournament,
-                reason="Match result changed.",
+            result = apply_final_match_result(
+                match=match,
+                home_score=form.cleaned_data["home_score"],
+                away_score=form.cleaned_data["away_score"],
+                winner=form.cleaned_data.get("winner"),
+                went_to_extra_time=form.cleaned_data.get("went_to_extra_time", False),
+                went_to_penalties=form.cleaned_data.get("went_to_penalties", False),
+                reason="Manual match result changed.",
             )
 
-            unavailable_messages = [
-                result["message"]
-                for result in refresh_results
-                if result["status"] == "unavailable"
-            ]
-            for warning_message in unavailable_messages:
+            for warning_message in result.refresh.unavailable_messages:
                 messages.warning(request, warning_message)
 
-            queued_count = sum(1 for result in refresh_results if result["queued"])
             messages.success(
                 request,
                 "Match result updated. "
-                f"Recomputed standings for {len(refresh_results)} league"
-                f"{'s' if len(refresh_results) != 1 else ''}; "
-                f"queued {queued_count} projection recompute job"
-                f"{'s' if queued_count != 1 else ''}.",
+                f"Recomputed standings for {result.refresh.league_count} league"
+                f"{'s' if result.refresh.league_count != 1 else ''}; "
+                f"queued {result.refresh.queued_count} projection recompute job"
+                f"{'s' if result.refresh.queued_count != 1 else ''}.",
             )
             return redirect("match_list", slug=league.slug)
     else:
@@ -99,6 +94,8 @@ def tournament_schedule(request, tournament_slug: str):
         .order_by("kickoff_time", "match_number", "id")
     )
 
+    matches = attach_live_score_displays(matches)
+
     matches_by_stage = defaultdict(list)
 
     for match in matches:
@@ -117,6 +114,11 @@ def group_stage(request, tournament_slug: str):
     tournament = get_object_or_404(Tournament, slug=tournament_slug)
 
     groups = build_group_stage_context(tournament)
+
+    group_matches = []
+    for group in groups:
+        group_matches.extend(group.get("matches", []))
+    attach_live_score_displays(group_matches)
 
     return render(
         request,
@@ -232,7 +234,11 @@ def bracket_stage(request, tournament_slug: str):
     base_match_count = 16
 
     for round_index, stage in enumerate(championship_stages):
-        matches = matches_by_stage[stage]
+        matches = attach_live_score_displays(
+            Match.objects.filter(tournament=tournament, stage=stage)
+            .select_related("home_team", "away_team", "winner")
+            .order_by("match_number")
+        )
 
         row_span = 2 ** round_index
         entries = []
@@ -260,7 +266,7 @@ def bracket_stage(request, tournament_slug: str):
             }
         )
 
-    third_place_matches = list(
+    third_place_matches = attach_live_score_displays(
         Match.objects.filter(tournament=tournament, stage=Match.Stage.THIRD_PLACE)
         .select_related("home_team", "away_team", "winner")
         .order_by("match_number")

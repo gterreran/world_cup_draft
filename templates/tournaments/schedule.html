@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
-  <div class="page-header">
+  <div class="page-header" data-live-score-tournament-slug="{{ tournament.slug }}">
     <div>
       <p class="eyebrow">Tournament schedule</p>
       <h1>{{ tournament }}</h1>
@@ -31,11 +31,12 @@
 
       <div class="schedule-list">
         {% for match in matches %}
-          <article class="match-card">
-            <div class="match-meta">
-              {% if match.match_number %}
-                <span>Match {{ match.match_number }}</span>
-              {% endif %}
+          {% with score=match.score_display %}
+            <article class="match-card {% if score.is_live %}has-live-score{% endif %}" data-live-score-match-id="{{ match.id }}">
+              <div class="match-meta">
+                {% if match.match_number %}
+                  <span>Match {{ match.match_number }}</span>
+                {% endif %}
 
               {% if match.kickoff_time %}
                 <span data-local-time="{{ match.kickoff_time|date:'c' }}" data-local-time-format="long">{{ match.kickoff_time|date:"M j, Y · g:i A" }} UTC</span>
@@ -43,57 +44,54 @@
                 <span>Date TBD</span>
               {% endif %}
 
-              {% if match.venue %}
-                <div class="right">
-                  <span>{{ match.venue }}</span>
-                </div>
-              {% endif %}
-            </div>
-
-            <div class="match-main">
-              <div class="match-team">
-                {% if match.home_team %}
-                  <span class="team-flag">{{ match.home_team.flag }}</span>
-                {% endif %}
-                <div>
-                  <strong>{{ match.home_label }}</strong>
-                </div>
-              </div>
-
-              <div class="match-score">
-                {% if match.is_complete %}
-                  {{ match.home_score }}–{{ match.away_score }}
-                {% else %}
-                  vs
+                {% if match.venue %}
+                  <div class="right">
+                    <span>{{ match.venue }}</span>
+                  </div>
                 {% endif %}
               </div>
 
-              <div class="match-team right">
-                <div>
-                  <strong>{{ match.away_label }}</strong>
+              <div class="match-main">
+                <div class="match-team">
+                  {% if match.home_team %}
+                    <span class="team-flag">{{ match.home_team.flag }}</span>
+                  {% endif %}
+                  <div>
+                    <strong>{{ match.home_label }}</strong>
+                  </div>
                 </div>
-                {% if match.away_team %}
-                  <span class="team-flag">{{ match.away_team.flag }}</span>
-                {% endif %}
+
+                <div class="match-score {% if score.is_live %}is-live{% endif %}" data-live-score-main-score>
+                  {% if score.has_score %}
+                    {{ score.home_score }}–{{ score.away_score }}
+                  {% else %}
+                    vs
+                  {% endif %}
+                </div>
+
+                <div class="match-team right">
+                  <div>
+                    <strong>{{ match.away_label }}</strong>
+                  </div>
+                  {% if match.away_team %}
+                    <span class="team-flag">{{ match.away_team.flag }}</span>
+                  {% endif %}
+                </div>
               </div>
-            </div>
 
-            <div class="match-footer">
-              <span class="status-pill status-{{ match.status }}">
-                {{ match.get_status_display }}
-              </span>
+              <div class="match-footer">
+                <span class="status-pill status-{{ score.status_class }}" data-live-score-status{% if not score.status_label %} hidden{% endif %}>
+                  {{ score.status_label }}
+                </span>
 
-              {% if match.went_to_penalties %}
-                <span>Penalties</span>
-              {% elif match.went_to_extra_time %}
-                <span>After extra time</span>
-              {% endif %}
+                <span data-live-score-detail{% if not score.detail_label %} hidden{% endif %}>{{ score.detail_label }}</span>
 
-              {% if match.winner %}
-                <span>Winner: {{ match.winner.flag }} {{ match.winner.name }}</span>
-              {% endif %}
-            </div>
-          </article>
+                <span data-live-score-winner{% if not match.winner %} hidden{% endif %}>
+                  {% if match.winner %}Winner: {{ match.winner.flag }} {{ match.winner.name }}{% endif %}
+                </span>
+              </div>
+            </article>
+          {% endwith %}
         {% endfor %}
       </div>
     </section>
@@ -102,4 +100,9 @@
       <p>No matches loaded yet.</p>
     </section>
   {% endfor %}
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'js/live_scores.js' %}"></script>
 {% endblock %}
