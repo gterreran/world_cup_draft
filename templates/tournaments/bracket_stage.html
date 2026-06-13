@@ -42,7 +42,7 @@
                         <span data-local-time="{{ match.kickoff_time|date:'c' }}" data-local-time-format="short">{{ match.kickoff_time|date:"M j · g:i A" }} UTC</span>
                       {% endif %}
 
-                      <span class="live-match-label" data-live-score-status{% if not score.is_live %} hidden{% endif %}>{{ score.status_label }}</span>
+                      <span class="status-pill{% if score.status_class %} status-{{ score.status_class }}{% endif %}" data-live-score-status{% if not score.status_label %} hidden{% endif %}>{{ score.status_label }}</span>
 
                       {% if match.venue %}
                         <div class="right">
@@ -102,9 +102,11 @@
                             <div class="match-meta">
                               <span>Match {{ match.match_number }}</span>
 
-                            {% if match.kickoff_time %}
-                              <span data-local-time="{{ match.kickoff_time|date:'c' }}" data-local-time-format="short">{{ match.kickoff_time|date:"M j · g:i A" }} UTC</span>
-                            {% endif %}
+                              {% if match.kickoff_time %}
+                                <span data-local-time="{{ match.kickoff_time|date:'c' }}" data-local-time-format="short">{{ match.kickoff_time|date:"M j · g:i A" }} UTC</span>
+                              {% endif %}
+
+                              <span class="status-pill{% if score.status_class %} status-{{ score.status_class }}{% endif %}" data-live-score-status{% if not score.status_label %} hidden{% endif %}>{{ score.status_label }}</span>
 
                               {% if match.venue %}
                                 <div class="right">
@@ -165,11 +167,11 @@
       {% endfor %}
     </div>
   </div>
-  <script src="{% static 'js/local_times.js' %}"></script>
-  <script src="{% static 'js/bracket.js' %}"></script>
 {% endblock %}
 
 {% block scripts %}
   {{ block.super }}
+  <script src="{% static 'js/local_times.js' %}"></script>
+  <script src="{% static 'js/bracket.js' %}"></script>
   <script src="{% static 'js/live_scores.js' %}"></script>
 {% endblock %}

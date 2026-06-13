@@ -2,10 +2,6 @@
 {% load static %}
 {% block title %}{{ tournament }} Group Stage{% endblock %}
 
-{% block scripts %}
-  {{ block.super }}
-  <script src="{% static 'js/local_times.js' %}"></script>
-{% endblock %}
 
 {% block content %}
   <div class="page-header" data-live-score-tournament-slug="{{ tournament.slug }}">
@@ -70,7 +66,8 @@
 
           <div class="group-matches">
             {% for match in group.matches %}
-              <article class="mini-match-card">
+              {% with score=match.score_display %}
+                <article class="mini-match-card {% if score.is_live %}has-live-score{% endif %}" data-live-score-match-id="{{ match.id }}">
                 <div class="mini-match-meta">
                   <span>Match {{ match.match_number }}</span>
                   {% if match.kickoff_time %}
@@ -95,7 +92,7 @@
                           vs
                         {% endif %}
                       </strong>
-                      <small data-live-score-status{% if not score.is_live %} hidden{% endif %}>{{ score.status_label }}</small>
+                      <span class="status-pill{% if score.status_class %} status-{{ score.status_class }}{% endif %}" data-live-score-status{% if not score.status_label %} hidden{% endif %}>{{ score.status_label }}</span>
                     </div>
                     <div class="right">
                       <span>{{ match.away_team.flag }} {{ match.away_label }}</span>
@@ -113,5 +110,6 @@
 
 {% block scripts %}
   {{ block.super }}
+  <script src="{% static 'js/local_times.js' %}"></script>
   <script src="{% static 'js/live_scores.js' %}"></script>
 {% endblock %}

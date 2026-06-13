@@ -54,8 +54,8 @@ def build_match_score_display(match, live_state: LiveMatchState | None = None) -
             is_final=True,
             home_score=match.home_score,
             away_score=match.away_score,
-            status_label=match.get_status_display(),
-            status_class=match.status,
+            status_label="Final",
+            status_class="final",
             detail_label=_final_detail_label(match),
         )
 
@@ -71,14 +71,16 @@ def build_match_score_display(match, live_state: LiveMatchState | None = None) -
             detail_label=_live_detail_label(live_state),
         )
 
+    # Scheduled/upcoming matches should not show a status badge in the UI.
+    # The internal Match.status remains unchanged; this only controls display.
     return MatchScoreDisplay(
         has_score=False,
         is_live=False,
         is_final=False,
         home_score=None,
         away_score=None,
-        status_label=match.get_status_display(),
-        status_class=match.status,
+        status_label="",
+        status_class="",
     )
 
 
@@ -94,7 +96,9 @@ def _is_live_like(live_state: LiveMatchState) -> bool:
 def _live_status_class(live_state: LiveMatchState) -> str:
     if _is_live_like(live_state):
         return "live"
-    return live_state.status or "unknown"
+    if live_state.status == LiveMatchState.Status.FINAL:
+        return "final"
+    return ""
 
 
 def _live_status_label(live_state: LiveMatchState) -> str:
@@ -117,7 +121,8 @@ def _live_status_label(live_state: LiveMatchState) -> str:
     if live_state.status == LiveMatchState.Status.FINAL:
         return "Final"
 
-    return live_state.get_status_display()
+    # Do not surface scheduled/unknown provider states as badges.
+    return ""
 
 
 def _live_detail_label(live_state: LiveMatchState) -> str:

@@ -2,10 +2,6 @@
 {% load static %}
 {% block title %}{{ tournament }} Schedule{% endblock %}
 
-{% block scripts %}
-  {{ block.super }}
-  <script src="{% static 'js/local_times.js' %}"></script>
-{% endblock %}
 
 {% block content %}
   <div class="page-header" data-live-score-tournament-slug="{{ tournament.slug }}">
@@ -80,7 +76,7 @@
               </div>
 
               <div class="match-footer">
-                <span class="status-pill status-{{ score.status_class }}" data-live-score-status{% if not score.status_label %} hidden{% endif %}>
+                <span class="status-pill{% if score.status_class %} status-{{ score.status_class }}{% endif %}" data-live-score-status{% if not score.status_label %} hidden{% endif %}>
                   {{ score.status_label }}
                 </span>
 
@@ -104,5 +100,6 @@
 
 {% block scripts %}
   {{ block.super }}
+  <script src="{% static 'js/local_times.js' %}"></script>
   <script src="{% static 'js/live_scores.js' %}"></script>
 {% endblock %}
