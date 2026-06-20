@@ -68,9 +68,13 @@ def _build_slot_map(
 
 
 def _third_place_sort_key(standing: GroupStanding) -> tuple:
+    # Third-place teams are ranked across groups, so head-to-head criteria do
+    # not apply. The app does not currently track FIFA team conduct/fair-play
+    # points, so FIFA ranking is the next deterministic fallback before name.
     return (
         -standing.points,
         -standing.goal_difference,
         -standing.goals_for,
+        standing.team.fifa_rank or 10_000,
         standing.team.name,
     )

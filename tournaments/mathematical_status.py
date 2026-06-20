@@ -1,5 +1,6 @@
 # `tournaments/mathematical_status.py`
 from dataclasses import dataclass
+from collections import defaultdict
 from itertools import product
 
 from tournaments.models import Match, NationalTeam
@@ -67,6 +68,33 @@ class MathematicalStatus:
     qualified: bool
     eliminated: bool
     guaranteed_position: int | None
+
+
+@dataclass
+class _ScenarioStanding:
+    team: NationalTeam
+    points: int = 0
+    goals_for: int = 0
+    goals_against: int = 0
+    goal_difference: int = 0
+
+
+@dataclass(frozen=True)
+class _ScenarioMatchResult:
+    home_team_id: int
+    away_team_id: int
+    is_exact_score: bool
+    home_score: int | None = None
+    away_score: int | None = None
+    outcome: str | None = None
+
+
+@dataclass
+class _ScenarioHeadToHeadStanding:
+    points: int = 0
+    goals_for: int = 0
+    goals_against: int = 0
+    goal_difference: int = 0
 
 
 POINTS_PER_RESULT = {
@@ -289,7 +317,11 @@ def _compute_group_outcome_envelope(tournament, group: str) -> GroupOutcomeEnvel
         ).order_by("name")
     )
 
-    team_ids = [team.id for team in teams]
+    teams_by_id = {
+        team.id: team
+        for team in teams
+    }
+    team_ids = list(teams_by_id.keys())
 
     matches = list(
         Match.objects.filter(
@@ -301,16 +333,18 @@ def _compute_group_outcome_envelope(tournament, group: str) -> GroupOutcomeEnvel
         .order_by("match_number")
     )
 
-    base_points = {
-        team_id: 0
-        for team_id in team_ids
+    base_rows = {
+        team_id: _ScenarioStanding(team=team)
+        for team_id, team in teams_by_id.items()
     }
 
+    exact_results = []
     remaining_matches = []
 
     for match in matches:
         if match.is_complete:
-            _apply_completed_match(base_points, match)
+            _apply_completed_match_to_scenario_rows(base_rows, match)
+            exact_results.append(_exact_result_from_match(match))
         else:
             remaining_matches.append(match)
 
@@ -354,11 +388,15 @@ def _compute_group_outcome_envelope(tournament, group: str) -> GroupOutcomeEnvel
     )
 
     for outcomes in outcomes_iterator:
-        scenario_points = dict(base_points)
+        scenario_points = {
+            team_id: row.points
+            for team_id, row in base_rows.items()
+        }
         scenario_records = {
             team_id: GroupResultRecord()
             for team_id in team_ids
         }
+        scenario_results = list(exact_results)
 
         for match, outcome in zip(remaining_matches, outcomes):
             home_points, away_points = POINTS_PER_RESULT[outcome]
@@ -375,7 +413,31 @@ def _compute_group_outcome_envelope(tournament, group: str) -> GroupOutcomeEnvel
                 away_points,
             )
 
-        scenario_positions = _possible_positions_by_points_only(scenario_points)
+            scenario_results.append(
+                _ScenarioMatchResult(
+                    home_team_id=match.home_team_id,
+                    away_team_id=match.away_team_id,
+                    is_exact_score=False,
+                    outcome=outcome,
+                )
+            )
+
+        scenario_rows = []
+        for team_id, base_row in base_rows.items():
+            scenario_rows.append(
+                _ScenarioStanding(
+                    team=base_row.team,
+                    points=scenario_points[team_id],
+                    goals_for=base_row.goals_for,
+                    goals_against=base_row.goals_against,
+                    goal_difference=base_row.goal_difference,
+                )
+            )
+
+        scenario_positions = _possible_positions_for_scenario(
+            rows=scenario_rows,
+            results=scenario_results,
+        )
 
         scenario_third_points = []
 
@@ -430,43 +492,280 @@ def _compute_group_outcome_envelope(tournament, group: str) -> GroupOutcomeEnvel
     )
 
 
-def _possible_positions_by_points_only(points: dict[int, int]) -> dict[int, set[int]]:
+def _possible_positions_for_scenario(
+    *,
+    rows: list[_ScenarioStanding],
+    results: list[_ScenarioMatchResult],
+) -> dict[int, set[int]]:
+    """Return conservative positions for one W/D/L scenario.
+
+    Remaining group matches are simulated as win/draw/loss outcomes, but their
+    exact scorelines are still unknown. The ranking therefore applies only the
+    tiebreakers that are safely known for this scenario:
+
+    * points are always known;
+    * head-to-head points are known from W/D/L outcomes;
+    * head-to-head goal difference/goals and overall goal difference/goals are
+      used only when the relevant matches already have exact scores.
+
+    If a future scoreline could still change an unresolved tiebreaker, every
+    team in that unresolved block keeps every position in that block. That keeps
+    early mathematical qualification/elimination conservative while still
+    allowing completed head-to-head results to lock first/second/fourth places.
     """
-    Return conservative possible finishing positions from points only.
 
-    This intentionally does not break ties. If two teams are tied for first,
-    both can occupy first or second. If three teams are tied for first, all
-    three can occupy first, second, or third.
-    """
-    grouped = {}
-
-    for team_id, team_points in points.items():
-        grouped.setdefault(team_points, set()).add(team_id)
-
-    ordered_points = sorted(grouped.keys(), reverse=True)
-
-    positions_by_team = {
-        team_id: set()
-        for team_id in points
+    ordered_blocks = _rank_scenario_into_position_blocks(rows=rows, results=results)
+    positions_by_team_id = {
+        row.team.id: set()
+        for row in rows
     }
 
     current_position = 1
-
-    for team_points in ordered_points:
-        tied_team_ids = grouped[team_points]
-        tied_positions = set(
+    for block in ordered_blocks:
+        block_positions = set(
             range(
                 current_position,
-                current_position + len(tied_team_ids),
+                current_position + len(block),
             )
         )
 
-        for team_id in tied_team_ids:
-            positions_by_team[team_id].update(tied_positions)
+        for row in block:
+            positions_by_team_id[row.team.id].update(block_positions)
 
-        current_position += len(tied_team_ids)
+        current_position += len(block)
 
-    return positions_by_team
+    return positions_by_team_id
+
+
+def _rank_scenario_into_position_blocks(
+    *,
+    rows: list[_ScenarioStanding],
+    results: list[_ScenarioMatchResult],
+) -> list[list[_ScenarioStanding]]:
+    rows_by_points: dict[int, list[_ScenarioStanding]] = defaultdict(list)
+
+    for row in rows:
+        rows_by_points[row.points].append(row)
+
+    ordered_blocks: list[list[_ScenarioStanding]] = []
+    for points in sorted(rows_by_points.keys(), reverse=True):
+        ordered_blocks.extend(
+            _break_scenario_tie(
+                rows=rows_by_points[points],
+                results=results,
+                criteria=(
+                    "h2h_points",
+                    "h2h_goal_difference",
+                    "h2h_goals_for",
+                    "goal_difference",
+                    "goals_for",
+                    "fifa_rank",
+                    "name",
+                ),
+            )
+        )
+
+    return ordered_blocks
+
+
+def _break_scenario_tie(
+    *,
+    rows: list[_ScenarioStanding],
+    results: list[_ScenarioMatchResult],
+    criteria: tuple[str, ...],
+) -> list[list[_ScenarioStanding]]:
+    if len(rows) <= 1:
+        return [rows]
+
+    if not criteria:
+        return [rows]
+
+    criterion = criteria[0]
+    rows_by_value = _group_scenario_rows_by_known_criterion(
+        rows=rows,
+        results=results,
+        criterion=criterion,
+    )
+
+    # A None return means this criterion depends on unknown future scorelines.
+    # Because FIFA would evaluate this criterion before all later criteria, it
+    # is not safe to fall through to goal difference/FIFA rank/name.
+    if rows_by_value is None:
+        return [rows]
+
+    ordered_blocks: list[list[_ScenarioStanding]] = []
+    for value in sorted(rows_by_value.keys(), reverse=True):
+        ordered_blocks.extend(
+            _break_scenario_tie(
+                rows=rows_by_value[value],
+                results=results,
+                criteria=criteria[1:],
+            )
+        )
+
+    return ordered_blocks
+
+
+def _group_scenario_rows_by_known_criterion(
+    *,
+    rows: list[_ScenarioStanding],
+    results: list[_ScenarioMatchResult],
+    criterion: str,
+) -> dict[int | str, list[_ScenarioStanding]] | None:
+    grouped: dict[int | str, list[_ScenarioStanding]] = defaultdict(list)
+
+    head_to_head = None
+    if criterion.startswith("h2h_"):
+        if criterion in {"h2h_goal_difference", "h2h_goals_for"} and not _head_to_head_scores_are_known(rows, results):
+            return None
+        head_to_head = _compute_scenario_head_to_head_standings(rows, results)
+
+    if criterion in {"goal_difference", "goals_for"} and not _overall_scores_are_known(rows, results):
+        return None
+
+    for row in rows:
+        if criterion == "h2h_points":
+            value = head_to_head[row.team.id].points
+        elif criterion == "h2h_goal_difference":
+            value = head_to_head[row.team.id].goal_difference
+        elif criterion == "h2h_goals_for":
+            value = head_to_head[row.team.id].goals_for
+        elif criterion == "goal_difference":
+            value = row.goal_difference
+        elif criterion == "goals_for":
+            value = row.goals_for
+        elif criterion == "fifa_rank":
+            # Lower FIFA rank is better, but blocks are sorted descending.
+            value = -(row.team.fifa_rank or 10_000)
+        elif criterion == "name":
+            # Name fallback is only an app-level deterministic fallback. It is
+            # reached only after all earlier tracked criteria were known/tied.
+            value = _reverse_sortable_string(row.team.name)
+        else:
+            raise ValueError(f"Unknown mathematical-status tiebreaker: {criterion}")
+
+        grouped[value].append(row)
+
+    return grouped
+
+
+def _compute_scenario_head_to_head_standings(
+    rows: list[_ScenarioStanding],
+    results: list[_ScenarioMatchResult],
+) -> dict[int, _ScenarioHeadToHeadStanding]:
+    team_ids = {row.team.id for row in rows}
+    head_to_head = {
+        team_id: _ScenarioHeadToHeadStanding()
+        for team_id in team_ids
+    }
+
+    for result in results:
+        if result.home_team_id not in team_ids or result.away_team_id not in team_ids:
+            continue
+
+        home = head_to_head[result.home_team_id]
+        away = head_to_head[result.away_team_id]
+
+        home_points, away_points = _points_for_scenario_result(result)
+        home.points += home_points
+        away.points += away_points
+
+        if not result.is_exact_score:
+            continue
+
+        home_score = result.home_score
+        away_score = result.away_score
+
+        home.goals_for += home_score
+        home.goals_against += away_score
+        home.goal_difference += home_score - away_score
+
+        away.goals_for += away_score
+        away.goals_against += home_score
+        away.goal_difference += away_score - home_score
+
+    return head_to_head
+
+
+def _points_for_scenario_result(result: _ScenarioMatchResult) -> tuple[int, int]:
+    if result.is_exact_score:
+        if result.home_score > result.away_score:
+            return 3, 0
+        if result.away_score > result.home_score:
+            return 0, 3
+        return 1, 1
+
+    return POINTS_PER_RESULT[result.outcome]
+
+
+def _head_to_head_scores_are_known(
+    rows: list[_ScenarioStanding],
+    results: list[_ScenarioMatchResult],
+) -> bool:
+    team_ids = {row.team.id for row in rows}
+
+    for result in results:
+        if result.home_team_id in team_ids and result.away_team_id in team_ids:
+            if not result.is_exact_score:
+                return False
+
+    return True
+
+
+def _overall_scores_are_known(
+    rows: list[_ScenarioStanding],
+    results: list[_ScenarioMatchResult],
+) -> bool:
+    team_ids = {row.team.id for row in rows}
+
+    for result in results:
+        if result.home_team_id in team_ids or result.away_team_id in team_ids:
+            if not result.is_exact_score:
+                return False
+
+    return True
+
+
+def _exact_result_from_match(match: Match) -> _ScenarioMatchResult:
+    return _ScenarioMatchResult(
+        home_team_id=match.home_team_id,
+        away_team_id=match.away_team_id,
+        is_exact_score=True,
+        home_score=match.home_score,
+        away_score=match.away_score,
+    )
+
+
+def _apply_completed_match_to_scenario_rows(
+    rows_by_team_id: dict[int, _ScenarioStanding],
+    match: Match,
+) -> None:
+    home = rows_by_team_id[match.home_team_id]
+    away = rows_by_team_id[match.away_team_id]
+    home_score = match.home_score
+    away_score = match.away_score
+
+    home.goals_for += home_score
+    home.goals_against += away_score
+    home.goal_difference += home_score - away_score
+
+    away.goals_for += away_score
+    away.goals_against += home_score
+    away.goal_difference += away_score - home_score
+
+    if home_score > away_score:
+        home.points += 3
+    elif away_score > home_score:
+        away.points += 3
+    else:
+        home.points += 1
+        away.points += 1
+
+
+def _reverse_sortable_string(value: str) -> str:
+    """Return a string whose descending sort mirrors normal ascending sort."""
+
+    return "".join(chr(0x10FFFF - ord(char)) for char in value)
 
 
 def _actual_positions_by_group(tournament) -> dict[str, dict[int, int]]:
