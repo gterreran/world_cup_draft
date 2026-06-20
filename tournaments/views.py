@@ -234,11 +234,7 @@ def bracket_stage(request, tournament_slug: str):
     base_match_count = 16
 
     for round_index, stage in enumerate(championship_stages):
-        matches = attach_live_score_displays(
-            Match.objects.filter(tournament=tournament, stage=stage)
-            .select_related("home_team", "away_team", "winner")
-            .order_by("match_number")
-        )
+        matches = attach_live_score_displays(matches_by_stage[stage])
 
         row_span = 2 ** round_index
         entries = []
