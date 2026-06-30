@@ -121,6 +121,10 @@ ALLOWED_HOSTS.append("healthcheck.railway.app")
 # Allow localhost for local development and testing.
 ALLOWED_HOSTS.append('127.0.0.1')
 
+# Tournament used by public top-bar navigation. The fallback in the context
+# processor still handles local/dev databases where this slug is not present.
+PUBLIC_TOURNAMENT_SLUG = os.getenv("PUBLIC_TOURNAMENT_SLUG", "fifa-world-cup-2026")
+
 
 # Application definition
 
@@ -165,6 +169,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'tournaments.context_processors.public_tournament',
             ],
         },
     },

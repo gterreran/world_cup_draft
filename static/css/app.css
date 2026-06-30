@@ -18,20 +18,39 @@ a:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 24px;
   padding: 16px 24px;
   background: white;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .brand {
+  flex: 0 0 auto;
   font-weight: 800;
   color: #171717;
 }
 
-.site-header nav {
+.site-header nav,
+.main-nav {
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+
+.nav-link {
+  border-radius: 999px;
+  color: #4b5563;
+  font-weight: 650;
+  padding: 6px 10px;
+}
+
+.nav-link:hover,
+.nav-link.is-active {
+  background: #eef2ff;
+  color: #155eef;
+  text-decoration: none;
 }
 
 .page {
@@ -2027,4 +2046,15 @@ tbody tr:hover {
 .projection-worker-offline {
   background: #fee2e2;
   color: #991b1b;
+}
+
+@media (max-width: 720px) {
+  .site-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .main-nav {
+    justify-content: flex-start;
+  }
 }

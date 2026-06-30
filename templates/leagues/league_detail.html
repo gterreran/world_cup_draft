@@ -31,9 +31,6 @@
         <a class="button secondary" href="{% url 'login' %}">Log in to follow</a>
         <a class="button secondary" href="{% url 'signup' %}">Sign up</a>
       {% endif %}
-      <a class="button secondary" href="{% url 'tournament_schedule' league.tournament.slug %}">Full schedule</a>
-      <a class="button secondary" href="{% url 'group_stage' league.tournament.slug %}">Group stage</a>
-      <a class="button secondary" href="{% url 'bracket_stage' league.tournament.slug %}">Bracket</a>
       <a class="button secondary" href="{% url 'league_scoring_settings' league.slug %}">Scoring &amp; tiebreakers</a>
       <a class="button" href="{% url 'draft_presentation' league.slug %}">Draft Room</a>
     </div>
