@@ -31,6 +31,9 @@
         <a class="button secondary" href="{% url 'login' %}">Log in to follow</a>
         <a class="button secondary" href="{% url 'signup' %}">Sign up</a>
       {% endif %}
+      <a class="button secondary" href="{% url 'tournament_schedule' league.tournament.slug %}">Full schedule</a>
+      <a class="button secondary" href="{% url 'group_stage' league.tournament.slug %}">Group stage</a>
+      <a class="button secondary" href="{% url 'bracket_stage' league.tournament.slug %}">Bracket</a>
       <a class="button secondary" href="{% url 'league_scoring_settings' league.slug %}">Scoring &amp; tiebreakers</a>
       <a class="button" href="{% url 'draft_presentation' league.slug %}">Draft Room</a>
     </div>
@@ -210,7 +213,11 @@
                   {% if entry.current_rank == 1 %}🥇{% elif entry.current_rank == 2 %}🥈{% elif entry.current_rank == 3 %}🥉{% else %}{{ entry.current_rank }}{% endif %}
                 </span>
               </td>
-              <td><strong>{{ entry.member.display_name }}</strong></td>
+              <td>
+                <strong>
+                  <a href="{% url 'member_point_breakdown' league.slug entry.member_id %}">{{ entry.member.display_name }}</a>
+                </strong>
+              </td>
               <td class="points-cell">{{ entry.points }}</td>
               {% with projection=projections_by_member_id|get_item:entry.member_id %}
                 {% if projection %}
@@ -255,12 +262,13 @@
           <div class="manager-card-header">
             <h3>{{ member.display_name }}</h3>
 
-            {% if can_manage_league and not league.is_setup_locked %}
-              <div class="manager-actions">
+            <div class="manager-actions">
+              <a href="{% url 'member_point_breakdown' league.slug member.id %}">Breakdown</a>
+              {% if can_manage_league and not league.is_setup_locked %}
                 <a href="{% url 'member_update' league.slug member.id %}">Edit</a>
                 <a href="{% url 'member_delete' league.slug member.id %}">Delete</a>
-              </div>
-            {% endif %}
+              {% endif %}
+            </div>
           </div>
 
           <ul class="team-list team-contribution-list">

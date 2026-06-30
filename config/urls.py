@@ -132,6 +132,11 @@ urlpatterns = [
         name="draft_autoplay",
     ),
     path(
+        "leagues/<slug:slug>/members/<int:member_id>/points/",
+        league_views.member_point_breakdown,
+        name="member_point_breakdown",
+    ),
+    path(
         "leagues/<slug:slug>/members/<int:member_id>/edit/",
         league_views.member_update,
         name="member_update",

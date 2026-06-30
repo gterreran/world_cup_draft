@@ -18,39 +18,20 @@ a:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 24px;
   padding: 16px 24px;
   background: white;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .brand {
-  flex: 0 0 auto;
   font-weight: 800;
   color: #171717;
 }
 
-.site-header nav,
-.main-nav {
+.site-header nav {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-}
-
-.nav-link {
-  border-radius: 999px;
-  color: #4b5563;
-  font-weight: 650;
-  padding: 6px 10px;
-}
-
-.nav-link:hover,
-.nav-link.is-active {
-  background: #eef2ff;
-  color: #155eef;
-  text-decoration: none;
+  gap: 16px;
 }
 
 .page {
@@ -2048,13 +2029,138 @@ tbody tr:hover {
   color: #991b1b;
 }
 
-@media (max-width: 720px) {
-  .site-header {
+/* Manager point breakdown page */
+.table-row-action {
+  margin-top: 3px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.point-breakdown-summary-grid {
+  margin-bottom: 24px;
+}
+
+.team-point-card.is-eliminated {
+  background: #fcfcfd;
+}
+
+.team-point-header {
+  align-items: center;
+}
+
+.team-point-total {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  color: #155eef;
+  line-height: 1.05;
+  text-align: right;
+}
+
+.team-point-total strong {
+  font-size: 2rem;
+  font-weight: 950;
+}
+
+.team-point-total span,
+.point-breakdown-line-points span {
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.point-breakdown-sections {
+  display: grid;
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.point-breakdown-section h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.point-breakdown-lines {
+  display: grid;
+  gap: 8px;
+}
+
+.point-breakdown-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(58px, auto);
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.point-breakdown-line.is-bonus {
+  background: #f8fafc;
+  border-color: #dbeafe;
+}
+
+.point-breakdown-line-main {
+  min-width: 0;
+}
+
+.point-breakdown-line-main strong,
+.point-breakdown-line-main span {
+  display: block;
+}
+
+.point-breakdown-line-main span {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.point-breakdown-line-result {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.point-breakdown-line-result strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #155eef;
+}
+
+.point-breakdown-line-points {
+  text-align: right;
+  line-height: 1.05;
+}
+
+.point-breakdown-line-points strong {
+  display: block;
+  color: #155eef;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+@media (max-width: 700px) {
+  .team-point-header {
     align-items: flex-start;
-    flex-direction: column;
   }
 
-  .main-nav {
+  .point-breakdown-line {
+    grid-template-columns: 1fr;
+  }
+
+  .point-breakdown-line-result,
+  .point-breakdown-line-points {
     justify-content: flex-start;
+    text-align: left;
   }
 }

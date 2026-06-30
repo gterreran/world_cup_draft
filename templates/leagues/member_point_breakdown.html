@@ -1,0 +1,122 @@
+{% extends "base/base.html" %}
+
+{% block title %}{{ member.display_name }} point breakdown{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Point breakdown</p>
+      <h1>{{ member.display_name }}</h1>
+      <p class="muted-text">
+        {{ league.name }} · {{ breakdown.total_points }} total point{{ breakdown.total_points|pluralize }}
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <a class="button secondary" href="{% url 'league_detail' league.slug %}">Back to league</a>
+      <a class="button secondary" href="{% url 'league_scoring_settings' league.slug %}">Scoring rules</a>
+    </div>
+  </div>
+
+  <section class="stats-grid point-breakdown-summary-grid">
+    <div class="stat-card">
+      <span class="stat-label">Total points</span>
+      <strong>{{ breakdown.total_points }}</strong>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-label">Teams</span>
+      <strong>{{ breakdown.teams|length }}</strong>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-label">League</span>
+      <strong>{{ league.name }}</strong>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-label">Tournament</span>
+      <strong>{{ league.tournament }}</strong>
+    </div>
+  </section>
+
+  {% for team_breakdown in breakdown.teams %}
+    {% if team_breakdown.is_hidden_blank %}
+      <section class="card team-point-card is-hidden-assignment-slot">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Hidden assignment</p>
+            <h2>Unrevealed team</h2>
+            <p class="muted-text">This assignment has not been revealed yet.</p>
+          </div>
+        </div>
+      </section>
+    {% else %}
+      <section class="card team-point-card {% if team_breakdown.is_eliminated %}is-eliminated{% endif %}">
+        <div class="section-header team-point-header">
+          <div>
+            <p class="eyebrow">
+              {% if team_breakdown.team.group %}Group {{ team_breakdown.team.group }}{% else %}Assigned team{% endif %}
+            </p>
+            <h2>
+              <span class="team-flag">{{ team_breakdown.team.flag }}</span>
+              {{ team_breakdown.team.name }}
+            </h2>
+            <p class="muted-text">
+              {{ team_breakdown.wins }}W · {{ team_breakdown.draws }}D · {{ team_breakdown.losses }}L
+              · GD {{ team_breakdown.goal_difference }}
+              · GF {{ team_breakdown.goals_scored }}
+              {% if team_breakdown.is_eliminated %} · Eliminated{% endif %}
+            </p>
+          </div>
+
+          <div class="team-point-total">
+            <strong>{{ team_breakdown.total_points }}</strong>
+            <span>pts</span>
+          </div>
+        </div>
+
+        {% if team_breakdown.sections %}
+          <div class="point-breakdown-sections">
+            {% for section in team_breakdown.sections %}
+              <div class="point-breakdown-section">
+                <h3>{{ section.title }}</h3>
+
+                <div class="point-breakdown-lines">
+                  {% for line in section.lines %}
+                    <div class="point-breakdown-line {% if line.is_bonus %}is-bonus{% endif %}">
+                      <div class="point-breakdown-line-main">
+                        <strong>{{ line.label }}</strong>
+                        <span>{{ line.description }}</span>
+                      </div>
+
+                      <div class="point-breakdown-line-result">
+                        {% if line.method_label %}
+                          <span>{{ line.method_label }}</span>
+                        {% endif %}
+                        {% if line.result_label %}
+                          <strong>{{ line.result_label }}</strong>
+                        {% endif %}
+                      </div>
+
+                      <div class="point-breakdown-line-points">
+                        <strong>{{ line.points }}</strong>
+                        <span>pts</span>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="muted-text">No completed scoring events yet for this team.</p>
+        {% endif %}
+      </section>
+    {% endif %}
+  {% empty %}
+    <section class="card">
+      <p>No teams assigned to this manager yet.</p>
+    </section>
+  {% endfor %}
+{% endblock %}

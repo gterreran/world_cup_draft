@@ -15,6 +15,7 @@ from .forms import (
 from .models import League, LeagueMember
 from .permissions import can_manage_league, is_commissioner, is_participant, is_platform_owner
 from scoring.services import (
+    compute_member_point_breakdown,
     compute_team_contribution,
     recompute_league_standings,
     team_is_eliminated_from_scoring,
@@ -230,6 +231,30 @@ def league_detail(request, slug: str):
             "can_manage_league": can_manage_league(request.user, league),
             "is_participant": is_participant(request.user, league),
             "is_following": is_participant(request.user, league),
+        },
+    )
+
+
+def member_point_breakdown(request, slug: str, member_id: int):
+    """Show a manager-specific fantasy point breakdown by assigned team."""
+
+    league = get_object_or_404(League, slug=slug)
+    member = get_object_or_404(LeagueMember, id=member_id, league=league)
+
+    breakdown = compute_member_point_breakdown(
+        league,
+        member,
+        show_hidden=can_manage_league(request.user, league),
+    )
+
+    return render(
+        request,
+        "leagues/member_point_breakdown.html",
+        {
+            "league": league,
+            "member": member,
+            "breakdown": breakdown,
+            "can_manage_league": can_manage_league(request.user, league),
         },
     )
 
