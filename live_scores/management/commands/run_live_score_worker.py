@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
+from live_scores.mapping import discover_missing_provider_mappings
 from live_scores.providers import (
     LiveScoreProviderConfigurationError,
     LiveScoreProviderError,
@@ -115,6 +116,45 @@ class Command(BaseCommand):
                 "time has already passed but are not final locally."
             ),
         )
+        parser.add_argument(
+            "--skip-auto-mapping",
+            action="store_true",
+            help=(
+                "Do not try to discover newly available provider fixture mappings. "
+                "Normally this should stay enabled for the knockout phase, because providers "
+                "may publish fixtures only after teams are known."
+            ),
+        )
+        parser.add_argument(
+            "--auto-map-interval",
+            type=float,
+            default=None,
+            help="Seconds between automatic mapping checks. Defaults to settings or idle sleep.",
+        )
+        parser.add_argument(
+            "--auto-map-lookback-days",
+            type=int,
+            default=None,
+            help="How many days back the automatic mapping window should inspect. Defaults to settings or 2.",
+        )
+        parser.add_argument(
+            "--auto-map-lookahead-days",
+            type=int,
+            default=None,
+            help="How many days ahead the automatic mapping window should inspect. Defaults to settings or 21.",
+        )
+        parser.add_argument(
+            "--auto-map-threshold",
+            type=float,
+            default=None,
+            help="Minimum confidence required for automatic mapping. Defaults to settings or 75.",
+        )
+        parser.add_argument(
+            "--auto-map-kickoff-tolerance-minutes",
+            type=int,
+            default=None,
+            help="Kickoff tolerance for automatic mapping. Defaults to settings or 180.",
+        )
 
     def handle(self, *args, **options):
         tournament = self._get_tournament(options["tournament_slug"])
@@ -132,6 +172,26 @@ class Command(BaseCommand):
         kickoff_buffer_minutes = options.get("kickoff_buffer_minutes")
         fixture_detail_batch_size = options["fixture_detail_batch_size"]
         provider_timezone = options.get("provider_timezone")
+        skip_auto_mapping = options["skip_auto_mapping"]
+        auto_map_interval = options["auto_map_interval"]
+        if auto_map_interval is None:
+            auto_map_interval = getattr(settings, "LIVE_SCORES_AUTO_MAP_INTERVAL_SECONDS", idle_sleep)
+        auto_map_lookback_days = options["auto_map_lookback_days"]
+        if auto_map_lookback_days is None:
+            auto_map_lookback_days = getattr(settings, "LIVE_SCORES_AUTO_MAP_LOOKBACK_DAYS", 2)
+        auto_map_lookahead_days = options["auto_map_lookahead_days"]
+        if auto_map_lookahead_days is None:
+            auto_map_lookahead_days = getattr(settings, "LIVE_SCORES_AUTO_MAP_LOOKAHEAD_DAYS", 21)
+        auto_map_threshold = options["auto_map_threshold"]
+        if auto_map_threshold is None:
+            auto_map_threshold = getattr(settings, "LIVE_SCORES_AUTO_MAP_THRESHOLD", 75.0)
+        auto_map_kickoff_tolerance_minutes = options["auto_map_kickoff_tolerance_minutes"]
+        if auto_map_kickoff_tolerance_minutes is None:
+            auto_map_kickoff_tolerance_minutes = getattr(
+                settings,
+                "LIVE_SCORES_AUTO_MAP_KICKOFF_TOLERANCE_MINUTES",
+                180,
+            )
 
         # Startup safety: force the first loop to check the provider's live feed
         # immediately. This catches a worker restart that happens after kickoff.
@@ -147,8 +207,45 @@ class Command(BaseCommand):
             f"Starting live-score worker for {tournament} using {provider_label(provider)}. "
             f"poll_interval={poll_interval}s, idle_sleep={idle_sleep}s, "
             f"kickoff_buffer={kickoff_buffer_minutes or getattr(settings, 'LIVE_SCORES_KICKOFF_BUFFER_MINUTES', 15)}m, "
-            f"force_poll={force_poll}, apply_final_results={apply_final_results}."
+            f"force_poll={force_poll}, apply_final_results={apply_final_results}, "
+            f"auto_mapping={'off' if skip_auto_mapping else 'on'}."
         )
+
+        last_auto_mapping_at = None
+
+        def run_auto_mapping(reason: str):
+            nonlocal last_auto_mapping_at
+            if skip_auto_mapping:
+                return None
+
+            log(f"Auto-mapping check ({reason}).")
+            result = discover_missing_provider_mappings(
+                tournament=tournament,
+                provider=provider,
+                league_id=options.get("league_id"),
+                season=options.get("season"),
+                provider_timezone=provider_timezone,
+                lookback_days=auto_map_lookback_days,
+                lookahead_days=auto_map_lookahead_days,
+                kickoff_tolerance_minutes=auto_map_kickoff_tolerance_minutes,
+                threshold=auto_map_threshold,
+            )
+            last_auto_mapping_at = timezone.now()
+            log(result.summary())
+            return result
+
+        try:
+            run_auto_mapping("startup")
+        except (LiveScoreProviderConfigurationError, LiveScoreProviderError) as exc:
+            self.stderr.write(self.style.ERROR(f"Live-score provider error during startup auto-mapping: {exc}"))
+            if once:
+                raise CommandError(str(exc)) from exc
+            time.sleep(sleep_after_error)
+        except Exception as exc:  # noqa: BLE001 - keep long-running worker alive.
+            self.stderr.write(self.style.ERROR(f"Live-score worker error during startup auto-mapping: {exc}"))
+            if once:
+                raise
+            time.sleep(sleep_after_error)
 
         if not options["skip_startup_recovery"]:
             try:
@@ -196,9 +293,30 @@ class Command(BaseCommand):
                 has_live_games=has_live_games,
                 kickoff_buffer_minutes=kickoff_buffer_minutes,
             )
-            should_poll_live = force_poll or startup_live_check_pending or decision.should_poll_live
 
             try:
+                if not skip_auto_mapping:
+                    now = timezone.now()
+                    auto_mapping_due = (
+                        last_auto_mapping_at is None
+                        or (auto_map_interval is not None and (now - last_auto_mapping_at).total_seconds() >= auto_map_interval)
+                        or decision.next_match is None
+                    )
+                    if auto_mapping_due:
+                        if decision.next_match is None:
+                            reason = "no upcoming mapped matches"
+                        else:
+                            reason = "periodic"
+                        mapping_result = run_auto_mapping(reason)
+                        if mapping_result and mapping_result.changed:
+                            decision = polling_decision_status(
+                                tournament=tournament,
+                                provider=provider,
+                                has_live_games=has_live_games,
+                                kickoff_buffer_minutes=kickoff_buffer_minutes,
+                            )
+
+                should_poll_live = force_poll or startup_live_check_pending or decision.should_poll_live
                 if should_poll_live:
                     was_startup_check = startup_live_check_pending
                     if force_poll:

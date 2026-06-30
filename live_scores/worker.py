@@ -476,7 +476,10 @@ def _apply_provider_final_result(
             )
         return 0, 1, 0
 
-    broadcast_match_score_update(applied.match)
+    broadcast_match_score_update(
+        applied.match,
+        LiveMatchState.objects.filter(match=applied.match).first(),
+    )
 
     if log:
         log(

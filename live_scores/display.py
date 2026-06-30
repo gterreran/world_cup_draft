@@ -56,7 +56,7 @@ def build_match_score_display(match, live_state: LiveMatchState | None = None) -
             away_score=match.away_score,
             status_label="Final",
             status_class="final",
-            detail_label=_final_detail_label(match),
+            detail_label=_final_detail_label(match, live_state),
         )
 
     if live_state is not None:
@@ -127,7 +127,7 @@ def _live_status_label(live_state: LiveMatchState) -> str:
 
 def _live_detail_label(live_state: LiveMatchState) -> str:
     if live_state.went_to_penalties:
-        return "Penalties"
+        return _penalty_detail_label(live_state)
     if live_state.went_to_extra_time:
         return "Extra time"
     if live_state.provider_state_name and live_state.status not in {
@@ -138,9 +138,19 @@ def _live_detail_label(live_state: LiveMatchState) -> str:
     return ""
 
 
-def _final_detail_label(match) -> str:
+def _final_detail_label(match, live_state: LiveMatchState | None = None) -> str:
     if match.went_to_penalties:
-        return "Penalties"
+        return _penalty_detail_label(live_state)
     if match.went_to_extra_time:
         return "After extra time"
     return ""
+
+
+def _penalty_detail_label(live_state: LiveMatchState | None) -> str:
+    if (
+        live_state is not None
+        and live_state.penalty_home_score is not None
+        and live_state.penalty_away_score is not None
+    ):
+        return f"Penalties {live_state.penalty_home_score}-{live_state.penalty_away_score}"
+    return "Penalties"

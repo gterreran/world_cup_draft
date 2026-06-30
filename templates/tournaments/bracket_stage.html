@@ -44,6 +44,8 @@
 
                       <span class="status-pill{% if score.status_class %} status-{{ score.status_class }}{% endif %}" data-live-score-status{% if not score.status_label %} hidden{% endif %}>{{ score.status_label }}</span>
 
+                      <span data-live-score-detail{% if not score.detail_label %} hidden{% endif %}>{{ score.detail_label }}</span>
+
                       {% if match.venue %}
                         <div class="right">
                           <span>{{ match.venue }}</span>
@@ -107,6 +109,8 @@
                               {% endif %}
 
                               <span class="status-pill{% if score.status_class %} status-{{ score.status_class }}{% endif %}" data-live-score-status{% if not score.status_label %} hidden{% endif %}>{{ score.status_label }}</span>
+
+                              <span data-live-score-detail{% if not score.detail_label %} hidden{% endif %}>{{ score.detail_label }}</span>
 
                               {% if match.venue %}
                                 <div class="right">
